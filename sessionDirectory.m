@@ -14,7 +14,7 @@ function [animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath
     % Sessions without .t64 files will maintain their position in
     % animal_tfilelist but will be empty.
 
-    % Jo Carpenter, June 23, 2020
+    % Jordan Carpenter, June 23, 2020
 
 recDir = dir(recFolderPath);
 dirList = cell(1, length(recDir));
