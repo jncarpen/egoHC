@@ -68,6 +68,7 @@ for iF = 1:nFiles
 		
         % convert to ts object
 		S{iF} = ts(S{iF});
+        % S{iF} = timetable(S{iF});
 	end 		% if tfn valid
 end		% for all files
 fprintf(2,'\n');

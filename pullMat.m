@@ -1,4 +1,4 @@
-s% Once all data is preprocessed and organized into .mat files, pull the
+% Once all data is preprocessed and organized into .mat files, pull the
 % files out one-by-one for analysis.
 
 % Adopted from:
@@ -25,9 +25,6 @@ for k = 1 : length(theFiles)
     fullFileName = fullfile(theFiles(k).folder, baseFileName);
     fprintf(1, 'Now reading %s\n', fullFileName);
     
-    % Now do whatever you want with this file name,
-    % such as reading it in as an image array with imread()
-    imageArray = imread(fullFileName);
-    imshow(imageArray);  % Display image.
-    drawnow; % Force display to update immediately.
+    % write in whatever I want to do with these files*
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end

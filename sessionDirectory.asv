@@ -19,7 +19,7 @@ function [animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath
 recDir = dir(recFolderPath);
 dirList = cell(1, length(recDir));
 animal_tfilelist = cell(1,length(recDir));
-animal_EEGfilelist = cell(1, length(recDir));
+animal_EEGfilelist = cell(2, length(recDir));
 
 count = 1;
 for dirIndex = 1:length(recDir)
