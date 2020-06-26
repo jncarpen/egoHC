@@ -1,4 +1,4 @@
-function [animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath)
+function [recDir, animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath)
 %SESSIONDIRECTORY:
 
     % INPUT:
@@ -6,20 +6,23 @@ function [animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath
     % (i.e. 'D:\Data\24116\Axona recordings'). 
     
     % OUTPUT:
-    % animal_tfilelist: 1 x S cell array, where S is the number of sessions
+    % (1) animal_tfilelist: 1 x S cell array, where S is the number of sessions
     % recorded for the animal. Each cell contains a 1 x T cell array where
     % T is the number of .t64 files found in each session folder. Each cell
     % contains information about the file path of each .t64 file to be read
     % into AD Redish's 'LoadSpikes.m' script to pull out spike trains.
     % Sessions without .t64 files will maintain their position in
     % animal_tfilelist but will be empty.
+    % (2) animal_EEGfilelist: paths to all four EEG file locations for each sesssion
+    % (Axona only)- will be adapted for Neuralynx.
+    % (3) recDir: Directory of recording folder paths.
 
     % Jordan Carpenter, June 23, 2020
 
-recDir = dir(recFolderPath);
-dirList = cell(1, length(recDir));
-animal_tfilelist = cell(1,length(recDir));
-animal_EEGfilelist = cell(1, length(recDir));
+    recDir = dir(recFolderPath);
+    dirList = cell(1, length(recDir));
+    animal_tfilelist = cell(1,length(recDir));
+    animal_EEGfilelist = cell(1, length(recDir));
 
 count = 1;
 for dirIndex = 1:length(recDir)
@@ -31,6 +34,11 @@ for dirIndex = 1:length(recDir)
         count = count + 1;
     end
 end
+
+% % remove junk rows from recDir struct
+% dirName = [recDir.name]; % Get all the names
+% g = length(dirName) == 10; % find names with correct format
+% recDir = recDir(g); % Select only correct names, delete rest.
 
 dirList = dirList(~cellfun(@isempty, dirList)); % clear empty cells
 
