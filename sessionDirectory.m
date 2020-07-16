@@ -1,4 +1,4 @@
-function [recDir, animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath)
+function [animal_trackfilelist, animal_fmEvents, animal_behaviourlist, animal_posfilelist, animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath)
 %SESSIONDIRECTORY:
 
     % INPUT:
@@ -21,9 +21,7 @@ function [recDir, animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFo
 
     recDir = dir(recFolderPath);
     dirList = cell(1, length(recDir));
-    animal_tfilelist = cell(1,length(recDir));
-    animal_EEGfilelist = cell(1, length(recDir));
-
+    
 count = 1;
 for dirIndex = 1:length(recDir)
     L = strlength(recDir(dirIndex).name);
@@ -35,29 +33,45 @@ for dirIndex = 1:length(recDir)
     end
 end
 
-% % remove junk rows from recDir struct
-% dirName = [recDir.name]; % Get all the names
-% g = length(dirName) == 10; % find names with correct format
-% recDir = recDir(g); % Select only correct names, delete rest.
-
 dirList = dirList(~cellfun(@isempty, dirList)); % clear empty cells
+
+    animal_tfilelist = cell(1,length(dirList));
+    animal_EEGfilelist = cell(1,length(dirList));
+    animal_posfilelist = cell(1,length(dirList));
+    animal_trackfilelist = cell(1,length(dirList));
+    animal_fmEvents = cell(1,length(dirList));
+    animal_behaviourlist = cell(1, length(dirList));
+
 
 for session= 1:length(dirList)
     folderPath = char(dirList(session));
     
-    % grab files with .t64 or .eeg extension
+    % grab files with specific extensions
     fileList_t64 = dir(fullfile(folderPath, '*.t64'));
+    tfilelist = cell(1,length(fileList_t64));
+
+    fileList_pos = dir(fullfile(folderPath, '*.pos'));
+    fileList_tracker = dir(fullfile(folderPath, '*_tracker.mat'));
+    fileList_fmEvents = dir(fullfile(folderPath, 'fmEvents.mat'));
+    fileList_behaviour = dir(fullfile(folderPath, 'behaviourTimes.mat'));
     
-    % find a less gross way to do this
+%     % if no file is found...
+%     if isempty(fileList_tracker)
+%         fileList_tracker = [];
+%     end
+%     
+%     if isempty(fileList_fmEvents)
+%         fileList_fmEvents = [];
+%     end
+    
+    % find a less gross way to do this 
     pathEEG = dir(fullfile(folderPath, '*.eeg'));
     pathEEG2 = dir(fullfile(folderPath, '*.eeg2'));
     pathEEG3 = dir(fullfile(folderPath, '*.eeg3'));
     pathEEG4 = dir(fullfile(folderPath, '*.eeg4'));
     fileList_EEG = [pathEEG, pathEEG2, pathEEG3, pathEEG4];
-    
-    tfilelist = cell(1,length(fileList_t64));
     EEGfilelist = cell(1,length(fileList_EEG));
-    
+        
     for i=1:length(fileList_t64)
         tfilelist{i} = append(fileList_t64(i).folder, '\', fileList_t64(i).name);
     end
@@ -66,9 +80,47 @@ for session= 1:length(dirList)
         EEGfilelist{i} = append(fileList_EEG(i).folder, '\', fileList_EEG(i).name); 
     end
     
+    for i=1:length(fileList_pos)
+        posfilelist{i} = append(fileList_pos(i).folder, '\', fileList_pos(i).name); 
+    end
+    
+     trackerfilelist{1}=[];
+    for i=1:length(fileList_tracker)
+        if ~isempty(fileList_tracker(i))
+            trackerfilelist{i} = append(fileList_tracker(i).folder, '\', fileList_tracker(i).name); 
+        else
+            trackerfilelist{i} = 'EMPTY';
+        end
+    end
+    
+     behaviorfilelist{1}=[];
+    for i=1:length(fileList_behaviour)
+        if ~isempty(fileList_behaviour(i))
+            behaviorfilelist{i} = append(fileList_behaviour(i).folder, '\', fileList_behaviour(i).name); 
+        else
+            behaviorfilelist{i} = 'OFS';
+        end
+    end
+    
+    fmEventsfilelist{1}="OFS";
+    for i=1:length(fileList_fmEvents)
+        if ~isempty(fileList_fmEvents(i))
+            fmEventsfilelist{i} = append(fileList_fmEvents(i).folder, '\', fileList_fmEvents(i).name); 
+        else
+            fmEventsfilelist{i} = 'OFS';
+        end
+    end
+    
  animal_tfilelist{session} = tfilelist;
  animal_EEGfilelist{session} = EEGfilelist;
+ animal_posfilelist{session} = posfilelist;
+ animal_trackfilelist{session} = trackerfilelist;
+ animal_fmEvents{session} = fmEventsfilelist;
+ animal_behaviourlist{session} = behaviorfilelist;
+ 
+ clear fileList_fmEvents fileList_tracker
  
 end
+
 end
 

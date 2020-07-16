@@ -1,2 +1,5 @@
 *.csv
+*.asv
 readtfile/
+mTintCore
+.ipynb_checkpoints

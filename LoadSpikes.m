@@ -1,6 +1,6 @@
 % LoadSpikes: from AD Redish's mClust program **
 
-function S = LoadSpikes(tfilelist)
+function [S, unitID] = LoadSpikes(tfilelist)
 %
 % S = LoadSpikes(tfilelist)
 %
@@ -41,7 +41,9 @@ fprintf(2, 'Reading %d files.', nFiles);
 % first read the header, then read a tfile 
 % note: uses the bigendian modifier to ensure correct read format.
 
-S = cell(nFiles, 2);
+S = cell(1, nFiles);
+unitID = cell(1, nFiles);
+
 for iF = 1:nFiles
 	tfn = tfilelist{iF};
     [fd, fn, xt] = fileparts(tfn);
@@ -55,27 +57,29 @@ for iF = 1:nFiles
 		MClust.ReadHeader(tfp);    
         switch xt
             case {'.raw64'}
-                S{iF,1} = fread(tfp,inf,'uint64')*10000;	%read as 64 bit ints                             
+                S{1,iF} = fread(tfp,inf,'uint64')*10000;	%read as 64 bit ints                             
             case {'.raw32'}
-                S{iF,1} = fread(tfp,inf,'uint32')*10000;	%read as 32 bit ints
+                S{1,iF} = fread(tfp,inf,'uint32')*10000;	%read as 32 bit ints
             case {'.t64', '.k64'}
-                S{iF,1} = fread(tfp,inf,'uint64');	%read as 64 bit ints
+                S{1,iF} = fread(tfp,inf,'uint64');	%read as 64 bit ints
             case {'.t32', '.t', '.k32','.k'}
-                S{iF,1} = fread(tfp,inf,'uint32');	%read as 32 bit ints             
+                S{1,iF} = fread(tfp,inf,'uint32');	%read as 32 bit ints             
             otherwise
                 error('MClust::LoadSpikes', 'Unknown t-file extension.');
         end
 		fclose(tfp);		
 
 		% Set appropriate time units.
-        S{iF,1} = S{iF,1}/10000;
+        S{1,iF} = (S{1,iF}/10000);
+        
+        % ** To get in ms: S{1,iF} = (S{1,iF}/10000)*1000;
 		
         % convert to ts object
-		S{iF,1} = ts(S{iF,1});
+		% S{1,iF} = ts(S{1,iF});
         
         
         % Add file name next in the adjacent cell 
-        S{iF,2} = fn;
+        unitID{1,iF} = fn;
       
 	end 		% if tfn valid
 end		% for all files
