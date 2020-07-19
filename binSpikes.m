@@ -5,8 +5,10 @@ function spikeTrain = binSpikes(trackingtimes, cellSpikes)
 %   Output is the *smoothed spike train (can adjust the width of the
 %   gaussian window)
 
+%   Everything should be in SECONDS **
+
 % if trackingtimes is in ms;convert to seconds
-trackingtimes = trackingtimes/1000;
+% trackingtimes = trackingtimes/1000;
 
 % compute first and last timestamp
 startTime = trackingtimes(1);
