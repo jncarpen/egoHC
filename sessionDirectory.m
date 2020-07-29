@@ -35,6 +35,22 @@ end
 
 dirList = dirList(~cellfun(@isempty, dirList)); % clear empty cells
 
+%% get correct order for dirList (sorted by date)
+
+MDYS = cell(length(dirList), 1);
+
+for fileNum = 1:length(dirList)
+    splitName = split(dirList{1,fileNum},'\');
+    serial = splitName{end,1}; % grab serial #
+    MDYS{fileNum, 1} = strcat(serial(3:4), serial(1:2), serial(5:8), serial(9:10));
+end
+
+% sort by mo-day-yr-session
+[~, I] = sort(MDYS); % grab order indices
+dirList = dirList(I); 
+
+%%
+
     animal_tfilelist = cell(1,length(dirList));
     animal_EEGfilelist = cell(1,length(dirList));
     animal_posfilelist = cell(1,length(dirList));

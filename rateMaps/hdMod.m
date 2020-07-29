@@ -1,15 +1,16 @@
-function [HDmean, rateMap, spkRate, weightSum, prefHDvect, occuMap,countMap] = hdMod(pos, head_angle, cellSpk)
-%BINPOS: Jercog et al. analysis knockoff
+function [HDmean, rateMap, spkRate, weightSum, prefHDvect, occuMap,countMap, xCenter, yCenter] = hdMod(pos, hd, SpikeTrain)
+%HDMOD: Jercog et al. analysis knockoff
 
     %   INPUT:
-    %   pos             Position samples, [t x y]
-    %   head_angle      Vector of head direction values
-    %   cellSpk         Spike train for cell
+    %   pos:                Position samples, [t x y]
+    %   hd:                 Vector of head direction values
+    %   SpikeTrain:         Spike train for cell
 
     %   OUTPUT:
     %   A bunch of stuff right now, will be refined once function is
     %   complete.
-
+    
+    %   Jordan Carpenter 2020
 
 %% Set everything up
     
@@ -45,15 +46,15 @@ function [HDmean, rateMap, spkRate, weightSum, prefHDvect, occuMap,countMap] = h
     for xx = 1:nBins
         for yy = 1:nBins
             indices = find(xx == binX & yy == binY);
-            HDmean(xx, yy) = circ_mean(head_angle(indices)); % mean HD in each spatial bin
+            HDmean(xx, yy) = circ_mean(hd(indices)); % mean HD in each spatial bin
             % meanFR(xx, yy) = mean(cellSpk(indices));
-            rateMap(xx,yy) = sum(cellSpk(indices))/(length(indices)*sampleRate/1000);
+            rateMap(xx,yy) = sum(SpikeTrain(indices))/(length(indices)*sampleRate/1000);
             occuMap(xx,yy) = length(indices);
-            countMap(xx,yy) = sum(cellSpk(indices));
+            countMap(xx,yy) = sum(SpikeTrain(indices));
             count = 1;
             for H = HDbins
-                indicesH = find(xx == binX & yy == binY & head_angle>H & head_angle<=H+(2*pi/10));
-                spkRate(xx, yy, count) = sum(cellSpk(indicesH))/(length(indicesH)*sampleRate/1000);
+                indicesH = find(xx == binX & yy == binY & hd>H & hd<=H+(2*pi/10));
+                spkRate(xx, yy, count) = sum(SpikeTrain(indicesH))/(length(indicesH)*sampleRate/1000);
                 count = count+1;
             end
         end

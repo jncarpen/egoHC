@@ -1,22 +1,38 @@
-function pathPlot(posx, posy, t_s, spikeTs)
+function pathPlot(pos, spikeTs)
 %PATHPLOT: make simple pathplot
 
-% make sure BNT is on the path
+%   INPUT:
+%   pos:        [t x y] or [t x y x2 y2]
+%   spikeTs:    Timestamps (in seconds) for a single neuron
+
+%   OUTPUT:
+%   pathPlot:   Function will return pathplot with spikes overlaid
+
+%   Jordan Carpenter, 2020.
+
+%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%
+
+% add BNT to path
 addpath(genpath('C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001'));
 
-pos = [t_s, posx, posy];
+% remove [x2 y2] if present
+if length(pos) > 3
+    pos = pos(:,1:3);
+end
 
-% from BNT
-[spkPos] = data.getSpikePositions(spikeTs', pos);
+x = pos(:,2); % grab xpos
+y = pos(:,3); % grab ypos
 
+[spkPos] = data.getSpikePositions(spikeTs', pos); % spkPos: [t x y]
 
-figure
-plot(posx, posy, 'k')
+% make path plot
+% figure
+plot(x, y, 'Color', [.7 .7 .7])
 hold on
-scatter(spkPos(:,2),spkPos(:,3), 2, 'r')
+scatter(spkPos(:,2),spkPos(:,3), 3, [1, 0, 0], 'filled')
 title("Path Plot")
-xlabel("X-Coordinate")
-ylabel("Y-Coordinate")
+xlabel("X")
+ylabel("Y")
 return
 
 end

@@ -51,12 +51,15 @@ for neuron = 1:length(t64info)
         
         if serial_t64 == serial_unit && tetrode_t64 == tetrode_unit && cluster_t64 == cluster_unit
             uniqueID{1,neuron} = unique;
-            neuronID{1,neuron} = ID;
-            sessType{1,neuron} = type;
-            
+            neuronID{1,neuron} = ID;            
+        end
+        
+        if serial_t64 == serial_unit
+            sessType = type;
         end
     end
 end
+
 
 uniqueID_A{1,sessNum} = uniqueID;
 neuronID_A{1,sessNum} = neuronID;
