@@ -1,4 +1,4 @@
-function pathPlot(pos, spikeTs)
+function pathPlot(pos, SpikeTimes)
 %PATHPLOT: make simple pathplot
 
 %   INPUT:
@@ -23,7 +23,7 @@ end
 x = pos(:,2); % grab xpos
 y = pos(:,3); % grab ypos
 
-[spkPos] = data.getSpikePositions(spikeTs', pos); % spkPos: [t x y]
+[spkPos] = data.getSpikePositions(SpikeTimes', pos); % spkPos: [t x y]
 
 % make path plot
 % figure

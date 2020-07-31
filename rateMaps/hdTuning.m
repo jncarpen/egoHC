@@ -1,8 +1,23 @@
 function hdTuning(hd, pos, SpikeTrain)
 %HDTUNING: make HD tuning plot
+%   INPUTS
+%   hd:                     Tx1 double, where T is the number of
+%                           timestamps. Each row corresponds to a head
+%                           direction value from 1-360 degrees.
+%
+%   pos:                    [t x y x1 y1]; each column should be of length
+%                           T to match the lenght of the hd and SpikeTrain
+%                           vectors.
+%
+%   SpikeTrain:             SpikeTimes that were binned by the number of
+%                           position samples- should be a Tx1 double.
+%   OUTPUTS
+%   TC:                     Head direction tuning curve will be generated.
 
 % make sure that everything is in SECONDS ** for appropriate Hz
 % calculations :)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % convert degrees to radians 
 if max(hd) > 2*pi

@@ -1,6 +1,6 @@
 % Fix sessType (as generated in the generateDataset.m script)
 % This can be deleted once I fix the other script
-% July 23, 2020. JC
+% July 23, 2020. Jordan Carpenter 
 
 trialType = cell(1, length(sessType_A)); % initalize new cell array
 

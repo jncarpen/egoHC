@@ -91,6 +91,7 @@ for sessionNum = 1:totalSessions
 
   v1 = v(:,1);
   v2 = v(:,2);
+  
   for i = 2:size(v,1)-1
       a(i,1) = (v1(i+1) - v1(i-1))/(t(i+1) - t(i-1));
       a(i,2) = (v2(i+1) - v2(i-1))/(t(i+1) - t(i-1));
