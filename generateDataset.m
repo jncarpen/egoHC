@@ -70,11 +70,12 @@ for sessionNum = 1:totalSessions
    
   %% speed + accel + hd
   numLeds = 2; 
+  % parse and medfilt pos vector to eliminate major outliers
   t = smoothPos(:,1); % in seconds
-  x = smoothPos(:,2); 
-  x2 = smoothPos(:,4);
-  y = smoothPos(:,3); 
-  y2 = smoothPos(:,5);
+  x = medfilt1(smoothPos(:,2)); 
+  x2 = medfilt1(smoothPos(:,4));
+  y = medfilt1(smoothPos(:,3)); 
+  y2 = medfilt1(smoothPos(:,5));
   v = zeros(size(smoothPos,1), numLeds); % velocity
   a = zeros(size(smoothPos,1), numLeds); % acceleration 
  

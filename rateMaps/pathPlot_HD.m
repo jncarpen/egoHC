@@ -28,6 +28,9 @@ y = pos(:,3); % grab ypos
 
 spkPos = [];
 spkAng = [];
+col1 = [];
+col2 = [];
+col3 = [];
 
 [spkPos] = data.getSpikePositions(SpikeTimes', pos); % spkPos: [t x y]
 idx = knnsearch(t, SpikeTimes);
@@ -37,10 +40,20 @@ spkAng(:,2) = hd(idx);
 % Adjust vectors to match if needed
 if length(spkPos) > length(spkAng)
     idx = knnsearch(spkPos(:,1), spkAng(:,1));
-    spkPos = spkPos(idx);
+    col1 = spkPos(:,1);
+    col2 = spkPos(:,2);
+    col3 = spkPos(:,2);
+    spkPos = [col1(idx), col2(idx), col3(idx)];
 elseif length(spkPos) < length(spkAng)
     idx = knnsearch(spkAng(:,1), spkPos(:,1));
-    spkAng = spkAng(idx);
+    col1 = spkAng(:,1);
+    col2 = spkAng(:,2);
+    spkAng = [col1(idx), col2(idx)];
+end
+
+if size(spkPos,2) == 3 && size(spkAng,2) == 2
+else
+    disp("Error: spkPos and spkAng have the wrong dimensions.")
 end
 
 
@@ -48,9 +61,9 @@ end
 % figure
 plot(x, y, 'Color', [.7 .7 .7])
 hold on
-scatter(spkPos(:,2), spkPos(:,3), [3], spkAng(:,2), '.')
+scatter(spkPos(:,2), spkPos(:,3), [30], spkAng(:,2), '.')
 title("HD Path Plot")
-colorbar(gca, "hsv", 'eastoutside')
+% colorbar(gca, "hsv", 'eastoutside')
 xlabel("X")
 ylabel("Y")
 return

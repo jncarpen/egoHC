@@ -1,4 +1,4 @@
-function [out] = FRhist(pos, SpikeTrain, speed)
+function [allSpdCnts, hiSpdCnts, loSpdCnts, histEdges] = FRhist(pos, SpikeTimes, speed)
 %FRHIST Bin SpikeTrain into 200 ms bins and make histogram.
 %
 %   With a sampling frequency of 0.020 seconds, we want to combine every 10
@@ -38,30 +38,62 @@ function [out] = FRhist(pos, SpikeTrain, speed)
 % addOptional(p, 'speed', @isnumeric)
 % parse(p,varargin{:});
 
-% determine whether a speed threshold should be applied
-% if speedFilt == 1
-%     
-% elseif speedFilt == 2
-% end
-
-
 % pull out important stuff
 t = pos(:,1); 
 minTime = nanmin(t);
 maxTime = nanmax(t);
 binWidth = 0.2; % 200 ms bins
 
+% get spike speed
+spdLED1 = speed(:,1);
+idx = knnsearch(t, SpikeTimes);
+spkSpd = spdLED1(idx);
+
+% get indices for times where speed was < or > 5 cm/s
+over5idx = find(spkSpd>5);
+under5idx = find(spkSpd<5);
+
+ST_over5 = SpikeTimes(over5idx);
+ST_under5 = SpikeTimes(under5idx);
+
+%% ALL FIRING RATES
+
 % build histogram
 edges = minTime:binWidth:maxTime; 
 [N] = histcounts(SpikeTimes,edges); % N = number of occurances/bin
 
 % compute average FR for each bin (Hz)
-firingRate = N./binWidth;
+firingRateALL = N./binWidth;
 
 % plot histogram of average firing rates
-nBins = 100; % # of bins
-FRhist = histcounts(firingRate, 100);
+% edgesFR = linspace(0.001,50,50);
+edgesFR = logspace(-3, 1.7,50); % fom 0.001 to ~50
+%edgesFR = logspace(-3,1.30103, 31); % from 0.0010 to 20.0000
+[allSpdCnts, histEdges] = histcounts(firingRateALL, edgesFR);
 
+%% OVER 5 CM/S
+
+% build histogram
+edges = minTime:binWidth:maxTime; 
+[N_over5] = histcounts(ST_over5,edges); % N = number of occurances/bin
+
+% compute average FR for each bin (Hz)
+firingRateHI = N_over5./binWidth;
+
+% plot histogram of average firing rates
+[hiSpdCnts, ~] = histcounts(firingRateHI, edgesFR);
+
+%% UNDER 5 CM/S
+
+% build histogram
+edges = minTime:binWidth:maxTime; 
+[N_under5] = histcounts(ST_under5,edges); % N = number of occurances/bin
+
+% compute average FR for each bin (Hz)
+firingRateLO = N_under5./binWidth;
+
+% plot histogram of average firing rates
+[loSpdCnts, ~] = histcounts(firingRateLO, edgesFR);
 
 end
 
