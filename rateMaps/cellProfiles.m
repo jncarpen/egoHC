@@ -28,9 +28,12 @@ for sessNum = 1:length(SpikeTrain)
     spikeAcc{1,sessNum} = SA;
 end
 
+% Get home/random well locations for all sessions
+[hwLoc, rdLoc] = getWellLoc(labNotes, trialType);
+
 %% Generate cell profile figures
 
-for sessNum = 25%:length(SpikeTrain)
+for sessNum = 27%:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         
@@ -65,6 +68,12 @@ for sessNum = 25%:length(SpikeTrain)
             mapSpd = analyses.map(P, zSpd, 'smooth', 15, 'binWidth', 4); % FR map
             [allSpdCnts, hiSpdCnts, loSpdCnts, histEdges] = FRhist(P, ST, speed{1,sessNum});
             
+            % Compute distance from home well at each time point
+            [distHome, spkDist] = objDist(P, hwLoc{1,sessNum}, ST);
+            
+            % Compute TC for distance from home well
+            tc_distHome = analyses.turningCurve(spkDist, P, sampleRate, 'binWidth', 10); %HD tuning curve
+
             
             %% Plot everything
             fig = figure('units','normalized','outerposition',[0 0 1 1]); % make fullscreen fig
@@ -76,7 +85,7 @@ for sessNum = 25%:length(SpikeTrain)
             fig.Name = figTit; % set figure name
             
             % PATHPLOT (STANDARD)
-            subplot(4,4,1)
+            subplot(5,5,1)
             pathPlot(pos{1,sessNum},SpikeTimes{1,sessNum}{1,unit})
             title("Path Plot")
             xlabel("x")
@@ -86,7 +95,7 @@ for sessNum = 25%:length(SpikeTrain)
             box off
             
             % PATHPLOT (HD)
-            subplot(4,4,2)
+            subplot(5,5,2)
             pathPlot_HD(pos{1,sessNum},SpikeTimes{1,sessNum}{1,unit}, hd{1,sessNum})
             colormap(gca,'hsv')
             caxis([0 360])
@@ -98,7 +107,7 @@ for sessNum = 25%:length(SpikeTrain)
             box off
             
             % FR MAP
-            subplot(4,4,3)
+            subplot(5,5,3)
             % imagesc(map.z); need to uninvert this if its gonna be used
             plot.colorMap(map.z)
             colorbar
@@ -109,7 +118,7 @@ for sessNum = 25%:length(SpikeTrain)
             box off
             
             % HD PATHPLOT
-            subplot(4,4,4)
+            subplot(5,5,4)
             scatter(pos{1,sessNum}(:,2), pos{1,sessNum}(:,3),[10],hd{1,sessNum}(:,1),'.')
             colormap(gca,'hsv')
             caxis([0 360])
@@ -122,7 +131,7 @@ for sessNum = 25%:length(SpikeTrain)
             box off         
             
             % ACCEL PATHPLOT
-            subplot(4,4,5)
+            subplot(5,5,5)
             scatter(pos{1,sessNum}(:,2), pos{1,sessNum}(:,3),[10],accel{1,sessNum}(:,1),'.')
             colorbar
             colormap(gca,'copper')
@@ -133,7 +142,7 @@ for sessNum = 25%:length(SpikeTrain)
             box off
             
             % SPEED PATHPLOT
-            subplot(4,4,6)
+            subplot(5,5,6)
             scatter(pos{1,sessNum}(:,2), pos{1,sessNum}(:,3),[10],speed{1,sessNum}(:,1),'.')
             colorbar
             colormap(gca,'copper')
@@ -145,7 +154,7 @@ for sessNum = 25%:length(SpikeTrain)
             
             
             % HD TUNING CURVE
-            subplot(4,4,7)
+            subplot(5,5,7)
             nanSum = sum(isnan(hd{1,sessNum}));
             HDnans = sprintf('%.f', nanSum);
             plot(tc_HD(:,1), tc_HD(:,2), 'Color', 'k', 'LineWidth', 1.5)
@@ -158,7 +167,7 @@ for sessNum = 25%:length(SpikeTrain)
             % ylabel("TC value")
             
             % SPEED TUNING CURVE
-            subplot(4,4,8)
+            subplot(5,5,8)
             plot(tc_SPD(:,1), tc_SPD(:,2), 'Color', 'k', 'LineWidth', 1.5)
             title("Speed TC")
             xlabel("speed (cm/s)")
@@ -171,7 +180,7 @@ for sessNum = 25%:length(SpikeTrain)
             if string(trialType{1,sessNum}) == "FM" && isstruct(fmEvents{1,sessNum})
                 
                 % For FM trials:
-                subplot(4,4,9)
+                subplot(5,5,9)
                 taskPhz = parseTask(fmEvents{1,sessNum}.events, pos{1,sessNum});
                 [TC_taskPhz] = taskPhz_tuningCurve(pos{1,sessNum}, SpikeTrain{1,sessNum}{1,unit}, taskPhz);
                 for phz=1:length(TC_taskPhz)
@@ -190,7 +199,7 @@ for sessNum = 25%:length(SpikeTrain)
             elseif string(trialType{1,sessNum}) == "OF"
                 
                 % For OF trials:
-                subplot(4,4,9)
+                subplot(5,5,9)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OF SES")
                 box off
@@ -198,7 +207,7 @@ for sessNum = 25%:length(SpikeTrain)
             end
             
             % FR HISTOGRAM- ALL SPEEDS    
-            subplot(4,4,10)
+            subplot(5,5,10)
             histogram('BinEdges',histEdges,'BinCounts',allSpdCnts, 'FaceColor', 'k')
             title("FR Distrib")
             ylim([0 max(allSpdCnts)])
@@ -207,7 +216,7 @@ for sessNum = 25%:length(SpikeTrain)
             box off
             
             % FR HISTOGRAM- BELOW 5 CM/S
-            subplot(4,4,11)
+            subplot(5,5,11)
             histogram('BinEdges',histEdges,'BinCounts',loSpdCnts, 'FaceColor', 'k')
             title("FR Distrib: spd<5cm/s")
             ylim([0 max(allSpdCnts)])
@@ -217,7 +226,7 @@ for sessNum = 25%:length(SpikeTrain)
 
             
             % FR HISTOGRAM- ABOVE 5 CM/S
-            subplot(4,4,12)
+            subplot(5,5,12)
             histogram('BinEdges',histEdges,'BinCounts',hiSpdCnts, 'FaceColor', 'k')
             title("FR Distrib: spd>5cm/s")
             ylim([0 max(allSpdCnts)])
@@ -241,7 +250,7 @@ for sessNum = 25%:length(SpikeTrain)
                 [rastmat_home timevec_home] = mraster(trialspx_home,pre,post);
 
                 % PSTH (HOME EVENTS)
-                subplot(4,4,13)
+                subplot(5,5,13)
                 bar(psth_home(:,1)+binsz,psth_home(:,2),'k','BarWidth',1)
                 axis([min(psth_home(:,1))-10 max(psth_home(:,1))+10 0 max(psth_home(:,2))+1])
                 xlabel('peri-stimulus time'),ylabel(['cntsPer ' num2str(binsz) 'ms bin / fr (Hz)']);
@@ -252,7 +261,7 @@ for sessNum = 25%:length(SpikeTrain)
                 box off
                 
                 % RASTER (HOME EVENTS)
-                subplot(4,4,14)
+                subplot(5,5,14)
                 for i = 1:numel(trialspx_home)
                     plot(timevec_home,rastmat_home(i,:)*i,'Color','k','Marker','.','MarkerSize',3,'LineStyle','none')
                     hold on
@@ -273,7 +282,7 @@ for sessNum = 25%:length(SpikeTrain)
                 [rastmat_rand timevec_rand] = mraster(trialspx_rand,pre,post);
   
                 % PSTH (RAND EVENTS)
-                subplot(4,4,15)
+                subplot(5,5,15)
                 bar(psth_rand(:,1)+binsz,psth_rand(:,2),'k','BarWidth',1)
                 axis([min(psth_rand(:,1))-10 max(psth_rand(:,1))+10 0 max(psth_rand(:,2))+1])
                 xlabel('peri-stimulus time'),ylabel(['cntsPer ' num2str(binsz) 'ms bin / fr (Hz)']);
@@ -284,7 +293,7 @@ for sessNum = 25%:length(SpikeTrain)
                 box off
                 
                 % RASTER (RAND EVENTS)
-                subplot(4,4,16)
+                subplot(5,5,16)
                 for i = 1:numel(trialspx_rand)
                     plot(timevec_rand,rastmat_rand(i,:)*i,'Color','k','Marker','.','MarkerSize',3,'LineStyle','none')
                     hold on
@@ -301,12 +310,12 @@ for sessNum = 25%:length(SpikeTrain)
             elseif string(trialType{1,sessNum}) == "OF" % for open field sessions
                 
                 % For OF trials:
-                subplot(4,4,13)
+                subplot(5,5,13)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OF SES")
                 box off
                 
-                subplot(4,4,14)
+                subplot(5,5,14)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OF SES")
                 box off
@@ -317,34 +326,43 @@ for sessNum = 25%:length(SpikeTrain)
                 box off
                 
                 
-                subplot(4,4,16)
+                subplot(5,5,16)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OF SES")
                 box off
                 
                 
             else
-                subplot(4,4,13)
+                subplot(5,5,13)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OTHER SES")
                 box off
                 
-                subplot(4,4,14)
+                subplot(5,5,14)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OTHER SES")
                 box off
                 
-                subplot(4,4,15)
+                subplot(5,5,15)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OTHER SES")
                 box off
                 
-                subplot(4,4,16)
+                subplot(5,5,16)
                 plot(1:3, 1:3) % plot random thing (for now)
                 title("OTHER SES")
                 box off
                 
             end  
+            
+            % DISTANCE FROM HW TC
+            subplot(5,5,17)
+            plot(tc_distHome(:,1), tc_distHome(:,2), 'Color', 'k', 'LineWidth', 1.5)
+            title("DistHome TC")
+            xlabel("distance (units)") % need to put these into cm
+            % xlim([0 200])
+            box off
+            
             
         % click through all figures
         pause
