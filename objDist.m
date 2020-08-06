@@ -1,4 +1,4 @@
-function [distHome, spkDist] = objDist(pos, hwLoc, SpikeTimes)
+function [distHome, spkDist, tc_distHome] = objDist(pos, hwLoc, SpikeTimes)
 %OBJDIST Summary of this function goes here
 %   INPUTS
 %   pos:            matrix in the form [t x y]
@@ -53,5 +53,25 @@ function [distHome, spkDist] = objDist(pos, hwLoc, SpikeTimes)
         display("Error: Number of elements in spkDist and SpikeTimes are not the same.")
     end
 
-
+    
+    %% Compute tuning curve
+    nBins = 20;
+    sampleRate = mode(diff(t));
+    minDist = nanmin(distHome);
+    maxDist = nanmax(distHome);
+    edges = linspace(minDist,maxDist,nBins);
+    [spkDistMap, mapAxis] = histcounts(spkDist,edges);
+    [allDistsMap] = histcounts(distHome,edges);
+    
+    % compute bin centers
+    for i = 1:length(mapAxis)
+        if i+1 <= length(mapAxis)
+            binCenters(i) = ((mapAxis(i+1)-mapAxis(i))/2)+mapAxis(i);
+        end
+    end
+    
+    % assign values to tc matrix
+    tc_distHome(:,1) = binCenters;
+    tc_distHome(:,2) = spkDistMap ./ (allDistsMap*sampleRate + eps);
+    
 end

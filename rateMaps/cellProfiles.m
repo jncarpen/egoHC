@@ -8,6 +8,7 @@ addpath(genpath("C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\b
 addpath(genpath("C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001"));
 addpath(genpath("C:\Users\17145\Documents\github_local\buzcode"));
 addpath(genpath("C:\Users\17145\Documents\github_local\mlib6"));
+addpath(genpath("C:\Users\17145\Documents\github_local\egoHC"));
 %% get spikeAngle for all cells (in degrees)
 
 spikeAngle = cell(1,length(SpikeTrain));
@@ -50,7 +51,7 @@ for sessNum = 27%:length(SpikeTrain)
         yMax = str2double(sessInfo{1,sessNum}.window_max_y{1,1})+10;
         
         
-        for unit = 1%:length(SpikeTrain{1,sessNum})
+        for unit = 1:length(SpikeTrain{1,sessNum})
             
             % Grab some info about current *neuron*
             ST = SpikeTimes{1,sessNum}{1,unit}; 
@@ -69,11 +70,7 @@ for sessNum = 27%:length(SpikeTrain)
             [allSpdCnts, hiSpdCnts, loSpdCnts, histEdges] = FRhist(P, ST, speed{1,sessNum});
             
             % Compute distance from home well at each time point
-            [distHome, spkDist] = objDist(P, hwLoc{1,sessNum}, ST);
-            
-            % Compute TC for distance from home well
-            tc_distHome = analyses.turningCurve(spkDist, P, sampleRate, 'binWidth', 10); %HD tuning curve
-
+            [distHome, spkDist, tc_distHome] = objDist(P, hwLoc{1,sessNum}, ST);
             
             %% Plot everything
             fig = figure('units','normalized','outerposition',[0 0 1 1]); % make fullscreen fig
@@ -360,8 +357,16 @@ for sessNum = 27%:length(SpikeTrain)
             plot(tc_distHome(:,1), tc_distHome(:,2), 'Color', 'k', 'LineWidth', 1.5)
             title("DistHome TC")
             xlabel("distance (units)") % need to put these into cm
-            % xlim([0 200])
             box off
+            
+            % GOAL DIRECTION TC (HD)- SAREL (??)
+            subplot(5,5,18)
+            goalDirSar(P, hwLoc{1,sessNum}, hd{1,sessNum}, ST);
+            
+            % THETA PHASE TC
+            subplot(5,5,19)
+            [thetaPhz, spkThetaPhz, tc_TP] = getThetaPhz(rawEEG{1,sessNum}{1,1}, ST);
+            plotThetaPhzTC(tc_TP)
             
             
         % click through all figures
