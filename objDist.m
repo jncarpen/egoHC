@@ -1,4 +1,4 @@
-function [distHome, spkDist, tc_distHome] = objDist(pos, hwLoc, SpikeTimes)
+function objDist(pos, hwLoc, SpikeTimes)
 %OBJDIST Summary of this function goes here
 %   INPUTS
 %   pos:            matrix in the form [t x y]
@@ -66,12 +66,21 @@ function [distHome, spkDist, tc_distHome] = objDist(pos, hwLoc, SpikeTimes)
     % compute bin centers
     for i = 1:length(mapAxis)
         if i+1 <= length(mapAxis)
-            binCenters(i) = ((mapAxis(i+1)-mapAxis(i))/2)+mapAxis(i);
+            binCtrs(i) = ((mapAxis(i+1)-mapAxis(i))/2)+mapAxis(i);
         end
     end
     
-    % assign values to tc matrix
-    tc_distHome(:,1) = binCenters;
-    tc_distHome(:,2) = spkDistMap ./ (allDistsMap*sampleRate + eps);
+    % assign values to tc values
+    tcVals = spkDistMap./(allDistsMap*sampleRate + eps);
+    
+    % plot
+    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+    title("DistHome TC")
+    xlabel("distance (units)")
+    ylabel("fr (Hz)")
+    xlim([minDist maxDist])
+    %xticks([-pi -pi/2 0 pi/2 pi])
+    %xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
+    box off
     
 end

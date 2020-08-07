@@ -63,6 +63,6 @@ edges = linspace(-pi,pi,nBins);
     
 % assign values to tc matrix
 tc_TP(:,1) = binCenters;
-tc_TP(:,2) = spkTPmap ./ (allPhasesMap*lfp_fr + eps);
+tc_TP(:,2) = spkTPmap./(allPhasesMap*lfp_fr + eps);
 end
 

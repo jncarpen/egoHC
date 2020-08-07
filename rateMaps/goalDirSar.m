@@ -46,21 +46,38 @@ function goalDirSar(pos, hwLoc, hd, SpikeTimes)
     
     % calculate goal direction
     theta = atan2(b, a);
-    goalDir = abs(theta - hd);
+    goalDirDeg = abs(theta - hd); % in deg
+    goalDir = (goalDirDeg*(pi/180))-pi; % from [-pi pi]
    
     % get spkGD
     idx = knnsearch(goalDir, SpikeTimes);
     spkGD = goalDir(idx);
     
-    % calculate GD tuning curve
-    tc_GD = analyses.turningCurve(spkGD, pos, sampleRate, 'binWidth', 10);
+    %% calculate GD tuning curve
     
-    % plot tuning curve
-    plot(tc_GD(:,1), tc_GD(:,2), 'Color', 'k', 'LineWidth', 1.5)
-    title("GoalDir (HD) TC")
-    xlabel("angle to goal (deg)")
+    nBins = 20;
+    edges = linspace(-pi,pi,nBins);
+    [spkGDmap, mapAxis] = histcounts(spkGD,edges);
+    [allGDmap] = histcounts(goalDir,edges);
+    
+    % compute bin centers
+    for i = 1:length(mapAxis)
+        if i+1 <= length(mapAxis)
+            binCtrs(i) = ((mapAxis(i+1)-mapAxis(i))/2)+mapAxis(i);
+        end
+    end
+    
+    % calculate tuning curve values
+    tcVals = spkGDmap./(allGDmap*sampleRate + eps); 
+    
+    % plot
+    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+    title("GoalDir(HD) TC")
+    xlabel("angle (rad)")
     ylabel("fr (Hz)")
-    xlim([0 360])
+    xlim([-pi pi])
+    xticks([-pi -pi/2 0 pi/2 pi])
+    xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
     box off
     
 end

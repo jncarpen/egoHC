@@ -51,7 +51,7 @@ for sessNum = 27%:length(SpikeTrain)
         yMax = str2double(sessInfo{1,sessNum}.window_max_y{1,1})+10;
         
         
-        for unit = 1:length(SpikeTrain{1,sessNum})
+        for unit = 1%:length(SpikeTrain{1,sessNum})
             
             % Grab some info about current *neuron*
             ST = SpikeTimes{1,sessNum}{1,unit}; 
@@ -69,8 +69,6 @@ for sessNum = 27%:length(SpikeTrain)
             mapSpd = analyses.map(P, zSpd, 'smooth', 15, 'binWidth', 4); % FR map
             [allSpdCnts, hiSpdCnts, loSpdCnts, histEdges] = FRhist(P, ST, speed{1,sessNum});
             
-            % Compute distance from home well at each time point
-            [distHome, spkDist, tc_distHome] = objDist(P, hwLoc{1,sessNum}, ST);
             
             %% Plot everything
             fig = figure('units','normalized','outerposition',[0 0 1 1]); % make fullscreen fig
@@ -304,64 +302,34 @@ for sessNum = 27%:length(SpikeTrain)
                 hold off
                 box off
                 
+                 % DISTANCE FROM HW TC
+                subplot(5,5,17)
+                objDist(P, hwLoc{1,sessNum}, ST)
+            
+                % GOAL DIRECTION TC (HD)- SAREL (??)
+                subplot(5,5,18)
+                goalDirSar(P, hwLoc{1,sessNum}, hd{1,sessNum}, ST);
+                
             elseif string(trialType{1,sessNum}) == "OF" % for open field sessions
                 
-                % For OF trials:
-                subplot(5,5,13)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OF SES")
-                box off
-                
-                subplot(5,5,14)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OF SES")
-                box off
-                
-                subplot(4,4,15)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OF SES")
-                box off
-                
-                
-                subplot(5,5,16)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OF SES")
-                box off
-                
+                for pltNum = 13:18
+                    % For OF trials:
+                    subplot(5,5,pltNum)
+                    plot(1:3, 1:3) % plot random thing (for now)
+                    title("OF SES")
+                    box off
+                end
                 
             else
-                subplot(5,5,13)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OTHER SES")
-                box off
-                
-                subplot(5,5,14)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OTHER SES")
-                box off
-                
-                subplot(5,5,15)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OTHER SES")
-                box off
-                
-                subplot(5,5,16)
-                plot(1:3, 1:3) % plot random thing (for now)
-                title("OTHER SES")
-                box off
+                for pltNum = 13:18
+                    % For TS/other trials:
+                    subplot(5,5,pltNum)
+                    plot(1:3, 1:3) % plot random thing (for now)
+                    title("OTHER SES")
+                    box off
+                end
                 
             end  
-            
-            % DISTANCE FROM HW TC
-            subplot(5,5,17)
-            plot(tc_distHome(:,1), tc_distHome(:,2), 'Color', 'k', 'LineWidth', 1.5)
-            title("DistHome TC")
-            xlabel("distance (units)") % need to put these into cm
-            box off
-            
-            % GOAL DIRECTION TC (HD)- SAREL (??)
-            subplot(5,5,18)
-            goalDirSar(P, hwLoc{1,sessNum}, hd{1,sessNum}, ST);
             
             % THETA PHASE TC
             subplot(5,5,19)
@@ -369,9 +337,9 @@ for sessNum = 27%:length(SpikeTrain)
             plotThetaPhzTC(tc_TP)
             
             
-        % click through all figures
-        pause
-        clf 
+            % click through all figures
+            pause
+            clf 
         
         end
     end
