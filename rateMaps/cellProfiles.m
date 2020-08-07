@@ -163,13 +163,7 @@ for sessNum = 27%:length(SpikeTrain)
             
             % SPEED TUNING CURVE
             subplot(5,5,8)
-            plot(tc_SPD(:,1), tc_SPD(:,2), 'Color', 'k', 'LineWidth', 1.5)
-            title("Speed TC")
-            xlabel("speed (cm/s)")
-            xlim([0 200])
-            box off
-            % ylabel("TC value")
-            
+            [spkSpd] = getSpikeSpeed(P,speed{1,sessNum},ST); % 10 bins
             
             % subplot 8 is dependent on trial type
             if string(trialType{1,sessNum}) == "FM" && isstruct(fmEvents{1,sessNum})

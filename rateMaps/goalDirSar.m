@@ -50,7 +50,7 @@ function goalDirSar(pos, hwLoc, hd, SpikeTimes)
     goalDir = (goalDirDeg*(pi/180))-pi; % from [-pi pi]
    
     % get spkGD
-    idx = knnsearch(goalDir, SpikeTimes);
+    idx = knnsearch(t, SpikeTimes);
     spkGD = goalDir(idx);
     
     %% calculate GD tuning curve
@@ -79,6 +79,8 @@ function goalDirSar(pos, hwLoc, hd, SpikeTimes)
     xticks([-pi -pi/2 0 pi/2 pi])
     xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
     box off
+    
+    return
     
 end
 

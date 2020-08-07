@@ -46,7 +46,7 @@ function objDist(pos, hwLoc, SpikeTimes)
     % Compute distance from home well each time the cell spikes.
     
     % find closest timestamp & store values
-    idx = knnsearch(distHome', SpikeTimes);
+    idx = knnsearch(t, SpikeTimes);
     spkDist = distHome(idx);
     
     if length(SpikeTimes) ~= length(spkDist)
