@@ -12,8 +12,8 @@ addpath(genpath("C:\Users\17145\Documents\github_local\egoHC"));
 %% get spikeAngle for all cells (in degrees)
 
 spikeAngle = cell(1,length(SpikeTrain));
-spikeSpeed = cell(1,length(SpikeTrain));
-spikeAcc = cell(1,length(SpikeTrain));
+%spikeSpeed = cell(1,length(SpikeTrain));
+%spikeAcc = cell(1,length(SpikeTrain));
 
 for sessNum = 1:length(SpikeTrain)
     SHD = cell(1,length(SpikeTrain{1,sessNum}));
@@ -21,20 +21,25 @@ for sessNum = 1:length(SpikeTrain)
     SA = cell(1,length(SpikeTrain{1,sessNum}));
     for unit = 1:length(SpikeTrain{1,sessNum})
         SHD{1,unit} = getSpikeAngle(hd{1,sessNum}, SpikeTrain{1,sessNum}{1,unit});
-        SS{1,unit} = getSpikeSpeed(speed{1,sessNum}, SpikeTimes{1,sessNum}{1,unit});
-        SA{1,unit} = getSpikeSpeed(accel{1,sessNum}, SpikeTimes{1,sessNum}{1,unit});
+        % SS{1,unit} = getSpikeSpeed(speed{1,sessNum}, SpikeTimes{1,sessNum}{1,unit});
+        % SA{1,unit} = getSpikeSpeed(accel{1,sessNum}, SpikeTimes{1,sessNum}{1,unit});
     end
     spikeAngle{1,sessNum} = SHD;
-    spikeSpeed{1,sessNum} = SS;
-    spikeAcc{1,sessNum} = SA;
+    % spikeSpeed{1,sessNum} = SS;
+    % spikeAcc{1,sessNum} = SA;
 end
 
 % Get home/random well locations for all sessions
 [hwLoc, rdLoc] = getWellLoc(labNotes, trialType);
 
+
+
+
+
+
 %% Generate cell profile figures
 
-for sessNum = 27%:length(SpikeTrain)
+for sessNum = 30%:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         
@@ -51,20 +56,20 @@ for sessNum = 27%:length(SpikeTrain)
         yMax = str2double(sessInfo{1,sessNum}.window_max_y{1,1})+10;
         
         
-        for unit = 1%:length(SpikeTrain{1,sessNum})
+        for unit = 1:length(SpikeTrain{1,sessNum})
             
             % Grab some info about current *neuron*
             ST = SpikeTimes{1,sessNum}{1,unit}; 
             UID = UniqueID{1,sessNum}{1,unit}; 
             SPK_A = spikeAngle{1,sessNum}{1,unit};
-            SSPD = spikeSpeed{1,sessNum}{1,unit};
+            % SSPD = spikeSpeed{1,sessNum}{1,unit};
             
             
             %% Calculate some stuff
             [spkPos, spkInd] = data.getSpikePositions(ST,P); % why do i have this?
             map = analyses.map(P, ST, 'smooth', 15, 'binWidth', 4); % FR map
             tc_HD = analyses.turningCurve(spikeAngle{1,sessNum}{1,unit}, P, sampleRate, 'binWidth', 10); %HD tuning curve
-            tc_SPD = analyses.turningCurve(SSPD, P, sampleRate, 'binWidth', 10); %HD tuning curve
+            % tc_SPD = analyses.turningCurve(SSPD, P, sampleRate, 'binWidth', 10); %HD tuning curve
             zSpd = [P(:,1), speed{1,sessNum}(:,1)];
             mapSpd = analyses.map(P, zSpd, 'smooth', 15, 'binWidth', 4); % FR map
             [allSpdCnts, hiSpdCnts, loSpdCnts, histEdges] = FRhist(P, ST, speed{1,sessNum});
@@ -113,7 +118,7 @@ for sessNum = 27%:length(SpikeTrain)
             box off
             
             % HD PATHPLOT
-            subplot(5,5,4)
+            subplot(5,5,7)
             scatter(pos{1,sessNum}(:,2), pos{1,sessNum}(:,3),[10],hd{1,sessNum}(:,1),'.')
             colormap(gca,'hsv')
             caxis([0 360])
@@ -126,7 +131,7 @@ for sessNum = 27%:length(SpikeTrain)
             box off         
             
             % ACCEL PATHPLOT
-            subplot(5,5,5)
+            subplot(5,5,12)
             scatter(pos{1,sessNum}(:,2), pos{1,sessNum}(:,3),[10],accel{1,sessNum}(:,1),'.')
             colorbar
             colormap(gca,'copper')
@@ -137,7 +142,7 @@ for sessNum = 27%:length(SpikeTrain)
             box off
             
             % SPEED PATHPLOT
-            subplot(5,5,6)
+            subplot(5,5,17)
             scatter(pos{1,sessNum}(:,2), pos{1,sessNum}(:,3),[10],speed{1,sessNum}(:,1),'.')
             colorbar
             colormap(gca,'copper')
@@ -149,7 +154,7 @@ for sessNum = 27%:length(SpikeTrain)
             
             
             % HD TUNING CURVE
-            subplot(5,5,7)
+            subplot(5,5,8)
             nanSum = sum(isnan(hd{1,sessNum}));
             HDnans = sprintf('%.f', nanSum);
             plot(tc_HD(:,1), tc_HD(:,2), 'Color', 'k', 'LineWidth', 1.5)
@@ -162,7 +167,7 @@ for sessNum = 27%:length(SpikeTrain)
             % ylabel("TC value")
             
             % SPEED TUNING CURVE
-            subplot(5,5,8)
+            subplot(5,5,18)
             [spkSpd] = getSpikeSpeed(P,speed{1,sessNum},ST); % 10 bins
             
             % subplot 8 is dependent on trial type
@@ -189,14 +194,14 @@ for sessNum = 27%:length(SpikeTrain)
                 
                 % For OF trials:
                 subplot(5,5,9)
-                plot(1:3, 1:3) % plot random thing (for now)
+                plot(1:3, 1:3,'LineWidth', 1.5, 'Color', 'k') % plot random thing (for now)
                 title("OF SES")
                 box off
                 
             end
             
             % FR HISTOGRAM- ALL SPEEDS    
-            subplot(5,5,10)
+            subplot(5,5,6)
             histogram('BinEdges',histEdges,'BinCounts',allSpdCnts, 'FaceColor', 'k')
             title("FR Distrib")
             ylim([0 max(allSpdCnts)])
@@ -215,7 +220,7 @@ for sessNum = 27%:length(SpikeTrain)
 
             
             % FR HISTOGRAM- ABOVE 5 CM/S
-            subplot(5,5,12)
+            subplot(5,5,16)
             histogram('BinEdges',histEdges,'BinCounts',hiSpdCnts, 'FaceColor', 'k')
             title("FR Distrib: spd>5cm/s")
             ylim([0 max(allSpdCnts)])
@@ -239,7 +244,7 @@ for sessNum = 27%:length(SpikeTrain)
                 [rastmat_home timevec_home] = mraster(trialspx_home,pre,post);
 
                 % PSTH (HOME EVENTS)
-                subplot(5,5,13)
+                subplot(5,5,5)
                 bar(psth_home(:,1)+binsz,psth_home(:,2),'k','BarWidth',1)
                 axis([min(psth_home(:,1))-10 max(psth_home(:,1))+10 0 max(psth_home(:,2))+1])
                 xlabel('peri-stimulus time'),ylabel(['cntsPer ' num2str(binsz) 'ms bin / fr (Hz)']);
@@ -250,7 +255,7 @@ for sessNum = 27%:length(SpikeTrain)
                 box off
                 
                 % RASTER (HOME EVENTS)
-                subplot(5,5,14)
+                subplot(5,5,10)
                 for i = 1:numel(trialspx_home)
                     plot(timevec_home,rastmat_home(i,:)*i,'Color','k','Marker','.','MarkerSize',3,'LineStyle','none')
                     hold on
@@ -282,7 +287,7 @@ for sessNum = 27%:length(SpikeTrain)
                 box off
                 
                 % RASTER (RAND EVENTS)
-                subplot(5,5,16)
+                subplot(5,5,20)
                 for i = 1:numel(trialspx_rand)
                     plot(timevec_rand,rastmat_rand(i,:)*i,'Color','k','Marker','.','MarkerSize',3,'LineStyle','none')
                     hold on
@@ -297,28 +302,28 @@ for sessNum = 27%:length(SpikeTrain)
                 box off
                 
                  % DISTANCE FROM HW TC
-                subplot(5,5,17)
+                subplot(5,5,14)
                 objDist(P, hwLoc{1,sessNum}, ST)
             
                 % GOAL DIRECTION TC (HD)- SAREL (??)
-                subplot(5,5,18)
+                subplot(5,5,19)
                 goalDirSar(P, hwLoc{1,sessNum}, hd{1,sessNum}, ST);
                 
             elseif string(trialType{1,sessNum}) == "OF" % for open field sessions
                 
-                for pltNum = 13:18
+                for pltNum = [5 10 14 15 19 20]
                     % For OF trials:
                     subplot(5,5,pltNum)
-                    plot(1:3, 1:3) % plot random thing (for now)
+                    plot(1:3, 1:3, 'Color', 'k', 'LineWidth', 1.5) % plot random thing (for now)
                     title("OF SES")
                     box off
                 end
                 
             else
-                for pltNum = 13:18
+                for pltNum = [5 10 14 15 19 20]
                     % For TS/other trials:
                     subplot(5,5,pltNum)
-                    plot(1:3, 1:3) % plot random thing (for now)
+                    plot(1:3, 1:3, 'Color', 'k', 'LineWidth', 1.5) % plot random thing (for now)
                     title("OTHER SES")
                     box off
                 end
@@ -326,10 +331,13 @@ for sessNum = 27%:length(SpikeTrain)
             end  
             
             % THETA PHASE TC
-            subplot(5,5,19)
+            subplot(5,5,4)
             [thetaPhz, spkThetaPhz, tc_TP] = getThetaPhz(rawEEG{1,sessNum}{1,1}, ST);
             plotThetaPhzTC(tc_TP)
             
+            % ACCEL TC
+            subplot(5,5,13)
+            [spkAcc] = getSpikeAccel(P, accel{1,sessNum}, ST);
             
             % click through all figures
             pause
