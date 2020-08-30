@@ -26,6 +26,8 @@ function [taskPhz] = parseTask(events, pos)
     %% (P2 and P4) Define drinking event times
     % define sampling frequency
     t = pos(:,1); % pull timestamps
+    x = pos(:,2);
+    y = pos(:,3);
     Fs = mode(diff(t)); % video sampling freq
     start = min(t);
     stop = max(t);
@@ -110,6 +112,7 @@ function [taskPhz] = parseTask(events, pos)
         tripHomeList = tripHome(i,1):Fs:tripHome(i,2);
         tripHomeTimes = [tripHomeTimes, tripHomeList];
     end
+    
     TH_idx = knnsearch(t,tripHomeTimes');
     tripHomeTimes = t(TH_idx);
     

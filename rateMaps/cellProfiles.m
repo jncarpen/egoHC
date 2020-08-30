@@ -15,7 +15,7 @@ spikeAngle = cell(1,length(SpikeTrain));
 %spikeSpeed = cell(1,length(SpikeTrain));
 %spikeAcc = cell(1,length(SpikeTrain));
 
-for sessNum = 1:length(SpikeTrain)
+for sessNum = 1:length(SpikeTrain) % 7 is when training stops
     SHD = cell(1,length(SpikeTrain{1,sessNum}));
     SS = cell(1,length(SpikeTrain{1,sessNum}));
     SA = cell(1,length(SpikeTrain{1,sessNum}));
@@ -39,7 +39,7 @@ end
 
 %% Generate cell profile figures
 
-for sessNum = 30%:length(SpikeTrain)
+for sessNum = 1:length(SpikeTrain)%:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         
@@ -81,7 +81,8 @@ for sessNum = 30%:length(SpikeTrain)
             dateStr = char(extractBetween(sessInfo{1,sessNum}.trial_date{1,1},",","20"));
             dateStr = dateStr(find(~isspace(dateStr)));
             timeStr = sessInfo{1,sessNum}.trial_time{1,1}(1:5);
-            figTit = strcat('UID:', sprintf('%.f', UID), '\SESS:', sprintf('%.f', sessNum), '\DAT:', dateStr, '\TIM:', timeStr, '\TYPE:', trialType{1,sessNum});
+            figTit = strcat('UID:', sprintf('%.f', UID), '\SESS:', sprintf('%.f', sessNum), '\DAT:', dateStr, '\TIME:', timeStr, '\TYPE:', trialType{1,sessNum});
+            fileBody = strcat('UID', sprintf('%.f', UID), '_SESS', sprintf('%.f', sessNum), '_TYPE_', trialType{1,sessNum});
             fig.Name = figTit; % set figure name
             
             % PATHPLOT (STANDARD)
@@ -339,9 +340,13 @@ for sessNum = 30%:length(SpikeTrain)
             subplot(5,5,13)
             [spkAcc] = getSpikeAccel(P, accel{1,sessNum}, ST);
             
+            % save figures
+            filename = strcat('D:\somePNGs\', fileBody, '.png');
+            saveas(fig, filename);
+            
             % click through all figures
-            pause
-            clf 
+            % pause
+            % clf 
         
         end
     end

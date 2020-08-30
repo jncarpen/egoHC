@@ -1,4 +1,4 @@
-function [animal_trackfilelist, animal_fmEvents, animal_behaviourlist, animal_posfilelist, animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath)
+    function [animal_trackfilelist, animal_fmEvents, animal_behaviourlist, animal_posfilelist, animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath)
 %SESSIONDIRECTORY:
 
     % INPUT:

@@ -13,6 +13,8 @@ function [spkAcc] = getSpikeAccel(pos, accel, SpikeTimes)
 %   Jordan Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+addpath(genpath("C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001"))
+
 % grab speed for first LED
 accLED1 = accel(:,1);
 minAcc = nanmin(accLED1);
@@ -24,7 +26,7 @@ sampleRate = mode(diff(t));
 idx = knnsearch(t, SpikeTimes);
 spkAcc = accLED1(idx);
 
-%% calculate speed tuning curve
+%% calculate acceleration tuning curve
 
     nBins = 10;
     edges = linspace(0,300,nBins); % get rid of outliers?
@@ -40,9 +42,11 @@ spkAcc = accLED1(idx);
     
     % calculate tuning curve values
     tcVals = spkAccmap./(allAccmap*sampleRate + eps); 
+    % smooth_tcVals = general.smooth(tcVals, [2 2]);
     
     % plot
     plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+    % plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
     title("Acc TC")
     xlabel("acc (units/s)")
     ylabel("fr (Hz)")

@@ -26,7 +26,7 @@ function [HDmean, rateMap, spkRate, weightSum, prefHDvect, occuMap,countMap, xCe
     % Compute spatial occupancy and indices for X and Y bins (binX & binY)
     [spatialOcc,xEdges,yEdges,binX,binY] = histcounts2(x,y,nBins);
     
-    % compute spatial bin *centers* (for when we plot the HD-mod vectors)
+    % compute spatial bin *centers* (x and y for quiverPlot)
     for i = 1:length(xEdges)
         if i+1 <= length(xEdges)
             xCenter(i) = ((xEdges(i+1)-xEdges(i))/2)+xEdges(i);
@@ -48,13 +48,13 @@ function [HDmean, rateMap, spkRate, weightSum, prefHDvect, occuMap,countMap, xCe
             indices = find(xx == binX & yy == binY);
             HDmean(xx, yy) = circ_mean(hd(indices)); % mean HD in each spatial bin
             % meanFR(xx, yy) = mean(cellSpk(indices));
-            rateMap(xx,yy) = sum(SpikeTrain(indices))/(length(indices)*sampleRate/1000);
+            rateMap(xx,yy) = sum(SpikeTrain(indices))/(length(indices)*sampleRate);
             occuMap(xx,yy) = length(indices);
             countMap(xx,yy) = sum(SpikeTrain(indices));
             count = 1;
             for H = HDbins
                 indicesH = find(xx == binX & yy == binY & hd>H & hd<=H+(2*pi/10));
-                spkRate(xx, yy, count) = sum(SpikeTrain(indicesH))/(length(indicesH)*sampleRate/1000);
+                spkRate(xx, yy, count) = sum(SpikeTrain(indicesH))/(length(indicesH)*sampleRate);
                 count = count+1;
             end
         end
@@ -87,18 +87,21 @@ function [HDmean, rateMap, spkRate, weightSum, prefHDvect, occuMap,countMap, xCe
     % imagesc(smoothdata(rateMap, 'gaussian',10));
     % imagesc(conv2(countMap, ones(11,1)/11, 'same')); % moving avg
     imagesc(rateMap); 
+    set(gca,'YDir','normal')
     title("Firing Rate Map")
     xlabel("XPos")
     ylabel("YPos")
     
     subplot(2,2,2)
-    imagesc(countMap); 
+    imagesc(countMap);
+    set(gca,'YDir','normal')
     title("Spike Counts")
     xlabel("XPos")
     ylabel("YPos")
     
     subplot(2,2,3)
     imagesc(occuMap);
+    set(gca,'YDir','normal')
     title("Spatial Occupancy")
     xlabel("XPos")
     ylabel("YPos")
