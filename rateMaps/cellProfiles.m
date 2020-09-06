@@ -33,10 +33,6 @@ end
 [hwLoc, rdLoc] = getWellLoc(labNotes, trialType);
 
 
-
-
-
-
 %% Generate cell profile figures
 
 for sessNum = 1:length(SpikeTrain)%:length(SpikeTrain)
@@ -155,17 +151,26 @@ for sessNum = 1:length(SpikeTrain)%:length(SpikeTrain)
             
             
             % HD TUNING CURVE
-            subplot(5,5,8)
+            % generate tuning curve values
+            SpkAngNow = spikeAngle{1,sessNum}{1,unit};
+            tc_HD = analyses.turningCurve(SpkAngNow, P, sampleRate, 'binWidth', 10); %HD tuning curve
+            tc_HD_even = analyses.turningCurve(SpkAngNow(2:2:end), P(2:2:end), sampleRate, 'binWidth', 10); % even tuning curve
+            tc_HD_odd = analyses.turningCurve(SpkAngNow(1:2:end), P(1:2:end), sampleRate, 'binWidth', 10); % even tuning curve
+            % plot tuning curves
+            %subplot(5,5,8)
             nanSum = sum(isnan(hd{1,sessNum}));
             HDnans = sprintf('%.f', nanSum);
-            plot(tc_HD(:,1), tc_HD(:,2), 'Color', 'k', 'LineWidth', 1.5)
+            plot(tc_HD(:,1), tc_HD(:,2), 'Color', 'r', 'LineWidth', 1.25)
+            hold on
+            plot(tc_HD_even(:,1), tc_HD_even(:,2), 'Color', 'k', 'LineStyle',':', 'LineWidth', 1.25)
+            plot(tc_HD_odd(:,1), tc_HD_odd(:,2), 'Color', 'k', 'LineWidth', 1.25)
             t = text(250, .5, strcat('NaNs=', HDnans));
             t.FontSize = 6;
             xlim([0 360])
             title("HD TC")
             xlabel("head angle (deg)")
+            legend('all', 'even', 'odd')
             box off
-            % ylabel("TC value")
             
             % SPEED TUNING CURVE
             subplot(5,5,18)
