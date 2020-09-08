@@ -38,6 +38,16 @@ function [HDmean, rateMap, spkRate, weightSum, prefHDvect, occuMap,countMap, xCe
             yCenter(i) = ((yEdges(i+1)-yEdges(i))/2)+yEdges(i);
         end
     end
+    
+    % make scatter plot of grids
+    % this was just for me to check
+    for xx = 1:length(xCenter)
+        for yy = 1:length(yCenter)
+            scatter(xCenter(xx), yCenter(yy))
+            hold on
+        end
+    end
+    
        
 
 %%  determine preferred HD vector

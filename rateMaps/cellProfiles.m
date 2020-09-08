@@ -313,7 +313,7 @@ for sessNum = 1:length(SpikeTrain)%:length(SpikeTrain)
             
                 % GOAL DIRECTION TC (HD)- SAREL (??)
                 subplot(5,5,19)
-                goalDirSar(P, hwLoc{1,sessNum}, hd{1,sessNum}, ST);
+                goalDirSar(P, hwLoc{1,sessNum}, hd{1,sessNum}, ST, 20); % last value is number of bins
                 
             elseif string(trialType{1,sessNum}) == "OF" % for open field sessions
                 

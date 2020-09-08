@@ -1,4 +1,4 @@
-function goalDirSar(pos, hwLoc, hd, SpikeTimes)
+function [binCtrs, tcVals] = goalDirSar(pos, hwLoc, hd, SpikeTimes, nBins)
 %SARELPLOT Summary of this function goes here
 %   INPUTS
 %   pos:            [t x y x2 y2]. 5xT vector, where T is number of
@@ -55,7 +55,7 @@ function goalDirSar(pos, hwLoc, hd, SpikeTimes)
     
     %% calculate GD tuning curve
     
-    nBins = 20;
+%     nBins = 20;
     edges = linspace(-pi,pi,nBins);
     [spkGDmap, mapAxis] = histcounts(spkGD,edges);
     [allGDmap] = histcounts(goalDir,edges);
