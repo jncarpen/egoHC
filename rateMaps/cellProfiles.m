@@ -35,7 +35,7 @@ end
 
 %% Generate cell profile figures
 
-for sessNum = 1:length(SpikeTrain)%:length(SpikeTrain)
+for sessNum = 27%1:length(SpikeTrain)%:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         
@@ -52,7 +52,7 @@ for sessNum = 1:length(SpikeTrain)%:length(SpikeTrain)
         yMax = str2double(sessInfo{1,sessNum}.window_max_y{1,1})+10;
         
         
-        for unit = 1:length(SpikeTrain{1,sessNum})
+        for unit = 1%:length(SpikeTrain{1,sessNum})
             
             % Grab some info about current *neuron*
             ST = SpikeTimes{1,sessNum}{1,unit}; 
@@ -157,7 +157,7 @@ for sessNum = 1:length(SpikeTrain)%:length(SpikeTrain)
             tc_HD_even = analyses.turningCurve(SpkAngNow(2:2:end), P(2:2:end), sampleRate, 'binWidth', 10); % even tuning curve
             tc_HD_odd = analyses.turningCurve(SpkAngNow(1:2:end), P(1:2:end), sampleRate, 'binWidth', 10); % even tuning curve
             % plot tuning curves
-            %subplot(5,5,8)
+            subplot(5,5,8)
             nanSum = sum(isnan(hd{1,sessNum}));
             HDnans = sprintf('%.f', nanSum);
             plot(tc_HD(:,1), tc_HD(:,2), 'Color', 'r', 'LineWidth', 1.25)
