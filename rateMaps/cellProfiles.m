@@ -35,7 +35,7 @@ end
 
 %% Generate cell profile figures
 
-for sessNum = 27%1:length(SpikeTrain)%:length(SpikeTrain)
+for sessNum = 27%1:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         

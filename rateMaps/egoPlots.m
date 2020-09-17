@@ -1,4 +1,4 @@
-function egoPlots(pos,SpikeTimes, refLoc, hd, sessInfo, sessNum, unitNum)
+function fig = egoPlots(pos,SpikeTimes, refLoc, hd, sessInfo, sessNum, unitNum)
 %EGOPLOTS Summary of this function goes here
 %   'pos':         [t x1 y1 x2 y2]
 %   'refLoc':      [x1 y1]
@@ -34,8 +34,8 @@ rlY = refLoc(1,2);
 
 % compute egocentric angle to reference loc
 % which one is correct?
-egoAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
-% egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
+% egoAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
+egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
 egoAng = deg2rad(egoAng)-pi; % range(-pi,+pi)
 
 % compute distance from rat to refLoc 
@@ -88,7 +88,7 @@ tcVals_HD = spkHDMap./(allHDMap*sampleRate + eps);
 
 
 %% plot
-figure('Position', [100 100 700 300], 'Color','white');
+fig = figure('Position', [100 100 700 300], 'Color','white');
 subplot(2,3,1)
 plot(x1, y1, 'Color', [.7 .7 .7])
 hold on
