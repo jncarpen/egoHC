@@ -31,9 +31,9 @@ plot(x, y, 'Color', [.7 .7 .7])
 hold on
 scatter(spkPos(:,2),spkPos(:,3), 3, [1, 0, 0], 'filled')
 title("Path Plot")
-xlabel("X")
-ylabel("Y")
-return
+box off
+% xlabel("X")
+% ylabel("Y")
 
 end
 

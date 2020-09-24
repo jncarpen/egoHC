@@ -42,13 +42,16 @@ spkAcc = accLED1(idx);
     
     % calculate tuning curve values
     tcVals = spkAccmap./(allAccmap*sampleRate + eps); 
-    % smooth_tcVals = general.smooth(tcVals, [2 2]);
+    
+    % smooth tuning curve values
+    tcVals = imgaussfilt(tcVals, 2, 'Padding', 'replicate');
+
     
     % plot
-    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.10)
     % plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
     title("Acc TC")
-    xlabel("acc (units/s)")
+    xlabel("acc (cm s -2)")
     ylabel("fr (Hz)")
     % xlim([0 300])
     % xticks([-pi -pi/2 0 pi/2 pi])

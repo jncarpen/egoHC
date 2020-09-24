@@ -24,7 +24,8 @@ function [Vectormap,r_bin,n,orientationCurve,polarbins,circlebins] = makeVecMaps
 n = 36; % number of angular bins
 r_bin = 3; %5 from beginning
 smoothF = 1.5; %1.5;
-maxDistMap = 12; % max distance threshold?
+% maxDistMap = 12; % max distance threshold?
+maxDistMap = 12;
 %startwidth = 1;
 
 % get pos indices for spike times
@@ -120,7 +121,7 @@ end
 % 
 % 
 % 
-figure();
+% figure();
 h = pcolor(C);
 %remove black edges from figure (Matlab standard)
 set(h, 'EdgeColor', 'none');
@@ -135,12 +136,16 @@ xticks = [1 size(C,2)/2 size(C,2)];
 xticklabels = [0 round(r_bin*xticks(2)) round(r_bin*xticks(3))];
 set(gca,'XTick',xticks,'XTickLabel', xticklabels) 
 xlabel('Distance (cm)');
+title("Allo Vec Map")
 
 %orientation goes from 0 to 360 deg (y-axis)
 yticks = [1 size(C,1)/2 size(C,1)];
 yticklabels = [0 180 360];
 set(gca,'YTick',yticks,'YTickLabel', yticklabels);
 ylabel('Orientation (deg)'); 
+
+colorbar
+colormap(gca,'jet')
 
 
 %check with Øyvind what this one was 

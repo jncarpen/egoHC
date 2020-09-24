@@ -63,10 +63,10 @@ plot(x, y, 'Color', [.7 .7 .7])
 hold on
 scatter(spkPos(:,2), spkPos(:,3), [30], spkAng(:,2), '.')
 title("HD Path Plot")
+box off
 % colorbar(gca, "hsv", 'eastoutside')
-xlabel("X")
-ylabel("Y")
-return
+% xlabel("X")
+% ylabel("Y")
 
 end
 

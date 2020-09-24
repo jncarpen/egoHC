@@ -15,8 +15,12 @@ function plotThetaPhzTC(tc_TP)
 binCtrs = tc_TP(:,1);
 tcVals = tc_TP(:,2);
 
+% smooth tcVals
+% tcVals = smoothdata(tcVals, 'gaussian', 10);
+tcVals = imgaussfilt(tcVals, 2, 'Padding', 'circular');
+
 % plot
-plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.10)
 title("Theta Phase TC")
 xlabel("phase (rad)")
 ylabel("fr (Hz)")

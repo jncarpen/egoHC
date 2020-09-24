@@ -1,4 +1,4 @@
-function objDist(pos, hwLoc, SpikeTimes)
+function objDist(pos_cm, hwCoord, SpikeTimes)
 %OBJDIST Summary of this function goes here
 %   INPUTS
 %   pos:            matrix in the form [t x y]
@@ -23,17 +23,19 @@ function objDist(pos, hwLoc, SpikeTimes)
     %% compute distance from home well
 
     % Parse position vector
-    t = pos(:,1); % time
-    x = pos(:,2); % posx
-    y = pos(:,3); % posy
+    t = pos_cm(:,1); % time
+    x = pos_cm(:,2); % posx
+    y = pos_cm(:,3); % posy
 
-    % Convert FM well location index to [x,y] coordinates
-    switch hwLoc
-        case 36
-            homeXY(1,1:2) = [372.31, 269.72];
-        case 37
-            homeXY(1,1:2) = [372.58, 305.75];
-    end
+%     % Convert FM well location index to [x,y] coordinates
+%     switch hwLoc
+%         case 36
+%             homeXY(1,1:2) = [372.31, 269.72];
+%         case 37
+%             homeXY(1,1:2) = [372.58, 305.75];
+%     end
+%     
+    homeXY = hwCoord;
 
     % Calculate distance from LED to *home well* for each timestamp.
         % Change out ObjCoord_2 for whatever the well location is
@@ -73,8 +75,11 @@ function objDist(pos, hwLoc, SpikeTimes)
     % assign values to tc values
     tcVals = spkDistMap./(allDistsMap*sampleRate + eps);
     
+    % smooth tuning curve values
+    tcVals = imgaussfilt(tcVals, 2, 'Padding', 'replicate');
+    
     % plot
-    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.1)
     title("DistHome TC")
     xlabel("distance (units)")
     ylabel("fr (Hz)")

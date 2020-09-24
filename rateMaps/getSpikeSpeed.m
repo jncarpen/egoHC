@@ -1,4 +1,4 @@
-function [spkSpd] = getSpikeSpeed(pos, speed,SpikeTimes)
+function [spkSpd] = getSpikeSpeed(pos_, speed_,SpikeTimes_)
 %GETSPIKESPEED Find speed of the animal each time the cell fired.
 %   INPUT
 %   speed:              [spdLED1 spdLED2]
@@ -13,14 +13,14 @@ function [spkSpd] = getSpikeSpeed(pos, speed,SpikeTimes)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % grab speed for first LED
-spdLED1 = speed(:,1);
+spdLED1 = speed_(:,1);
 minSpd = nanmin(spdLED1);
 maxSpd = nanmax(spdLED1);
-t = pos(:,1);
+t = pos_(:,1);
 sampleRate = mode(diff(t));
 
 % find closest timestamp & store values
-idx = knnsearch(t, SpikeTimes);
+idx = knnsearch(t, SpikeTimes_);
 spkSpd = spdLED1(idx);
 
 %% calculate speed tuning curve
@@ -36,19 +36,24 @@ spkSpd = spdLED1(idx);
             binCtrs(i) = ((mapAxis(i+1)-mapAxis(i))/2)+mapAxis(i);
         end
     end
-    
+       
     % calculate tuning curve values
-    tcVals = spkSpdmap./(allSpdmap*sampleRate + eps); 
+    tcVals = spkSpdmap./(allSpdmap*sampleRate + eps);
     
+    % smooth tuning curve values
+    tcVals = imgaussfilt(tcVals, 2, 'Padding', 'replicate');
+
+
     % plot
-    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.1)
     title("Speed TC")
-    xlabel("speed (units/s)")
+    xlabel("speed (cm/s)")
     ylabel("fr (Hz)")
     xlim([0 300])
     % xticks([-pi -pi/2 0 pi/2 pi])
     % xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
     box off
+
     
     return
 

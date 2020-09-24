@@ -11,9 +11,14 @@ spkPhz = taskPhz(idx);
 
 [phzOcc,~] = histcounts(taskPhz, bins);
 
+% spikes in each task phase
 spkPerPhz = histcounts(spkPhz, bins);
 
+% compute tuning curve values
 TC_taskPhz = spkPerPhz./phzOcc * Fs;
+
+% smooth tuning curve values
+TC_taskPhz = imgaussfilt(TC_taskPhz, 2, 'Padding', 'replicate');
 
 end
 

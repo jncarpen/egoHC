@@ -1,4 +1,4 @@
-function [binCtrs, tcVals] = goalDirSar(pos, hwLoc, hd, SpikeTimes, nBins)
+function [binCtrs, tcVals] = goalDirSar(pos, hwCoord, hd, SpikeTimes, nBins)
 %SARELPLOT Summary of this function goes here
 %   INPUTS
 %   pos:            [t x y x2 y2]. 5xT vector, where T is number of
@@ -31,14 +31,8 @@ function [binCtrs, tcVals] = goalDirSar(pos, hwLoc, hd, SpikeTimes, nBins)
     sampleRate = mode(diff(t));
    
     % manually define x/yGoal (for now)
-    switch hwLoc
-        case 36
-            xGoal = 372.31;
-            yGoal = 269.72;
-        case 37
-            xGoal = 372.58;
-            yGoal = 305.75;            
-    end
+    xGoal = hwCoord(1,1);
+    yGoal = hwCoord(1,2);
     
     % compute difference between currentPos and goalPos
     a = x - xGoal;
@@ -69,9 +63,10 @@ function [binCtrs, tcVals] = goalDirSar(pos, hwLoc, hd, SpikeTimes, nBins)
     
     % calculate tuning curve values
     tcVals = spkGDmap./(allGDmap*sampleRate + eps); 
+    tcVals= imgaussfilt(tcVals, 2, 'Padding', 'circular');
     
     % plot
-    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.5)
+    plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.1)
     title("GoalDir(HD) TC")
     xlabel("angle (rad)")
     ylabel("fr (Hz)")
