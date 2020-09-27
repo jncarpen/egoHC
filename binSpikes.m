@@ -35,7 +35,14 @@ for neuron = 1:length(cellSpikes)
     
     % histcount of spikes per time bin
     binnedSpikes = histcounts(S,edgesT);
+    
+    % smooth spike train
+    sigma = 2;
+    binnedSpikes = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate');
+    
+    % save to cell array
     spikeTrain{1,neuron} = binnedSpikes;
+    
     
 %% Smooth spikes:
 %     % initialize bin size for gaussian window

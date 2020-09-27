@@ -20,7 +20,7 @@ for sessNum = 1:length(SpikeTrain) % 7 is when training stops
     SS = cell(1,length(SpikeTrain{1,sessNum}));
     SA = cell(1,length(SpikeTrain{1,sessNum}));
     for unit = 1:length(SpikeTrain{1,sessNum})
-        SHD{1,unit} = getSpikeAngle(hd{1,sessNum}, SpikeTrain{1,sessNum}{1,unit});
+        SHD{1,unit} = getSpikeAngle(hd{1,sessNum}, SpikeTrain_thresh{1,sessNum}{1,unit});
         % SS{1,unit} = getSpikeSpeed(speed{1,sessNum}, SpikeTimes{1,sessNum}{1,unit});
         % SA{1,unit} = getSpikeSpeed(accel{1,sessNum}, SpikeTimes{1,sessNum}{1,unit});
     end
@@ -32,10 +32,26 @@ end
 % Get home/random well locations for all sessions
 [hwLoc, rdLoc] = getWellLoc(labNotes, trialType);
 
+%% get spiketrain_thresh for all sessions
+% this uses SpikeTimes_thresh
+
+for sessNum = 1:length(pos_cm)
+    if ~isempty(pos{1,sessNum}) && ~isempty(SpikeTimes_thresh{1,sessNum})
+        sessionArray = cell(1,length(SpikeTimes{1,sessNum}));
+        for unitNum = 1:length(SpikeTrain{1,sessNum})
+            ST_now = SpikeTimes_thresh{1,sessNum}{1,unitNum};
+            SpikeTrain_thresh{1,sessNum} = binSpikes(pos_cm{1,sessNum}(:,1), SpikeTimes_thresh{1,sessNum});
+        end
+    end
+end
+
+%% get accel_cm
+[~, accel_cm] = fix_speed_cm(pos_cm);
+
 
 %% Generate cell profile figures
 
-for sessNum = 36:length(SpikeTrain)
+for sessNum = 27%1:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         disp(sessNum)
@@ -70,7 +86,7 @@ for sessNum = 36:length(SpikeTrain)
         % get ref coordinates (home well for FM or center for other)
         refCoord = hwCoord{1,sessNum};
         
-        for unit = 1:length(SpikeTrain{1,sessNum})
+        for unit = 4%1:length(SpikeTrain{1,sessNum})
             if length(SpikeTimes_thresh{1,sessNum}{1,unit}) > 10
                 disp(unit)
                 % Grab some info about current *neuron*
@@ -80,7 +96,7 @@ for sessNum = 36:length(SpikeTrain)
 
                 %% Calculate some stuff
                 [spkPos, spkInd] = data.getSpikePositions(ST,P); % why do i have this?
-                map = analyses.map(P, ST, 'smooth', 3, 'binWidth', 4); % FR map
+                map = analyses.map(P, ST, 'smooth', 2, 'binWidth', 4); % FR map
                 tc_HD = analyses.turningCurve(spikeAngle{1,sessNum}{1,unit}, P, sampleRate, 'binWidth', 10); %HD tuning curve
                 zSpd = [P(:,1), speed_cm{1,sessNum}(:,1)];
                 mapSpd = analyses.map(P, zSpd, 'smooth', 15, 'binWidth', 4); % FR map
@@ -231,7 +247,7 @@ for sessNum = 36:length(SpikeTrain)
                     % For FM trials:
                     subplot(4,5,9)
                     taskPhz = parseTask(fmEvents{1,sessNum}.events, P);
-                    [TC_taskPhz] = taskPhz_tuningCurve(P, SpikeTrain{1,sessNum}{1,unit}, taskPhz);
+                    [TC_taskPhz] = taskPhz_tuningCurve(P, SpikeTrain_thresh{1,sessNum}{1,unit}, taskPhz);
                     for phz=1:length(TC_taskPhz)
                         if isnan(TC_taskPhz(phz))
                             TC_taskPhz(phz) = 0;
@@ -393,14 +409,14 @@ for sessNum = 36:length(SpikeTrain)
                 % ACCEL TC
                 subplot(4,5,13)
                 [spkAcc] = getSpikeAccel(P, accel_cm{1,sessNum}, ST);
-
-    %             save figures
-                filename = strcat('D:\egoAnalysis\cell_profiles\', fileBody, '.png');
-                saveas(fig, filename);
-
-    %             click through all figures
-    %             pause
-                close all 
+% 
+%     %             save figures
+%                 filename = strcat('D:\egoAnalysis\cell_profiles\', fileBody, '.png');
+%                 saveas(fig, filename);
+% 
+%     %             click through all figures
+%     %             pause
+%                 close all 
             else
               message = strcat("unit ", sprintf('%.0f', unit), " has too few spikes to include");
               disp(message)

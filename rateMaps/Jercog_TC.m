@@ -1,4 +1,4 @@
-function Jercog_TC(pos, hd, SpikeTrain)
+function Jercog_TC(pos_, hd_, SpikeTrain)
 %HDMOD: Jercog et al. analysis knockoff
 
     %   INPUT:
@@ -15,12 +15,12 @@ function Jercog_TC(pos, hd, SpikeTrain)
 %% Set everything up
     
     % Parse position vector
-    t = pos(:,1);
-    x = pos(:,2);
-    y = pos(:,3);
+    t = pos_(:,1);
+    x = pos_(:,2);
+    y = pos_(:,3);
     
     % convert HD from degrees to radians (-pi:+pi)
-    hd_rad = deg2rad(hd)-pi;
+    hd_rad = deg2rad(hd_)-pi;
     
     % Set default bin size to 10
     nBins = 10;
@@ -55,7 +55,7 @@ function Jercog_TC(pos, hd, SpikeTrain)
     for xx = 1:length(xCenter)
         for yy = 1:length(yCenter)
             vecLocs(count,1:2) = [xCenter(xx), yCenter(yy)];
-%             scatter(xCenter(xx), yCenter(yy)) % plot vector locations (to
+            scatter(xCenter(xx), yCenter(yy)) % plot vector locations (to
 %             check)
             count = count+1;
             hold on
