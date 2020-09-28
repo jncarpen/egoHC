@@ -1,11 +1,17 @@
-function egoBearing(pos_cm,SpikeTimes, refLoc, refLoc2, hd, sessNum)
+function [tcVals_egoAng] = egoBearing(pos_cm, SpikeTimes, refLoc, refLoc2, hd, sessNum, doPlot, deg_or_rad)
 %EGOBEARING Summary of this function goes here
 
 % grab stuff
 pos_ = pos_cm{1,sessNum};
 SpikeTimes_ = SpikeTimes;
 hd_ = hd{1,sessNum};
-hd_ = deg2rad(hd_)-pi; % range(-pi,+pi)
+
+% decide whether to convert to radians or keep in degrees
+if deg_or_rad == "rad"
+    hd_ = deg2rad(hd_)-pi; % range(-pi,+pi)
+elseif deg_or_rad == "deg"
+    hd_ = hd_;
+end
 
 % Grab window limits for pos tracking
 expansionFactor = 5;
@@ -33,8 +39,13 @@ rlY2 = refLoc2(1,2);
 % compute egocentric angle to reference loc
 % which one is correct?
 % egoAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
-egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
-egoAng = deg2rad(egoAng)-pi; % range(-pi,+pi)
+
+if deg_or_rad == "deg"
+    egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
+elseif deg_or_rad == "rad"
+    egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
+    egoAng = deg2rad(egoAng)-pi; % range(-pi,+pi)
+end
 
 % same, but for ref2
 egoAng2 = rem(atan2d(midY-rlY2, midX-rlX2)+180, 360);
@@ -50,7 +61,13 @@ spk_egoAng2 = egoAng2(idx); % for ref #2
 
 %% compute tuning curves
 nBins = 20;
-angEdges = linspace(-pi,pi,nBins); 
+
+if deg_or_rad == "rad"
+    angEdges = linspace(-pi,pi,nBins);
+elseif deg_or_rad == "deg"
+    angEdges = linspace(0,360,nBins);
+end
+    
 
 %% egoAng
 [spkEgoAngMap, mapAxis_EgoAng] = histcounts(spk_egoAng,angEdges);
@@ -83,16 +100,27 @@ tcVals_egoAng2 = imgaussfilt(tcVals_egoAng2, 2, 'Padding', 'circular');
 
 
 %% plot
-plot(binCtrs_egoAng, tcVals_egoAng, 'Color', 'k', 'LineWidth', 1.10)
-hold on
-plot(binCtrs_egoAng, tcVals_egoAng2, 'LineStyle', ':', 'Color', 'r', 'LineWidth', 1.10)
-% legend('center','hw', 'Location','northeastoutside', 'orientation', 'vertical')
-title("Egocentric Angle")
-xlabel("angle (rad)")
-ylabel("fr (Hz)")
-xlim([-pi pi])
-xticks([-pi -pi/2 0 pi/2 pi])
-xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
-box off
+if doPlot == "True"
+    plot(binCtrs_egoAng, tcVals_egoAng, 'Color', 'k', 'LineWidth', 1.10)
+    hold on
+    plot(binCtrs_egoAng, tcVals_egoAng2, 'LineStyle', ':', 'Color', 'r', 'LineWidth', 1.10)
+    % legend('center','hw', 'Location','northeastoutside', 'orientation', 'vertical')
+    title("Egocentric Angle")
+    ylabel("fr (Hz)")
+    box off
+    
+    % decide how to label plot
+    if deg_or_rad == "rad"
+        xlim([-pi pi])
+        xticks([-pi -pi/2 0 pi/2 pi])
+        xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
+        xlabel("angle (rad)")
+    elseif deg_or_rad == "deg"
+        xlim([0 360])
+        xticks([0 90 180 270 360])
+        xlabel("angle (deg)")
+    end
+    
+end
 end
 

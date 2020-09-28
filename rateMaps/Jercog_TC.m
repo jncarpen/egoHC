@@ -49,18 +49,21 @@ function Jercog_TC(pos_, hd_, SpikeTrain)
         end
     end
     
-    % make scatter plot of grids
-    % this was just for me to check
+    % make scatter plot of grids to check
+    LegLabels = cell(100,1);
     count = 1;
     for xx = 1:length(xCenter)
         for yy = 1:length(yCenter)
             vecLocs(count,1:2) = [xCenter(xx), yCenter(yy)];
-            scatter(xCenter(xx), yCenter(yy)) % plot vector locations (to
-%             check)
+            scatter(xCenter(xx), yCenter(yy))
+            Legend{count} = int2str(count);
             count = count+1;
             hold on
         end
     end
+    
+    % set legend for the plot
+    legend(Legend);
     
        
 
