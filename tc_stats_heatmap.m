@@ -1,5 +1,27 @@
 function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unitNum)
     %TC_STATS_HEATMAP
+    %   INPUTS
+    %   'pos_cm'                position of animal in centimeters, in the
+    %                           form of a 1xS cell array, where S is the number
+    %                           of sessions. Each cell is populated with a Tx5 matrix,
+    %                           where T is the number of timestamps- looks like this:
+    %                           [t x1 y2 x2 y2].
+    %
+    %   'hd'                    cell array of *head direction values* for a single
+    %                           animal. Same format as 'pos_cm'.
+    %
+    %   'UniqueID'              cell array of UniqueID values for the animal.
+    %   
+    %   'SpikeTimes_thresh'     cell array of thresholded spike times (only
+    %                           times when the animal was moving >5cm/s are
+    %                           included.
+    %
+    %   'sessNum'               session number that you're interested in
+    %                           looking at.
+    %
+    %   'unitNum'               unit number (not uniqueID though)
+    %
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %% grab information + set values
     
@@ -16,7 +38,8 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
     
     numIter = 30;
     [refVec] = generate_reference_pnts(posNow);
-
+    r = zeros(length(refVec),1);
+    
     for refIdx = 1:length(refVec)
 
         % choose refLoc (and refLoc2); refLoc=refLoc2 for now
@@ -30,7 +53,7 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
         tcStat = analyses.tcStatistics(tcVals_egoAng', binWidth, percentile);
 
         % make matrix for resulting r values (mean vector length)
-        r(refIdx) = tcStat.r;
+        r(refIdx,1) = tcStat.r;
     end
 
     % Reshape the matrix (10x10)
@@ -45,8 +68,9 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
     
     shiftVal = 30; % s
     r_sim_cell = cell(1,numIter);
+    rSim = zeros(length(refVec),1); rSim_mean = zeros(length(refVec),1);
     
-    for iter = 1:numIter
+    for iter = 1:2%:numIter
         STNow_sim = circShift_TimeStamps(pos_cm, SpikeTimes_thresh, sessNum, unitNum, shiftVal);
         
         for refIdx = 1:length(refVec)
@@ -63,14 +87,14 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
 
 
             % make matrix for resulting r values (mean vector length)
-            rSim(refIdx) = tcStat_sim.r;
+            rSim(refIdx,1) = tcStat_sim.r;
             
             % calculate mean rSim value
-            if refIdx == 1
-                rSim_mean(refIdx) = rSim(refIdx);
-            elseif refIdx > 1
-                rSim_mean(refIdx) = (rSim_mean(refIdx) + rSim(refIdx))/2;
-            end
+%             if refIdx == 1
+%                 rSim_mean(refIdx,1) = rSim(refIdx,1);
+%             elseif refIdx > 1
+%                 rSim_mean(refIdx,1) = (rSim_mean(refIdx,1) + rSim(refIdx,1))/2;
+%             end
             
         end
 
@@ -78,37 +102,31 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
         start = 1; stop = 10;
         for ii = 1:10
             rSim_mat(:,ii) = flip(rSim(start:stop))';
-            rSim_mean_mat(:,ii) = flip(rSim_mean(start:stop))';
+%             rSim_mean_mat(:,ii) = flip(rSim_mean(start:stop))';
             start = start + 10; stop = stop + 10;
         end
         
-        % plot each iteration
-        imagesc(rSim_mat-rSim_mean_mat)
-        figTit = strcat('MVL', ' ID', sprintf('%.f', UID), ' S', sprintf('%.f', sessNum));
-        set(gca,'YDir','normal')
-        pbaspect([1 1 1])
-        title(figTit)
-        
         % add stuff to a matrix 
-        r_sim_cell{1,iter} = rSim_mat;
+%         r_sim_cell{1,iter} = rSim_mat;
+        r_sim_3D(:,:,iter) = rSim_mat;
         shiftVal = shiftVal + 2;
-        
     end
     
+    % take mean of the r_sim_3D matrix in the 3rd dimension (element-wise)
+    meanMatrix = mean(r_sim_3D,3);
 
     %% Plot
     
     % make a heatmap (mean vector length- real data)
     figure
-    imagesc(zscore(r_mat-rSim_mat));
-    figTit = strcat('MVL', ' ID', sprintf('%.f', UID), ' S', sprintf('%.f', sessNum));
+    imagesc(r_mat-meanMatrix);
+    figTit = strcat('MVL(real)-mean(MVL(shuff))', ' ID', sprintf('%.f', UID), ' S', sprintf('%.f', sessNum));
     set(gca,'YDir','normal')
     pbaspect([1 1 1])
     title(figTit)
     colorbar
     
 end
-
 
 
 %% SCRATCH
