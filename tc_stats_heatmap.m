@@ -1,4 +1,4 @@
-function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unitNum)
+function imagesc_output = tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unitNum, measure)
     %TC_STATS_HEATMAP
     %   INPUTS
     %   'pos_cm'                position of animal in centimeters, in the
@@ -21,15 +21,27 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
     %
     %   'unitNum'               unit number (not uniqueID though)
     %
+    %   'measure'               (1) 'MVL_from_shuff': distance of MVL from
+    %                           a shuffled distribution of spikes.
+    %                           (2) 'peak_from_shuff'
+    %                           (3) 'spatial_info'
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     %% grab information + set values
+    if sessNum == "False" && unitNum == "False"
+        posNow = pos_cm;
+        timeNow = pos_cm(:,1);
+        hdNow = hd;
+        STNow = SpikeTimes_thresh;
+        UID = UniqueID;
+    else
+        posNow = pos_cm{1,sessNum};
+        timeNow = posNow(:,1);
+        hdNow = hd{1,sessNum};
+        STNow = SpikeTimes_thresh{1,sessNum}{1,unitNum};
+        UID = UniqueID{1,sessNum}{1,unitNum};
+    end
     
-    posNow = pos_cm{1,sessNum};
-    timeNow = posNow(:,1);
-    hdNow = hd{1,sessNum};
-    STNow = SpikeTimes_thresh{1,sessNum}{1,unitNum};
-    UID = UniqueID{1,sessNum}{1,unitNum};
     binWidth = 18; % deg
     percentile = 95;
 
@@ -37,7 +49,8 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
     %% Compute statistics for *real* data
     
     numIter = 30;
-    [refVec] = generate_reference_pnts(posNow);
+    nBins = 20;
+    [refVec] = generate_reference_pnts(posNow, "True", nBins);
     r = zeros(length(refVec),1);
     
     for refIdx = 1:length(refVec)
@@ -47,20 +60,30 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
         refLoc2(1,1) = refVec(refIdx, 1); refLoc2(1,2) = refVec(refIdx, 2);
 
         % generate egoBearing tuning curve
-        [tcVals_egoAng] = egoBearing(pos_cm, STNow, refLoc, refLoc2, hd, sessNum, "False", "deg");
+        if sessNum == "False" && unitNum == "False"
+            [tcVals_egoAng] = egoBearing(pos_cm, STNow, refLoc, refLoc2, hd, "False", "False", "deg");
+        else
+            [tcVals_egoAng] = egoBearing(pos_cm, STNow, refLoc, refLoc2, hd, sessNum, "False", "deg");
+        end
         
         % get tuning curve statistics
         tcStat = analyses.tcStatistics(tcVals_egoAng', binWidth, percentile);
 
-        % make matrix for resulting r values (mean vector length)
-        r(refIdx,1) = tcStat.r;
+        % make matrix for resulting statistics
+        switch measure
+            case 'MVL_from_shuff'
+                r(refIdx,1) = tcStat.r;
+            case 'peak_from_shuff'
+                r(refIdx,1) = tcStat.peakDirection;
+        end
+        
     end
 
     % Reshape the matrix (10x10)
-    start = 1; stop = 10;
-    for ii = 1:10
+    start = 1; stop = nBins;
+    for ii = 1:nBins
         r_mat(:,ii) = flip(r(start:stop))';
-        start = start + 10; stop = stop + 10;
+        start = start + nBins; stop = stop + nBins;
     end
     
     
@@ -70,8 +93,12 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
     r_sim_cell = cell(1,numIter);
     rSim = zeros(length(refVec),1); rSim_mean = zeros(length(refVec),1);
     
-    for iter = 1:2%:numIter
-        STNow_sim = circShift_TimeStamps(pos_cm, SpikeTimes_thresh, sessNum, unitNum, shiftVal);
+    for iter = 1:30 %numIter
+        if sessNum == "False" && unitNum == "False"
+            STNow_sim = circShift_TimeStamps(pos_cm, SpikeTimes_thresh, "False", "False", shiftVal);
+        else
+            STNow_sim = circShift_TimeStamps(pos_cm, SpikeTimes_thresh, sessNum, unitNum, shiftVal);
+        end
         
         for refIdx = 1:length(refVec)
 
@@ -80,14 +107,23 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
             refLoc2(1,1) = refVec(refIdx, 1); refLoc2(1,2) = refVec(refIdx, 2);
 
             % generate egoBearing tuning curve
-            [tcVals_egoAng_sim] = egoBearing(pos_cm, STNow_sim, refLoc, refLoc2, hd, sessNum, "False", "deg");
-
+            if sessNum == "False" && unitNum == "False"
+                [tcVals_egoAng_sim] = egoBearing(pos_cm, STNow_sim, refLoc, refLoc2, hd, "False", "False", "deg");
+            else
+                [tcVals_egoAng_sim] = egoBearing(pos_cm, STNow_sim, refLoc, refLoc2, hd, sessNum, "False", "deg");
+            end
+            
             % get tuning curve statistics
             tcStat_sim = analyses.tcStatistics(tcVals_egoAng_sim', binWidth, percentile);
 
 
-            % make matrix for resulting r values (mean vector length)
-            rSim(refIdx,1) = tcStat_sim.r;
+            % make matrix for resulting statistics
+            switch measure
+                case 'MVL_from_shuff'
+                    rSim(refIdx,1) = tcStat_sim.r;
+                case 'peak_from_shuff'
+                    rSim(refIdx,1) = tcStat_sim.peakDirection;
+            end
             
             % calculate mean rSim value
 %             if refIdx == 1
@@ -99,11 +135,11 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
         end
 
         % Reshape the matrix (10x10)
-        start = 1; stop = 10;
-        for ii = 1:10
+        start = 1; stop = nBins;
+        for ii = 1:nBins
             rSim_mat(:,ii) = flip(rSim(start:stop))';
 %             rSim_mean_mat(:,ii) = flip(rSim_mean(start:stop))';
-            start = start + 10; stop = stop + 10;
+            start = start + nBins; stop = stop + nBins;
         end
         
         % add stuff to a matrix 
@@ -118,13 +154,20 @@ function tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unit
     %% Plot
     
     % make a heatmap (mean vector length- real data)
-    figure
-    imagesc(r_mat-meanMatrix);
-    figTit = strcat('MVL(real)-mean(MVL(shuff))', ' ID', sprintf('%.f', UID), ' S', sprintf('%.f', sessNum));
-    set(gca,'YDir','normal')
-    pbaspect([1 1 1])
-    title(figTit)
-    colorbar
+    if sessNum == "False" && unitNum == "False"
+        figTit = 'MVL(real)-mean(MVL(shuff))';
+    else
+        figTit = strcat('MVL(real)-mean(MVL(shuff))', ' ID', sprintf('%.f', UID), ' S', sprintf('%.f', sessNum));
+    end
+    
+%     figure
+    imagesc_output = r_mat-meanMatrix;
+%     imagesc(r_mat-meanMatrix);
+%     set(gca,'YDir','normal')
+%     colormap(jet) % diverging
+%     colorbar
+%     pbaspect([1 1 1])
+%     title(figTit)
     
 end
 
@@ -137,5 +180,6 @@ end
 %     STNow_sim = randi(floor(nanmax(timeNow)),length(STNow),1);
 %
 %     (2)
-%     circularly shift spikes by 150 *bins*
-%     STNow_sim = circshift(STNow,150); % shift by shiftVal bins
+%     circularly shift spikes by some number of *bins*
+%     someNumber = 150; 
+%     STNow_sim = circshift(STNow,someNumber); % shift by shiftVal bins

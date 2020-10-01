@@ -2,9 +2,15 @@ function ST_shftd = circShift_TimeStamps(pos_cm, SpikeTimes_thresh, sessNum, uni
 %CIRCSHIFT_TIMESTAMPS Summary of this function goes here
 %   Circularly shift timestamps (shiftVal is in seconds)
 
-t = pos_cm{1,sessNum}(:,1);
+if sessNum == "False" && unitNum == "False"
+    t = pos_cm(:,1);
+    ST = SpikeTimes_thresh;
+else
+    t = pos_cm{1,sessNum}(:,1);
+    ST = SpikeTimes_thresh{1,sessNum}{1,unitNum};
+end
+
 tMax = nanmax(t); tMin = nanmin(t);
-ST = SpikeTimes_thresh{1,sessNum}{1,unitNum};
 
 ST_shftd = [];
 for spk = 1:length(ST)

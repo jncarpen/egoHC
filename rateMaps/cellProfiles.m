@@ -51,7 +51,7 @@ end
 
 %% Generate cell profile figures
 
-for sessNum = 27%1:length(SpikeTrain)
+for sessNum = 1:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         disp(sessNum)
@@ -86,8 +86,8 @@ for sessNum = 27%1:length(SpikeTrain)
         % get ref coordinates (home well for FM or center for other)
         refCoord = hwCoord{1,sessNum};
         
-        for unit = 4%1:length(SpikeTrain{1,sessNum})
-            if length(SpikeTimes_thresh{1,sessNum}{1,unit}) > 10
+        for unit = 1:length(SpikeTrain{1,sessNum})
+            if length(SpikeTimes_thresh{1,sessNum}{1,unit}) > 20
                 disp(unit)
                 % Grab some info about current *neuron*
                 UID = UniqueID{1,sessNum}{1,unit}; 
@@ -211,7 +211,7 @@ for sessNum = 27%1:length(SpikeTrain)
                 % EGO BEARING
                 subplot(4,5,17)
                 % black line = ctrCoord; redLine = refCoord (hwLoc)
-                egoBearing(pos_cm, ST, ctrCoord, refCoord, hd, sessNum, "True")
+                egoBearing(pos_cm, ST, ctrCoord, refCoord, hd, sessNum, "True", "rad");
 
                 % HD TUNING CURVE
                 % generate tuning curve values
@@ -247,7 +247,7 @@ for sessNum = 27%1:length(SpikeTrain)
                     % For FM trials:
                     subplot(4,5,9)
                     taskPhz = parseTask(fmEvents{1,sessNum}.events, P);
-                    [TC_taskPhz] = taskPhz_tuningCurve(P, SpikeTrain_thresh{1,sessNum}{1,unit}, taskPhz);
+                    [TC_taskPhz] = taskPhz_tuningCurve(P, ST, taskPhz);
                     for phz=1:length(TC_taskPhz)
                         if isnan(TC_taskPhz(phz))
                             TC_taskPhz(phz) = 0;
@@ -410,9 +410,9 @@ for sessNum = 27%1:length(SpikeTrain)
                 subplot(4,5,13)
                 [spkAcc] = getSpikeAccel(P, accel_cm{1,sessNum}, ST);
 % 
-%     %             save figures
-%                 filename = strcat('D:\egoAnalysis\cell_profiles\', fileBody, '.png');
-%                 saveas(fig, filename);
+    %             save figures
+                filename = strcat('D:\egoAnalysis\cell_profiles\', fileBody, '.png');
+                saveas(fig, filename);
 % 
 %     %             click through all figures
 %     %             pause

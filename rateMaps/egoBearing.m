@@ -2,9 +2,15 @@ function [tcVals_egoAng] = egoBearing(pos_cm, SpikeTimes, refLoc, refLoc2, hd, s
 %EGOBEARING Summary of this function goes here
 
 % grab stuff
-pos_ = pos_cm{1,sessNum};
-SpikeTimes_ = SpikeTimes;
-hd_ = hd{1,sessNum};
+if sessNum == "False"
+    pos_ = pos_cm;
+    SpikeTimes_ = SpikeTimes;
+    hd_ = hd;
+else
+    pos_ = pos_cm{1,sessNum};
+    SpikeTimes_ = SpikeTimes;
+    hd_ = hd{1,sessNum};
+end
 
 % decide whether to convert to radians or keep in degrees
 if deg_or_rad == "rad"
@@ -40,16 +46,27 @@ rlY2 = refLoc2(1,2);
 % which one is correct?
 % egoAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
 
+% this is the way I was originally computing ego angle.
+% egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
+
 if deg_or_rad == "deg"
-    egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
+    % this is the way i computed it in the python script
+    alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
+    egoAng = alloAng - hd_;
 elseif deg_or_rad == "rad"
-    egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
-    egoAng = deg2rad(egoAng)-pi; % range(-pi,+pi)
+    alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
+    egoAng = deg2rad(alloAng-hd_)-pi;
 end
 
 % same, but for ref2
-egoAng2 = rem(atan2d(midY-rlY2, midX-rlX2)+180, 360);
-egoAng2 = deg2rad(egoAng2)-pi;
+if deg_or_rad == "deg"
+    % this is the way i computed it in the python script
+    alloAng2 = rem(atan2d(rlY2-midY, rlX2-midX)+180, 360);
+    egoAng2 = alloAng2 - hd_;
+elseif deg_or_rad == "rad"
+    alloAng2 = rem(atan2d(rlY2-midY, rlX2-midX)+180, 360);
+    egoAng2 = deg2rad(alloAng2-hd_)-pi;
+end
 
 
 % find time indices when cell spikes
@@ -101,9 +118,10 @@ tcVals_egoAng2 = imgaussfilt(tcVals_egoAng2, 2, 'Padding', 'circular');
 
 %% plot
 if doPlot == "True"
+%     figure
     plot(binCtrs_egoAng, tcVals_egoAng, 'Color', 'k', 'LineWidth', 1.10)
     hold on
-    plot(binCtrs_egoAng, tcVals_egoAng2, 'LineStyle', ':', 'Color', 'r', 'LineWidth', 1.10)
+    plot(binCtrs_egoAng2, tcVals_egoAng2, 'LineStyle', ':', 'Color', 'r', 'LineWidth', 1.10)
     % legend('center','hw', 'Location','northeastoutside', 'orientation', 'vertical')
     title("Egocentric Angle")
     ylabel("fr (Hz)")

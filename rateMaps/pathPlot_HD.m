@@ -33,6 +33,7 @@ col2 = [];
 col3 = [];
 
 [spkPos] = data.getSpikePositions(SpikeTimes', pos); % spkPos: [t x y]
+
 idx = knnsearch(t, SpikeTimes);
 spkAng(:,1) = t(idx);
 spkAng(:,2) = hd(idx);
@@ -62,11 +63,10 @@ end
 plot(x, y, 'Color', [.7 .7 .7])
 hold on
 scatter(spkPos(:,2), spkPos(:,3), [30], spkAng(:,2), '.')
+colormap(hsv);
+colorbar;
+caxis([0 360])
 title("HD Path Plot")
 box off
-% colorbar(gca, "hsv", 'eastoutside')
-% xlabel("X")
-% ylabel("Y")
-
 end
 
