@@ -63,6 +63,7 @@ end
 plot(x, y, 'Color', [.7 .7 .7])
 hold on
 scatter(spkPos(:,2), spkPos(:,3), [30], spkAng(:,2), '.')
+% newmap = brighten(hsv,-.8);
 colormap(hsv);
 colorbar;
 caxis([0 360])

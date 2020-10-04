@@ -51,7 +51,7 @@ end
 
 %% Generate cell profile figures
 
-for sessNum = 1:length(SpikeTrain)
+for sessNum = 1%:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         disp(sessNum)
@@ -86,7 +86,7 @@ for sessNum = 1:length(SpikeTrain)
         % get ref coordinates (home well for FM or center for other)
         refCoord = hwCoord{1,sessNum};
         
-        for unit = 1:length(SpikeTrain{1,sessNum})
+        for unit = 6%1:length(SpikeTrain{1,sessNum})
             if length(SpikeTimes_thresh{1,sessNum}{1,unit}) > 20
                 disp(unit)
                 % Grab some info about current *neuron*
@@ -185,7 +185,7 @@ for sessNum = 1:length(SpikeTrain)
 
     %             % SPATIAL OCC
                 subplot(4,5,6)
-                plot.colorMap(map.time, 'ydir', 'reverse')
+                plot.colorMap(map.time, 'ydir', 'normal')
                 pbaspect([1 1 1])
                 colorbar
                 colormap(gca,'jet')

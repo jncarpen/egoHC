@@ -1,4 +1,4 @@
-function imagesc_output = tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unitNum, measure)
+function [imagesc_output, refVec] = tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thresh, sessNum, unitNum, measure)
     %TC_STATS_HEATMAP
     %   INPUTS
     %   'pos_cm'                position of animal in centimeters, in the
@@ -93,7 +93,7 @@ function imagesc_output = tc_stats_heatmap(pos_cm, hd, UniqueID, SpikeTimes_thre
     r_sim_cell = cell(1,numIter);
     rSim = zeros(length(refVec),1); rSim_mean = zeros(length(refVec),1);
     
-    for iter = 1:30 %numIter
+    for iter = 1:numIter
         if sessNum == "False" && unitNum == "False"
             STNow_sim = circShift_TimeStamps(pos_cm, SpikeTimes_thresh, "False", "False", shiftVal);
         else

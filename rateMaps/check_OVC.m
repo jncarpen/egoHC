@@ -42,11 +42,19 @@ hd_OVC = rem(atan2d(y2-y, x2-x) + 180, 360);
 % plot stuff
 fig = figure('Position', [100 100 600 300]);
 set(gcf,'color','w');
-sgtitle("Object Moved Trial")
+sgtitle("Object Trial")
 
 % path plot (colored by HD)
 subplot(2,2,1)
+[imagesc_output, refVec] = tc_stats_heatmap(posCorr, hd_OVC, 0, STCorr, "False", "False", 'MVL_from_shuff');
 pathPlot_HD(posCorr, STCorr, hd_OVC);
+% hold on
+for ii = 1:length(refVec)
+plot(refVec(ii,1), refVec(ii,2), '.', 'Color', 'k')
+hold on
+end
+yline(nanmin(y)); yline(nanmax(y));
+xline(nanmin(x)); xline(nanmax(x));
 xlim([nanmin(x), nanmax(x)])
 ylim([nanmin(y), nanmax(y)])
 pbaspect([1 1 1])
@@ -54,8 +62,8 @@ box off
 
 % OVC Plot
 subplot(2,2,2)
-% refCoord = [42,37]; % for object trial (cm)
-refCoord = [42, 59];
+refCoord = [42,37]; % for object trial (cm)
+% refCoord = [42, 59];
 makeVecMaps(posCorr,STCorr,refCoord);
 box off
 
@@ -71,12 +79,11 @@ box off
 
 % egoBearing TC stats
 subplot(2,2,4)
-imagesc_output = tc_stats_heatmap(posCorr, hd_OVC, 0, STCorr, "False", "False", 'MVL_from_shuff');
 imagesc(imagesc_output);
 set(gca,'YDir','normal')
 colormap(jet) % diverging
 colorbar
-caxis([-.5, .5])
+caxis([-1, 1])
 pbaspect([1 1 1])
 title('MVL(real)-mean(MVL(shuff))')
 
