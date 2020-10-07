@@ -77,7 +77,7 @@ spk_egoAng2 = egoAng2(idx); % for ref #2
 
 
 %% compute tuning curves
-nBins = 20;
+nBins = 40; % 9 degree bins
 
 if deg_or_rad == "rad"
     angEdges = linspace(-pi,pi,nBins);

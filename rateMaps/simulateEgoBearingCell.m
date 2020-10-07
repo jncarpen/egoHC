@@ -79,8 +79,6 @@ spkBearing = egoAng(spk_index);
 
 % find spike positions
 xSpk=xCorr(spk_index); ySpk=yCorr(spk_index);
-r = 1; % circle radius
-horiz = r*cos(spkBearing); vert = r*sin(spkBearing);
 
 %% Quiver pathplot
 % identify data in *each quadrant*
@@ -118,34 +116,13 @@ h4 = quiver(data(q4 == 1,1), data(q4 == 1,2), cos(data(q4 == 1,3) * pi/180), sin
 
 % Set colors to red for 1st quadrant, blue for 2nd, green for 3rd, cyan for 4th
 % Also, turn scaling off. get(h1) will return additional property-value pairs
-set(h1, 'Color', 'k', 'AutoScale', 'off')
-
-
-% set(h1, 'Color', [.8 0 .5], 'AutoScale', 'off')
-% set(h2, 'Color', [.9 .5 .3], 'AutoScale', 'off')
-% set(h3, 'Color', [.1 0 .8], 'AutoScale', 'off')
-% set(h4, 'Color', [0 .75 .5], 'AutoScale', 'off')
+set(h1, 'Color', [.8 0 .5], 'AutoScale', 'off')
+set(h2, 'Color', [.9 .5 .3], 'AutoScale', 'off')
+set(h3, 'Color', [.1 0 .8], 'AutoScale', 'off')
+set(h4, 'Color', [0 .75 .5], 'AutoScale', 'off')
 % Done plotting
 hold off;
 
-
-
-% figure
-% set(gcf,'color','w');
-% 
-% subplot(1,2,1)
-% pathPlot_HD(posCorr, STCorr, hd_OVC);
-% xlim([nanmin(x), nanmax(x)])
-% ylim([nanmin(y), nanmax(y)])
-% pbaspect([1 1 1])
-% box off
-% 
-% subplot(1,2,2)
-% quiver(xSpk, ySpk, horiz, vert)
-% xlim([nanmin(x), nanmax(x)])
-% ylim([nanmin(y), nanmax(y)])
-% pbaspect([1 1 1])
-% box off
 
 %% plot
 fig = figure('Position', [100 100 600 300]);

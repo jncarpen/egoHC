@@ -62,11 +62,13 @@ end
 % figure
 plot(x, y, 'Color', [.7 .7 .7])
 hold on
-scatter(spkPos(:,2), spkPos(:,3), [30], spkAng(:,2), '.')
+scatter(spkPos(:,2), spkPos(:,3), [50], spkAng(:,2), '.')
 % newmap = brighten(hsv,-.8);
 colormap(hsv);
 colorbar;
 caxis([0 360])
+xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
+ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
 title("HD Path Plot")
 box off
 end

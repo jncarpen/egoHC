@@ -1,4 +1,4 @@
-function Jercog_TC(pos_, hd_, SpikeTrain)
+function Jercog_TC(pos_, hd_, SpikeTrain_)
 %HDMOD: Jercog et al. analysis knockoff
 
     %   INPUT:
@@ -50,20 +50,20 @@ function Jercog_TC(pos_, hd_, SpikeTrain)
     end
     
     % make scatter plot of grids to check
-    LegLabels = cell(100,1);
+%     LegLabels = cell(100,1);
     count = 1;
     for xx = 1:length(xCenter)
         for yy = 1:length(yCenter)
             vecLocs(count,1:2) = [xCenter(xx), yCenter(yy)];
-            scatter(xCenter(xx), yCenter(yy))
-            Legend{count} = int2str(count);
+%             scatter(xCenter(xx), yCenter(yy))
+%             Legend{count} = int2str(count);
             count = count+1;
-            hold on
+%             hold on
         end
     end
     
-    % set legend for the plot
-    legend(Legend);
+%     % set legend for the plot
+%     legend(Legend);
     
        
 
@@ -84,7 +84,7 @@ function Jercog_TC(pos_, hd_, SpikeTrain)
             % calculate values for current 2D spatial bin
             hd_here = hd_rad(indices); % head direction values in this spatial bin
 %             time_here = t(indices); % time values in this spatial bin
-            spikes_here = SpikeTrain(indices); % spiketrain in this spatial bin
+            spikes_here = SpikeTrain_(indices); % spiketrain in this spatial bin
             
             % find head-direction at times of spikes (angSpk)
             
@@ -99,7 +99,7 @@ function Jercog_TC(pos_, hd_, SpikeTrain)
 %             end
             
             % compute firing rate map
-            rateMap(xx,yy) = sum(SpikeTrain(indices))/(timeInBin); % normal rate map [r(x,y)]
+            rateMap(xx,yy) = sum(SpikeTrain_(indices))/(timeInBin); % normal rate map [r(x,y)]
 
             % compute occupancy for each HD bin
             histAng = histcounts(hd_rad(indices), angBins);
