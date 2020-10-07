@@ -12,3 +12,4 @@ notebook1.ipynb
 inpaint_nans.m
 gauss2D.m
 opex_setup.ipynb
++LFP/detectRipples.m
