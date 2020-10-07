@@ -3,6 +3,7 @@ function [mean_stats, sum_stats] = score_tuning_curve(stats_array)
 %   INPUTS
 %   'stats_array'      cell array of tuning curve statistics structs (BNT)
 %   'measure'          which measure to compute
+%
 %   OUTPUT
 %   'mean_stat'         mean of statistic across all 2D spatial bins
 %   Jordan Carpenter, October 5, 2020.
