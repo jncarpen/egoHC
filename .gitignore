@@ -1,11 +1,11 @@
 *.csv
 *.asv
 readtfile/
-mTintCore
-behaVid
-someFigures
-refPaperCode
-circstat-matlab
+mTintCore/
+behaVid/
+someFigures/
+refPaperCode/
+circstat-matlab/
 .ipynb_checkpoints
 inpaint_nans.m
 notebook1.ipynb
