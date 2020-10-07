@@ -88,58 +88,82 @@ SpkTrn = binnedSpikes;
 
 %% run the analysis
 % get a vector of all the reference points you're interested in
-nBins = 10; % increase this # when ready to run
-[refVec, outside_circ] = generate_reference_pnts(position, "True", nBins); % the number of reference points you get is nBins^2
+nBins = 30; % increase this # when ready to run
+[refVec, in_out_index] = generate_reference_pnts(position, "True", nBins); % the number of reference points you get is nBins^2
+
+% clear vectors from past runs
+ego_test_MVL=[]; allo_test_MVL=[]; hd_test_MVL=[];
+ego_test_MD=[]; allo_test_MD=[]; hd_test_MD=[];
+ego_test_pr=[]; allo_test_pr=[]; hd_test_pr=[];
 
 % loop through vector of reference points (refVec)
 for refPt = 1:nBins^2
-    % grab reference point for this iteration
+    
+    % grab reference point/logical value for this iteration
     refLoc = refVec(refPt,:);
+    logical_circle = in_out_index(refPt); % points inside circles equal [1]. points outside equal [0].
     
-    % compute tuning curves + stats for this *reference point*
-    [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc);
-    
-    % get scores for this reference points
-    [HD_mean_stats, HD_sum_stats] = score_tuning_curve(HD_ST);
-    [ALLO_mean_stats, ALLO_sum_stats] = score_tuning_curve(ALLO_ST);
-    [EGO_mean_stats, EGO_sum_stats] = score_tuning_curve(EGO_ST);
-    
-    % lets test MVL
-    ego_test_MVL(refPt) = EGO_sum_stats.MVL;
-    allo_test_MVL(refPt) = ALLO_sum_stats.MVL;
-    hd_test_MVL(refPt) = HD_sum_stats.MVL;
-    
-    ego_test_MD(refPt) = EGO_mean_stats.mean_direction;
-    allo_test_MD(refPt) = ALLO_mean_stats.mean_direction;
-    hd_test_MD(refPt) = HD_mean_stats.mean_direction;
-    
-    ego_test_pr(refPt) = EGO_sum_stats.peak_rate;
-    allo_test_pr(refPt) = ALLO_sum_stats.peak_rate;
-    hd_test_pr(refPt) = HD_sum_stats.peak_rate;
-    
-    
+    if logical_circle == 1 % if the point is INSIDE the circle
+        % compute tuning curves + stats for this *reference point*
+        [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc);
+
+        % get scores for this reference points
+        [HD_mean_stats, HD_sum_stats] = score_tuning_curve(HD_ST);
+        [ALLO_mean_stats, ALLO_sum_stats] = score_tuning_curve(ALLO_ST);
+        [EGO_mean_stats, EGO_sum_stats] = score_tuning_curve(EGO_ST);
+
+        % lets test MVL
+        ego_test_MVL(refPt) = EGO_sum_stats.MVL;
+        allo_test_MVL(refPt) = ALLO_sum_stats.MVL;
+        hd_test_MVL(refPt) = HD_sum_stats.MVL;
+
+        ego_test_MD(refPt) = EGO_mean_stats.mean_direction;
+        allo_test_MD(refPt) = ALLO_mean_stats.mean_direction;
+        hd_test_MD(refPt) = HD_mean_stats.mean_direction;
+
+        ego_test_pr(refPt) = EGO_sum_stats.peak_rate;
+        allo_test_pr(refPt) = ALLO_sum_stats.peak_rate;
+        hd_test_pr(refPt) = HD_sum_stats.peak_rate;
+        
+    elseif logical_circle == 0
+         % set all values to 0.
+        ego_test_MVL(refPt) = NaN;
+        allo_test_MVL(refPt) = NaN;
+        hd_test_MVL(refPt) = NaN;
+
+        ego_test_MD(refPt) = NaN;
+        allo_test_MD(refPt) = NaN;
+        hd_test_MD(refPt) = NaN;
+
+        ego_test_pr(refPt) = NaN;
+        allo_test_pr(refPt) = NaN;
+        hd_test_pr(refPt) = NaN;
+    end
 end
 
-test2 = ego_test_MVL;
+test2 = allo_test_MVL;
 % reshape the matrix
-start = 1; stop = 100;
-for ii = 1:100
+sumMat=[];
+start = 1; stop = nBins;
+for ii = 1:nBins
 %     meanMat(:,ii) = flip(test(start:stop))';
     sumMat(:,ii)= flip(test2(start:stop))';
     start = start + nBins; stop = stop + nBins;
 end
 
-% plot results (sum mat)
+% plot results: sumMat
 figure
 set(gcf,'color','w');
 imagesc(sumMat)
-title("S27U4:HD")
+title("TITLE")
 pbaspect([1 1 1])
+colorbar
+box off
+
 % colormap(hsv)
 % caxis([0 360])
-colorbar
 % set(gca,'YDir','normal')
-box off
+
 
 % % plot results (mean mat)
 % figure

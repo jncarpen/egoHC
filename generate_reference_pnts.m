@@ -1,4 +1,4 @@
-function [refVec, outside_circ] = generate_reference_pnts(position, extend_arena, nBins)
+function [refVec, in_out_index] = generate_reference_pnts(position, extend_arena, nBins)
 %GENERATE_REFERENCE_PNTS 
 %   Generate a grid of reference points.
 
@@ -27,14 +27,26 @@ function [refVec, outside_circ] = generate_reference_pnts(position, extend_arena
         [~,xEdges,yEdges,~,~] = histcounts2(x,y,nBins);
     
     elseif extend_arena == "True"
+        
         % Compute spatial occupancy and indices for extended X and Y bins
         scaleFac = 1.25; % how much to scale up arena (proportion)
         xSize = nanmax(x)-nanmin(x); ySize = nanmax(y)-nanmin(y);
         extended_x_edges = linspace(nanmin(x)-xSize*scaleFac, nanmax(x)+xSize*scaleFac, nBins+1);
         extended_y_edges = linspace(nanmin(y)-ySize*scaleFac, nanmax(y)+ySize*scaleFac, nBins+1);
+        
         [~,xEdges,yEdges,~,~] = histcounts2(x,y,extended_x_edges,extended_y_edges);
+    
     end
 
+    
+%% plot xedges
+% plot(x,y)
+% hold on
+% for ll = 1:length(extended_x_edges)
+%     xline(extended_x_edges(ll))
+%     yline(extended_y_edges(ll))
+% end
+% hold off
     
     %% Compute bin centers
 
@@ -60,38 +72,45 @@ function [refVec, outside_circ] = generate_reference_pnts(position, extend_arena
     end
     
     
+    
+    %% define points inside of the circle    
+    
+    % this vector will be filled with 1s and 0s; 
+    % 1 means that the point is INSIDE the circle, 0 means its OUTSIDE
+    in_out_index = zeros(length(refVec),1);
+    
     if extend_arena == "True"
         
         % define the circle of points we're interested in
         centerX = (nanmax(x)-nanmin(x))/2;
         centerY = (nanmax(y)-nanmin(y))/2;
         centers = [centerX, centerY];
-        radius = 300;
+        radius = (abs(nanmin(x)-xSize*scaleFac) + abs(nanmax(x)+xSize*scaleFac))/2;
+        
 
         % compute the distance from each point from (centerX, centerY)
-        refVec_circ = [];
+%         refVec_circ = [];
         rvX = refVec(:,1); rvY = refVec(:,2);
         d = sqrt((centerX-rvX).^2 + (centerY-rvY).^2);
         in_idx = find(radius>=d); out_idx = find(radius<=d);
-        outside_circ(:,1)= rvX(out_idx); outside_circ(:,2)= rvY(out_idx);
-        refVec_circ(:,1) = rvX(in_idx); refVec_circ(:,2) = rvY(in_idx);
-        refVec = refVec_circ;
+        in_out_index(in_idx) = 1; in_out_index(out_idx) = 0;
+%         refVec_circ(:,1) = rvX(in_idx); refVec_circ(:,2) = rvY(in_idx);
+%         refVec = refVec_circ;
         
     elseif extend_arena == "False"
-        
-        % shitty line of code cuz not parsing inputs well
-        outside_circ = refVec;
+        outside_circ = refVec; % shitty line of code cuz not parsing inputs well (sorry future self)
     end
 end
 
-%% plot the reference points
-% this can be used to check the reference points
+% %% plot the reference points
+% % this can be used to check the reference points
 % figure
-% skip=5;
-% for loc = 1:skip:length(refVec_circ)
-%     plot(refVec_circ(loc,1), refVec_circ(loc,2), '.')
+% skip=1;
+% for loc = 1:skip:length(refVec)
+%     plot(refVec(loc,1), refVec(loc,2), '.')
 %     hold on
 % end
+% 
 % viscircles(centers,radius)
 % plot(x,y)
 % hold off
