@@ -67,6 +67,7 @@ scatter(spkPos(:,2), spkPos(:,3), [50], spkAng(:,2), '.')
 colormap(hsv);
 colorbar;
 caxis([0 360])
+pbaspect([1 1 1])
 xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
 ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
 title("HD Path Plot")

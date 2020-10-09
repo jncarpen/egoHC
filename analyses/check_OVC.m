@@ -48,6 +48,7 @@ sgtitle("Object Trial")
 subplot(2,2,1)
 [imagesc_output, refVec] = tc_stats_heatmap(posCorr, hd_OVC, 0, STCorr, "False", "False", 'MVL_from_shuff');
 pathPlot_HD(posCorr, STCorr, hd_OVC);
+
 % hold on
 for ii = 1:length(refVec)
 plot(refVec(ii,1), refVec(ii,2), '.', 'Color', 'k')

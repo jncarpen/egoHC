@@ -53,9 +53,12 @@ rlX=42; rlY=59; % object moved
 midX=(x+x2)/2; midY=(y+y2)/2;
 alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
 egoAng = alloAng - head_direction;
+% correct for negative angles (egoAng)
+neg_idx = find(egoAng<0);
+egoAng(neg_idx) = egoAng(neg_idx)+360;
 
 % define angles of interest
-angle_of_interest = 60; plus_minus = 20;
+angle_of_interest = 345; plus_minus = 20;
 min_angle = angle_of_interest - plus_minus;
 max_angle = angle_of_interest + plus_minus;
 logical = egoAng>min_angle & egoAng<max_angle; % find indices where egoAngle is within range
@@ -65,6 +68,8 @@ sz = floor(length(idx)-length(idx)*throw_away); % size to keep
 len_background = sz*.3; % number of background spikes to add
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);
+% add background spikes if you want noise?? **
+% sort the simulated spikes
 simTS = sort(foreground_spikes, 'ascend'); % simulated timestamps
 
 % speed threshold spikes
@@ -85,10 +90,13 @@ binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
 binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpkTrn = binnedSpikes;
 
+% check the simulated cell
+pathPlot_HD(position, S, head_direction);
+
 
 %% run the analysis
 % get a vector of all the reference points you're interested in
-nBins = 30; % increase this # when ready to run
+nBins = 6; % increase this # when ready to run
 [refVec, in_out_index] = generate_reference_pnts(position, "True", nBins); % the number of reference points you get is nBins^2
 
 % clear vectors from past runs
@@ -97,6 +105,7 @@ ego_test_MD=[]; allo_test_MD=[]; hd_test_MD=[];
 ego_test_pr=[]; allo_test_pr=[]; hd_test_pr=[];
 
 % loop through vector of reference points (refVec)
+fileCount = 1;
 for refPt = 1:nBins^2
     
     % grab reference point/logical value for this iteration
@@ -105,7 +114,7 @@ for refPt = 1:nBins^2
     
     if logical_circle == 1 % if the point is INSIDE the circle
         % compute tuning curves + stats for this *reference point*
-        [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc);
+        [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc, fileCount);
 
         % get scores for this reference points
         [HD_mean_stats, HD_sum_stats] = score_tuning_curve(HD_ST);
@@ -125,6 +134,8 @@ for refPt = 1:nBins^2
         allo_test_pr(refPt) = ALLO_sum_stats.peak_rate;
         hd_test_pr(refPt) = HD_sum_stats.peak_rate;
         
+        fileCount = fileCount + 1;
+        
     elseif logical_circle == 0
          % set all values to 0.
         ego_test_MVL(refPt) = NaN;
@@ -141,7 +152,7 @@ for refPt = 1:nBins^2
     end
 end
 
-test2 = allo_test_MVL;
+test2 = ego_test_MVL;
 % reshape the matrix
 sumMat=[];
 start = 1; stop = nBins;
@@ -155,9 +166,15 @@ end
 figure
 set(gcf,'color','w');
 imagesc(sumMat)
-title("TITLE")
+title("SimCell(Obj): EGO MVL")
 pbaspect([1 1 1])
 colorbar
+box off
+
+% subplot(1,2,2)
+pbaspect([1 1 1])
+set(gcf,'color','w');
+plot_quiver(test2, refVec)
 box off
 
 % colormap(hsv)

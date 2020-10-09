@@ -1,4 +1,4 @@
-function objDist(pos_cm, hwCoord, SpikeTimes)
+function objDist(pos_cm, hwCoord, SpikeTimes, nBins)
 %OBJDIST Summary of this function goes here
 %   INPUTS
 %   pos:            matrix in the form [t x y]
@@ -26,19 +26,10 @@ function objDist(pos_cm, hwCoord, SpikeTimes)
     t = pos_cm(:,1); % time
     x = pos_cm(:,2); % posx
     y = pos_cm(:,3); % posy
-
-%     % Convert FM well location index to [x,y] coordinates
-%     switch hwLoc
-%         case 36
-%             homeXY(1,1:2) = [372.31, 269.72];
-%         case 37
-%             homeXY(1,1:2) = [372.58, 305.75];
-%     end
-%     
     homeXY = hwCoord;
 
     % Calculate distance from LED to *home well* for each timestamp.
-        % Change out ObjCoord_2 for whatever the well location is
+    % Change out ObjCoord_2 for whatever the well location is
     for cordInd = 1:length(x)
         DisValue = sqrt((homeXY(1,1)- x(cordInd))^2+ (homeXY(1,2)- y(cordInd))^2); % distance formula
         distHome(cordInd) = DisValue;
@@ -57,7 +48,6 @@ function objDist(pos_cm, hwCoord, SpikeTimes)
 
     
     %% Compute tuning curve
-    nBins = 20;
     sampleRate = mode(diff(t));
     minDist = nanmin(distHome);
     maxDist = nanmax(distHome);
@@ -76,16 +66,28 @@ function objDist(pos_cm, hwCoord, SpikeTimes)
     tcVals = spkDistMap./(allDistsMap*sampleRate + eps);
     
     % smooth tuning curve values
-    tcVals = imgaussfilt(tcVals, 2, 'Padding', 'replicate');
+    sigma = 2;
+    tcVals = imgaussfilt(tcVals, sigma, 'Padding', 'replicate');
     
-    % plot
+    % plot tuning curve
     plot(binCtrs, tcVals, 'Color', 'k', 'LineWidth', 1.1)
     title("DistHome TC")
     xlabel("distance (units)")
     ylabel("fr (Hz)")
     xlim([minDist maxDist])
-    %xticks([-pi -pi/2 0 pi/2 pi])
-    %xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
     box off
     
 end
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SCRATCH
+
+%     % Convert FM well location index to [x,y] coordinates
+%     switch hwLoc
+%         case 36
+%             homeXY(1,1:2) = [372.31, 269.72];
+%         case 37
+%             homeXY(1,1:2) = [372.58, 305.75];
+%     end

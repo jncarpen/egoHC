@@ -2,15 +2,15 @@ function [tcVals_egoAng] = egoBearing(pos_cm, SpikeTimes, refLoc, refLoc2, hd, s
 %EGOBEARING Summary of this function goes here
 
 % grab stuff
-if sessNum == "False"
-    pos_ = pos_cm;
-    SpikeTimes_ = SpikeTimes;
-    hd_ = hd;
-else
+% if sessNum == "False"
+%     pos_ = pos_cm;
+%     SpikeTimes_ = SpikeTimes;
+%     hd_ = hd;
+% else
     pos_ = pos_cm{1,sessNum};
     SpikeTimes_ = SpikeTimes;
     hd_ = hd{1,sessNum};
-end
+% end
 
 % decide whether to convert to radians or keep in degrees
 if deg_or_rad == "rad"
@@ -53,6 +53,10 @@ if deg_or_rad == "deg"
     % this is the way i computed it in the python script
     alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
     egoAng = alloAng - hd_;
+    % correct for negative angles if any are found
+    neg_idx = find(egoAng<0);
+    egoAng(neg_idx) = egoAng(neg_idx)+360;
+    
 elseif deg_or_rad == "rad"
     alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
     egoAng = deg2rad(alloAng-hd_)-pi;
@@ -63,6 +67,10 @@ if deg_or_rad == "deg"
     % this is the way i computed it in the python script
     alloAng2 = rem(atan2d(rlY2-midY, rlX2-midX)+180, 360);
     egoAng2 = alloAng2 - hd_;
+    % correct for negative angles if any are found
+    neg_idx2 = find(egoAng2<0);
+    egoAng2(neg_idx2) = egoAng2(neg_idx2)+360;
+    
 elseif deg_or_rad == "rad"
     alloAng2 = rem(atan2d(rlY2-midY, rlX2-midX)+180, 360);
     egoAng2 = deg2rad(alloAng2-hd_)-pi;

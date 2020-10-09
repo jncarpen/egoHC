@@ -1,7 +1,12 @@
-% SIMULATE EGOCENTRIC BEARING CELL:
+%% SIMULATE EGOCENTRIC BEARING CELL:
+% DESCRIPTION:
 % this script will use the data from Sebastian's OVC cell to
 % simulate an egocentric bearing cell with (1) no noise and (2) with a
 % uniform distribution of spontaneous firing noise.
+
+% Last edited: October 8, 2020- J. Carpenter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % correct position data (cm) 
 boxSize = 80; % in cm (according to Seb)
@@ -33,13 +38,16 @@ speed_OVC(end, 2) = speed_OVC(end-1, 2); speed_OVC(end, 1) = speed_OVC(end-1, 1)
 
 
 % find egocentric bearing for each timepoint
-% rlX=42; rlY=37; % object
-rlX=42; rlY=59; % object moved
+rlX=42; rlY=37; % object
+% rlX=42; rlY=59; % object moved
 midX=(x+x2)/2; midY=(y+y2)/2;
 hd_OVC = rem(atan2d(y2-y, x2-x) + 180, 360);
 alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
-% alloAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
 egoAng = alloAng - hd_OVC;
+
+% correct for negative angles (egoAng)
+neg_idx = find(egoAng<0);
+egoAng(neg_idx) = egoAng(neg_idx)+360;
 
 % define a range of egoAngles you are interested in,
 % here I will use +/- 15 deg from 270 degrees. This means
