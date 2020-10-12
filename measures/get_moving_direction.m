@@ -74,6 +74,6 @@ clear i
 md_3 = angle(md(:,1) + md(:,2) * 1i); % range is from -pi to +pi
 
 % convert to degrees (if you want)
-md_3_deg = rad2deg(md_3+pi);
+md_3 = rad2deg(md_3+pi);
 end
 

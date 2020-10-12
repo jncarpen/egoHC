@@ -44,7 +44,7 @@ for sessNum = 1:length(pos_cm)
     if ~isempty(pos{1,sessNum}) && ~isempty(SpikeTimes_thresh{1,sessNum})
         sessionArray = cell(1,length(SpikeTimes{1,sessNum}));
         for unitNum = 1:length(SpikeTrain{1,sessNum})
-            ST_now = SpikeTimes_thresh{1,sessNum}{1,unitNum}; % spike times now
+            ST_now = SpikeTimes_thresh{1,sessNum}{1,unitNum}; % spifigureke times now
             SpikeTrain_thresh{1,sessNum} = binSpikes(pos_cm{1,sessNum}(:,1), SpikeTimes_thresh{1,sessNum});
         end
     end
@@ -56,7 +56,7 @@ end
 
 %% Generate cell profile figures
 
-for sessNum = 23%1:length(SpikeTrain)
+for sessNum = 1:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         disp(sessNum)
@@ -80,7 +80,7 @@ for sessNum = 23%1:length(SpikeTrain)
         % get ref coordinates (home well for FM or center for other)
         refCoord = hwCoord{1,sessNum};
         
-        for unit = 4%1:length(SpikeTrain{1,sessNum})
+        for unit = 1:length(SpikeTrain{1,sessNum})
             if length(SpikeTimes_thresh{1,sessNum}{1,unit}) > 80
                 disp(unit)
                 % Grab some info about current *neuron*
@@ -300,12 +300,12 @@ for sessNum = 23%1:length(SpikeTrain)
 
                     % DISTANCE FROM HW TC
                     subplot(4,5,14)
-                    objDist_bins = 20;
-                    objDist(P, refCoord, ST, objDist_bins)
+                    moving_direction_tc(P, ST)
+                    
 
                     % GOAL DIRECTION TC (HD)- SAREL (??)
                     subplot(4,5,19)
-                    goalDirSar_bins = 20;
+                    goalDirSar_bins = 20;   
                     goalDirSar(P, refCoord, hd{1,sessNum}, ST, goalDirSar_bins); % ref coord is home location for FM and center of box for OF
 
                 elseif string(trialType{1,sessNum}) == "OF" % for open field sessions
@@ -339,11 +339,11 @@ for sessNum = 23%1:length(SpikeTrain)
 
                 % save figures
                 filename = strcat('D:\egoAnalysis\cell_profiles_oct8\', fileBody, '.png');
-                % saveas(fig, filename);
+                saveas(fig, filename);
 
                 % click through all figures
                 % pause
-                % close all 
+                close all 
                 
             else
                 
@@ -450,3 +450,7 @@ warning('on','all') % re-enable all warning messages for future use
 % i think this is for the speed path plot
 % zSpd = [P(:,1), speed_cm{1,sessNum}(:,1)];
 % mapSpd = analyses.map(P, zSpd, 'smooth', 15, 'binWidth', 4); % FR map
+
+% % For object distance tuning curve (retired)
+% objDist_bins = 20;
+% objDist(P, refCoord, ST, objDist_bins)

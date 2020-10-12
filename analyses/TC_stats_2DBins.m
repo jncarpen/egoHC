@@ -1,4 +1,4 @@
-function [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc, fileCount)
+function [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refVec, refLoc, fileCount)
 %TC_SCORING Summary of this function goes here
 %   Get tuning curve statistics for each 2D bin for:
 %   (1) HD tuning curve
@@ -121,15 +121,18 @@ for xx = 1:nBins
     end
 end
 
-%% plot the results
-theta = ego_PD; theta2 = hd_PD;
-quiver_handle = plot_quiver_stacked(theta, theta2, ctrLocs); % quiver function is already holding
-h1 = plot(rlX, rlY, 'o', 'MarkerSize', 12);
-set(h1, 'markerfacecolor', 'red');
-
-% save the figure
-% filename = strcat('D:\egoAnalysis\ego_hd_peakRate\', 'refX', sprintf('%.f', rlX), '_refY', sprintf('%.f', rlY), '.png');
-filename = strcat('D:\egoAnalysis\ego_hd_peakRate2\', sprintf('%.f', fileCount), '.png');
-saveas(quiver_handle, filename);
+%% plot the results (uncomment when you want to use)
+% theta = ego_PD; theta2 = hd_PD;
+% quiver_handle = plot_quiver_stacked(theta, theta2, ctrLocs); % quiver function is already holding
+% h1 = plot(rlX, rlY, 'o', 'MarkerSize', 12);
+% set(h1, 'markerfacecolor', 'red');
+% xlim([nanmin(refVec(:,1)), nanmax(refVec(:,1))]);
+% ylim([nanmin(refVec(:,2)), nanmax(refVec(:,2))]);
+% 
+% 
+% % save the figure
+% % filename = strcat('D:\egoAnalysis\ego_hd_peakRate\', 'refX', sprintf('%.f', rlX), '_refY', sprintf('%.f', rlY), '.png');
+% filename = strcat('D:\egoAnalysis\ego_hd_peakRate3\', sprintf('%.f', fileCount), '.png');
+% saveas(quiver_handle, filename);
 end
 

@@ -49,7 +49,8 @@ SpkTrn = binnedSpikes;
 
 %% (3) Sebastian's data (simulated EBC)
 % find egobearing for each timepoint
-rlX=42; rlY=59; % object moved
+% rlX=42; rlY=59; % object moved
+rlX = 42; rlY= 38; % object trial
 midX=(x+x2)/2; midY=(y+y2)/2;
 alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
 egoAng = alloAng - head_direction;
@@ -96,7 +97,7 @@ pathPlot_HD(position, S, head_direction);
 
 %% run the analysis
 % get a vector of all the reference points you're interested in
-nBins = 6; % increase this # when ready to run
+nBins = 100; % increase this # when ready to run
 [refVec, in_out_index] = generate_reference_pnts(position, "True", nBins); % the number of reference points you get is nBins^2
 
 % clear vectors from past runs
@@ -114,7 +115,7 @@ for refPt = 1:nBins^2
     
     if logical_circle == 1 % if the point is INSIDE the circle
         % compute tuning curves + stats for this *reference point*
-        [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc, fileCount);
+        [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refVec, refLoc, fileCount);
 
         % get scores for this reference points
         [HD_mean_stats, HD_sum_stats] = score_tuning_curve(HD_ST);
@@ -152,7 +153,7 @@ for refPt = 1:nBins^2
     end
 end
 
-test2 = ego_test_MVL;
+test2 = allo_test_pr;
 % reshape the matrix
 sumMat=[];
 start = 1; stop = nBins;
@@ -166,7 +167,7 @@ end
 figure
 set(gcf,'color','w');
 imagesc(sumMat)
-title("SimCell(Obj): EGO MVL")
+title("SimCell(Obj): ALLO PR")
 pbaspect([1 1 1])
 colorbar
 box off
@@ -192,7 +193,54 @@ box off
 % % set(gca,'YDir','normal')
 % box off
 
-%% plot tuning curves for 
+%% plot preferred refPoint
 
+% find refPnt with max MVL
+[M, I] = nanmax(test2);
+[Mmin, Imin] = nanmin(test2);
+max_refPnt = refVec(I, :);
+min_refPnt = refVec(Imin,:);
+true_refPnt = [42, 38];
+
+% plot 
+[HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refVec, true_refPnt, 1);
+
+% make a bunch of subplots with polar tuning curves
+
+% (this needs to be the same as it is in the TC_stats_2DBins.m script)
+
+figure
+cellNum = 1;
+for row = 1:10
+    for col = 1:10
+        map_axis = deg2rad(EGO_TC{row,col}(:,1));
+        tc_vals = EGO_TC{row,col}(:,2);
+        
+        % make it wrap around
+        map_axis = [map_axis;0]; 
+        tc_vals = [tc_vals; tc_vals(1)];
+        
+        subplot(10,10,cellNum)
+        polarplot(map_axis,tc_vals)
+        ax = gca;
+        ax.ThetaTick = [0 90 180 270];
+        ax.RTick = [nanmax(tc_vals)];
+        cellNum = cellNum + 1;    
+    end
+end
+
+% plot minimum and max reference points
+figure
+set(gcf,'color','w');
+pathPlot_HD(position, S, head_direction)
+
+h1 = plot(max_refPnt(1,1), max_refPnt(1,2), 'o', 'MarkerSize', 12);
+set(h1, 'markerfacecolor', 'k');
+
+h2 = plot(min_refPnt(1,1), min_refPnt(1,2), 'o', 'MarkerSize', 12);
+set(h2, 'markerfacecolor', 'red');
+
+legend("path", "spikes", "max", "min", "Location", "northwestoutside")
+hold off;
 
 
