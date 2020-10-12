@@ -62,7 +62,7 @@ logical = egoAng>min_angle & egoAng<max_angle & dist_from_ref>min_dist & dist_fr
 idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
 
 % define how many spikes to keep
-throw_away = .2;
+throw_away = .15;
 sz = floor(length(idx)-length(idx)*throw_away);
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);

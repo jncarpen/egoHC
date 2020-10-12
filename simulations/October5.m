@@ -1,7 +1,11 @@
 % Messy script for lab meeting presentation
-% October 5, 2020
+% Started: October 5, 2020
+% Last updated: October 12, 2020.
+% J. Carpenter
 
-% WHOS DATA ARE WE LOOKING AT?:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% I. PICK A CELL TYPE TO LOOK AT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% (1) for Jan Sigurd's data:
 % define variables for the session you're interested in
@@ -47,56 +51,53 @@ binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpkTrn = binnedSpikes;
 
 
-%% (3) Sebastian's data (simulated EBC)
-% find egobearing for each timepoint
-% rlX=42; rlY=59; % object moved
-rlX = 42; rlY= 38; % object trial
-midX=(x+x2)/2; midY=(y+y2)/2;
-alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
-egoAng = alloAng - head_direction;
-% correct for negative angles (egoAng)
-neg_idx = find(egoAng<0);
-egoAng(neg_idx) = egoAng(neg_idx)+360;
+%% (3) Simulated Egocentric bearing cell
+boxSize = 80; % for Seb's data
+ref_point = [43, 38]; % object trial
+angle_of_interest = 90; % deg
+[corrPos] = correct_pos_general(positions, boxSize);
+[SpikeTimes_sim, SpkTrn, head_direction] = simulate_ego_cell(corrPos, ref_point, angle_of_interest);
 
-% define angles of interest
-angle_of_interest = 345; plus_minus = 20;
-min_angle = angle_of_interest - plus_minus;
-max_angle = angle_of_interest + plus_minus;
-logical = egoAng>min_angle & egoAng<max_angle; % find indices where egoAngle is within range
-idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
-throw_away = .2; % percentage to remove
-sz = floor(length(idx)-length(idx)*throw_away); % size to keep
-len_background = sz*.3; % number of background spikes to add
-randIdx = datasample(idx, sz, 'Replace', false);
-foreground_spikes = t(randIdx);
-% add background spikes if you want noise?? **
-% sort the simulated spikes
-simTS = sort(foreground_spikes, 'ascend'); % simulated timestamps
-
-% speed threshold spikes
-t = position(:,1);
-x_smooth=medfilt1(x);y_smooth=medfilt1(y);
-speed_OVC = zeros(length(t), 1);
-for i = 2:numel(x_smooth)-1
-    speed_OVC(i) = sqrt((x_smooth(i+1) - x_smooth(i-1))^2 + (y_smooth(i+1) - y_smooth(i-1))^2) / (t(i+1) - t(i-1));
-end
-
-% make a spike train
-stopTime = nanmax(t); startTime = nanmin(t);
-S = simTS(simTS < stopTime & simTS > startTime); % remove times outside of recording
-edgesT = linspace(startTime,stopTime,numel(t)+1); % binsize is close to video frame rate
-binnedSpikes = histcounts(S,edgesT); % bin those spikes baby
-speed_idx = find(speed_OVC<5); % find indices when animal was moving slow
-binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
-binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
-SpkTrn = binnedSpikes;
-
-% check the simulated cell
-pathPlot_HD(position, S, head_direction);
+%% (4) Simulated Egocentric bearing + distance cell
+boxSize = 80; % for Seb's data
+ref_point = [43, 38]; % object trial
+angle_of_interest = 90; % deg
+radius = 20; % dist from reference
+[corrPos] = correct_pos_general(positions, boxSize);
+[SpikeTimes_sim, SpkTrn, head_direction] = simulate_egoDist_cell(corrPos, ref_point, angle_of_interest, radius);
 
 
-%% run the analysis
+%% (5) Simulated allocentric bearing cell
+boxSize = 80; % for Seb's data
+ref_point = [43, 38]; % object trial
+angle_of_interest = 90; % deg
+[corrPos] = correct_pos_general(positions, boxSize);
+[SpikeTimes_sim, SpkTrn, head_direction] = simulate_allo_cell(corrPos, ref_point, angle_of_interest);
+
+
+%% (6) Simulated OVC
+boxSize = 80; % for Seb's data
+ref_point = [43, 38]; % object trial
+angle_of_interest = 90; % deg
+radius = 20; % dist from reference
+[corrPos] = correct_pos_general(positions, boxSize);
+[SpikeTimes_sim, SpkTrn, head_direction] = simulate_OVC(corrPos, ref_point, angle_of_interest, radius);
+
+
+%% (7) Simulated HD cell
+boxSize = 80; % for Seb's data
+ref_point = [43, 38]; % object trial
+angle_of_interest = 90; % deg
+[corrPos] = correct_pos_general(positions, boxSize);
+[SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_HD(corrPos, angle_of_interest);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% II. CALCULATE TUNING CURVES & STATISTICS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % get a vector of all the reference points you're interested in
+position = pos_cm{1,27};
 nBins = 100; % increase this # when ready to run
 [refVec, in_out_index] = generate_reference_pnts(position, "True", nBins); % the number of reference points you get is nBins^2
 
@@ -153,7 +154,11 @@ for refPt = 1:nBins^2
     end
 end
 
-test2 = allo_test_pr;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% III. GENERATE PLOTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+test2 = ego_test_MVL;
 % reshape the matrix
 sumMat=[];
 start = 1; stop = nBins;

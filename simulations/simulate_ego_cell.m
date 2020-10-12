@@ -1,4 +1,4 @@
-function [hd_sim, SpikeTimes_sim, SpikeTrain_sim] = simulate_ego_cell(pos_in, ref_point, angle_of_interest)
+function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_ego_cell(pos_in, ref_point, angle_of_interest)
 %SIMULATE_EGO_CELL Simulate an egocentric bearing cell.
 %   Inputs:
 %   'pos_in'                    real position data [t x1 y1 x2 y2]

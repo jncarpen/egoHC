@@ -1,4 +1,4 @@
-function [hd_sim, SpikeTimes_sim, SpikeTrain_sim] = simulate_allo_cell(pos_in, ref_point, angle_of_interest)
+function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_allo_cell(pos_in, ref_point, angle_of_interest)
 %SIMULATE_ALLO_CELL Summary of this function goes here
 %   Detailed explanation goes here
 
