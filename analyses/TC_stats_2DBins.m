@@ -1,4 +1,4 @@
-function [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refVec, refLoc, fileCount)
+function [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST, allo_angleAtPeak, ego_angleAtPeak, allo_circVar, ego_circVar, ctrLocs] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc, fileCount)
 %TC_SCORING Summary of this function goes here
 %   Get tuning curve statistics for each 2D bin for:
 %   (1) HD tuning curve
@@ -9,6 +9,9 @@ function [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(posi
 %   Jo Carpenter, October 5, 2020.
 
 %% Set things up
+
+% make sure BNT is on the path
+addpath(genpath("C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001\bnt"));
 
 % parse position vector
 t = position(:,1);
@@ -68,6 +71,7 @@ angBins = linspace(0,360,numBins_HD);
 % set up all the cell arrays youre gonna need
 HD_TC = cell(10,10); EGO_TC = cell(10,10); ALLO_TC = cell(10,10);
 HD_ST = cell(10,10); EGO_ST = cell(10,10); ALLO_ST = cell(10,10);
+allo_angleAtPeak = []; ego_angleAtPeak = [];
 
 % iterate through every 2D spatial bin 
 count = 1;
@@ -93,6 +97,17 @@ for xx = 1:nBins
         allo_tc = analyses.turningCurve(alloSpk, allo_here, sampleRate, 'smooth', 1, 'binWidth', binWidth_deg);
         ego_tc = analyses.turningCurve(egoSpk, ego_here, sampleRate, 'smooth', 1, 'binWidth', binWidth_deg);
         
+        % (allo): compute the orientations at the peak of the tuning curve
+        allo_tc_vals = allo_tc(:,2); allo_tc_angles = allo_tc(:,1);
+        [~, allo_idx] = nanmax(allo_tc_vals); 
+        allo_angleAtPeak(count) = allo_tc_angles(allo_idx);
+
+                
+        % (ego): compute the orientations at the peak of the tuning curve
+        ego_tc_vals = ego_tc(:,2); ego_tc_angles = ego_tc(:,1);
+        [~, ego_idx] = nanmax(ego_tc_vals); 
+        ego_angleAtPeak(count) = ego_tc_angles(ego_idx);
+        
         % compute tuning curve statistics
         hd_tcStat = analyses.tcStatistics(hd_tc, binWidth_deg, 95);
         allo_tcStat = analyses.tcStatistics(allo_tc, binWidth_deg, 95);
@@ -117,18 +132,30 @@ for xx = 1:nBins
         hd_MVL(count)=hd_tcStat.r;
         allo_MVL(count)=allo_tcStat.r;
         ego_MVL(count)=ego_tcStat.r;
+        
         count = count+1;
     end
 end
 
+% find circular variance of peak angles
+[allo_circVar, ~] = circ_var(allo_angleAtPeak');
+[ego_circVar, ~] = circ_var(ego_angleAtPeak');
+
+
 %% plot the results (uncomment when you want to use)
 % theta = ego_PD; theta2 = hd_PD;
-% quiver_handle = plot_quiver_stacked(theta, theta2, ctrLocs); % quiver function is already holding
+% quiver_handle = plot_quiver_stacked(theta, theta2, ctrLocs, scaleVec); % quiver function is already holding
 % h1 = plot(rlX, rlY, 'o', 'MarkerSize', 12);
 % set(h1, 'markerfacecolor', 'red');
-% xlim([nanmin(refVec(:,1)), nanmax(refVec(:,1))]);
-% ylim([nanmin(refVec(:,2)), nanmax(refVec(:,2))]);
 % 
+% % find minimum values
+% min_x = nanmin([xCenter, rlX]); max_x = nanmax([xCenter, rlX]);
+% min_y = nanmin([yCenter, rlY]); max_y = nanmax([yCenter, rlY]);
+
+% set plot limits
+% xlim([min_x, max_x]);
+% ylim([min_y, max_y]);
+
 % 
 % % save the figure
 % % filename = strcat('D:\egoAnalysis\ego_hd_peakRate\', 'refX', sprintf('%.f', rlX), '_refY', sprintf('%.f', rlY), '.png');

@@ -56,7 +56,7 @@ end
 
 %% Generate cell profile figures
 
-for sessNum = 1:length(SpikeTrain)
+for sessNum = 27%1:length(SpikeTrain)
     
     if ~isempty(SpikeTimes{1,sessNum}) % skip empty trials
         disp(sessNum)
@@ -80,7 +80,7 @@ for sessNum = 1:length(SpikeTrain)
         % get ref coordinates (home well for FM or center for other)
         refCoord = hwCoord{1,sessNum};
         
-        for unit = 1:length(SpikeTrain{1,sessNum})
+        for unit = 4%1:length(SpikeTrain{1,sessNum})
             if length(SpikeTimes_thresh{1,sessNum}{1,unit}) > 80
                 disp(unit)
                 % Grab some info about current *neuron*
@@ -116,7 +116,7 @@ for sessNum = 1:length(SpikeTrain)
 
                 % PATHPLOT (HD)
                 subplot(4,5,2)
-                pathPlot_HD(P, ST, hd{1,sessNum})
+                pathPlot_hd(P, ST, hd{1,sessNum})
                 pbaspect([1 1 1])
                 set(gca,'xtick',[])
                 set(gca,'ytick',[])
@@ -147,8 +147,9 @@ for sessNum = 1:length(SpikeTrain)
                 egoDistance(pos_cm, ST, ctrCoord, refCoord, hd, sessNum)
 
                 % SPATIAL OCCUPANCY
-                subplot(4,5,6)
+                subplot(4,5,11)
                 plot.colorMap(map.time, 'ydir', 'normal')
+                colormap(gca,'jet')
                 pbaspect([1 1 1])
                 colorbar
                 colormap(gca,'jet')
@@ -158,6 +159,7 @@ for sessNum = 1:length(SpikeTrain)
                 % ALLOCENTRIC PLOT
                 subplot(4,5,4)
                 [Vectormap,r_bin,n,orientationCurve,polarbins,circlebins] = makeVecMaps(P,ST,refCoord);
+                colormap(gca,'jet')
                 
                 % EGO BEARING
                 % LEGEND: blackLine = ctrCoord; redLine = refCoord (hwLoc)
@@ -185,13 +187,13 @@ for sessNum = 1:length(SpikeTrain)
 
                 % SPEED TUNING CURVE
                 subplot(4,5,18)
-                [spkSpd] = getSpikeSpeed(P,speed_cm{1,sessNum},ST); % 10 bins
-
+                [~] = getSpikeSpeed(P, ST);
+                
                 % subplot 8 is dependent on trial type
                 if string(trialType{1,sessNum}) == "FM" && isstruct(fmEvents{1,sessNum})
 
                     % For FM trials:
-                    subplot(4,5,9)
+                    subplot(4,5,19)
                     taskPhz = parseTask(fmEvents{1,sessNum}.events, P);
                     [TC_taskPhz] = taskPhz_tuningCurve(P, ST, taskPhz);
                     for phz=1:length(TC_taskPhz)
@@ -218,7 +220,7 @@ for sessNum = 1:length(SpikeTrain)
                 end
 
                 % FR HISTOGRAM- ALL SPEEDS    
-                subplot(4,5,11)
+                subplot(4,5,16)
                 [allSpdCnts, hiSpdCnts, loSpdCnts, histEdges] = FRhist(P, ST, speed_cm{1,sessNum});
                 histogram('BinEdges',histEdges,'BinCounts',allSpdCnts, 'FaceColor', 'k')
                 title("FR Distrib")
@@ -226,6 +228,11 @@ for sessNum = 1:length(SpikeTrain)
                 xlabel("counts")
                 xlabel("fr (Hz)")
                 box off
+                
+                % Spikeplot (heading direction); method 1
+                subplot(4,5,6)
+                pathPlot_heading(P, ST);
+                
                 
                 % PSTH + RASTER
                 if string(trialType{1,sessNum}) == "FM" && isstruct(fmEvents{1,sessNum}) % if the trial is FM
@@ -298,19 +305,19 @@ for sessNum = 1:length(SpikeTrain)
                     hold off
                     box off
 
-                    % DISTANCE FROM HW TC
+                    % Egocentric bearing TC (wrt heading direction)
                     subplot(4,5,14)
-                    moving_direction_tc(P, ST)
-                    
+                    % moving_direction_tc(P, ST)
+                    [~] = egoBearing_heading(P, ST, ctrCoord, refCoord, "True", "deg", "1");
 
                     % GOAL DIRECTION TC (HD)- SAREL (??)
-                    subplot(4,5,19)
+                    subplot(4,5,9)
                     goalDirSar_bins = 20;   
                     goalDirSar(P, refCoord, hd{1,sessNum}, ST, goalDirSar_bins); % ref coord is home location for FM and center of box for OF
 
                 elseif string(trialType{1,sessNum}) == "OF" % for open field sessions
                     
-                    for pltNum = [5 10 14 15 19 20]
+                    for pltNum = [5 10 15 19 20]
                         % For OF trials:
                         subplot(4,5,pltNum)
                         plot(1:3, 1:3, 'Color', 'k', 'LineWidth', 1.10) % plot random thing (for now)
@@ -319,7 +326,7 @@ for sessNum = 1:length(SpikeTrain)
                     end
 
                 else % For TS/other trials:
-                    for pltNum = [5 10 14 15 19 20]
+                    for pltNum = [5 10 15 19 20]
                         subplot(4,5,pltNum)
                         plot(1:3, 1:3, 'Color', 'k', 'LineWidth', 1.10) % plot random thing (for now)
                         title("OTHER SES")
@@ -343,7 +350,7 @@ for sessNum = 1:length(SpikeTrain)
 
                 % click through all figures
                 % pause
-                close all 
+                % close all 
                 
             else
                 

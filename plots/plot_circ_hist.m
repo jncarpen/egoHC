@@ -4,6 +4,9 @@ function plot_circ_hist(sDist,nBins)
 %   Frederick Zittrell (2020). CircHist - circular / polar / angle histogram (https://github.com/zifredder/CircHist), GitHub.
 %   Adapted to a plotting function for ease of use. October 8, 2020
 %
+%   Inputs:
+%   'sDist'         distribution you wanna look at
+%   'nBins'         number of bins to use in the histogram
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% make initial plot
 fH = figure;

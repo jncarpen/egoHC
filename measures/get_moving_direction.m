@@ -69,6 +69,7 @@ md_2(movement_distance == 0) = nan;
 %   and delta_y are the changes in head-position between consecutive video
 %   frames and the imaginary number i = sqrt(-1). This is the method used
 %   in Sarel et al. 2017.
+%   Something looks wrong here, need to look more into it (Oct 16, 2020)
 
 clear i
 md_3 = angle(md(:,1) + md(:,2) * 1i); % range is from -pi to +pi

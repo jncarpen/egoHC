@@ -55,7 +55,7 @@ logical = egoAng>min_angle & egoAng<max_angle;
 idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
 
 % define how many spikes to keep
-throw_away = .2;
+throw_away = .25;
 sz = floor(length(idx)-length(idx)*throw_away);
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);
@@ -86,13 +86,14 @@ binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
 
 % show user their simulated cell!
-figure
+% figure
 hold on;
 set(gcf,'color','w');
-pathPlot_HD(pos_in, SpikeTimes_sim, hd_sim)
-h1 = plot(rlX, rlY, 'o', 'MarkerSize', 12);
+pathPlot_hd(pos_in, SpikeTimes_sim, hd_sim)
+h1 = plot(rlX, rlY, 'o', 'MarkerSize', 8);
 set(h1, 'markerfacecolor', 'k');
-legend("path", "spikes", "refLoc", "Location", "northwestoutside")
+title("Egocentric Bearing")
+% legend("path", "spikes", "refLoc", "Location", "northwestoutside")
 hold off;
 
 end

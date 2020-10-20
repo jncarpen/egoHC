@@ -5,12 +5,14 @@ function [quiver_handle] = plot_quiver_stacked(theta, theta2, point_locations)
 % parse inputs
 x = point_locations(:,1);
 y = point_locations(:,2);
+
+% we want it to be nx1 (n is # of observations)
 theta = theta'; theta2 = theta2';
 
 % format figure
 quiver_handle = figure;
 % title("blue:theta, black:theta2")
-title("blue:peak(ego), black:peak(hd)")
+title("red:peak(ego), black:peak(hd)")
 pbaspect([1 1 1])
 box off
 
@@ -32,6 +34,7 @@ q44 = (data2(:,3) > 271) .* (data2(:,3) <= 360);
 
 hold on;
 
+%%
 % Use QUIVER to specify the start point (tail of the arrow) and direction based on angle
 % q1, q2, q3, and q4 are used to generate four different QUIVER handles (h1, h2, h3, and h4)
 % This is necessary for varying colors based on direction
@@ -55,10 +58,10 @@ set(h3, 'Color', 'k', 'AutoScale', 'on')
 set(h4, 'Color', 'k', 'AutoScale', 'on')
 
 % set properties for theta2
-set(h1, 'Color', 'b', 'AutoScale', 'on')
-set(h2, 'Color', 'b', 'AutoScale', 'on')
-set(h3, 'Color', 'b', 'AutoScale', 'on')
-set(h4, 'Color', 'b', 'AutoScale', 'on')
+set(h1, 'Color', 'r', 'AutoScale', 'on')
+set(h2, 'Color', 'r', 'AutoScale', 'on')
+set(h3, 'Color', 'r', 'AutoScale', 'on')
+set(h4, 'Color', 'r', 'AutoScale', 'on')
 
 % Done plotting
 % hold off;

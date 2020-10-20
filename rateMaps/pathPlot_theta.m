@@ -1,4 +1,4 @@
-function pathPlot_hd(pos, SpikeTimes, hd)
+function pathPlot_theta(pos_, SpikeTimes_, rawEEG)
 %PATHPLOT_HD: Make pathplot with spikes colored by head direction.
 
 %   INPUT:
@@ -18,41 +18,47 @@ function pathPlot_hd(pos, SpikeTimes, hd)
 addpath(genpath('C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001'));
 
 % remove [x2 y2] if present
-if length(pos) > 3
-    pos = pos(:,1:3);
+if length(pos_) > 3
+    pos_ = pos_(:,1:3);
 end
 
-t = pos(:,1);
-x = pos(:,2); % grab xpos
-y = pos(:,3); % grab ypos
+t = pos_(:,1);
+x = pos_(:,2); % grab xpos
+y = pos_(:,3); % grab ypos
+
+% grab theta phase
+[~, spkThetaPhz, ~] = getThetaPhz(rawEEG, SpikeTimes_);
+
+% get into degrees 
+spkThetaPhz_deg = rad2deg(spkThetaPhz + pi);
 
 spkPos = [];
-spkAng = [];
+spkPhz = [];
 col1 = [];
 col2 = [];
 col3 = [];
 
-[spkPos] = data.getSpikePositions(SpikeTimes', pos); % spkPos: [t x y]
+[spkPos] = data.getSpikePositions(SpikeTimes_', pos_); % spkPos: [t x y]
 
-idx = knnsearch(t, SpikeTimes);
-spkAng(:,1) = t(idx);
-spkAng(:,2) = hd(idx);
+idx = knnsearch(t, SpikeTimes_);
+spkPhz(:,1) = t(idx);
+spkPhz(:,2) = spkThetaPhz_deg;
 
 % Adjust vectors to match if needed
-if length(spkPos) > length(spkAng)
-    idx = knnsearch(spkPos(:,1), spkAng(:,1));
+if length(spkPos) > length(spkPhz)
+    idx = knnsearch(spkPos(:,1), spkPhz(:,1));
     col1 = spkPos(:,1);
     col2 = spkPos(:,2);
     col3 = spkPos(:,2);
     spkPos = [col1(idx), col2(idx), col3(idx)];
-elseif length(spkPos) < length(spkAng)
-    idx = knnsearch(spkAng(:,1), spkPos(:,1));
-    col1 = spkAng(:,1);
-    col2 = spkAng(:,2);
-    spkAng = [col1(idx), col2(idx)];
+elseif length(spkPos) < length(spkPhz)
+    idx = knnsearch(spkPhz(:,1), spkPos(:,1));
+    col1 = spkPhz(:,1);
+    col2 = spkPhz(:,2);
+    spkPhz = [col1(idx), col2(idx)];
 end
 
-if size(spkPos,2) == 3 && size(spkAng,2) == 2
+if size(spkPos,2) == 3 && size(spkPhz,2) == 2
 else
     disp("Error: spkPos and spkAng have the wrong dimensions.")
 end
@@ -60,19 +66,17 @@ end
 
 % make path plot
 % figure
-plot(x, y, 'Color', [.7 .7 .7]);
+plot(x, y, 'Color', [.7 .7 .7])
 hold on
-scatter(spkPos(:,2), spkPos(:,3), [50], spkAng(:,2), '.')
+scatter(spkPos(:,2), spkPos(:,3), [50], spkPhz(:,2), '.')
 % newmap = brighten(hsv,-.8);
 colormap(hsv);
 colorbar;
 caxis([0 360])
 pbaspect([1 1 1])
-xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
-ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
-title("HD Path Plot")
-set(gca,'xtick',[])
-set(gca,'ytick',[])
+xlim([nanmin(pos_(:,2)), nanmax(pos_(:,2))])
+ylim([nanmin(pos_(:,3)), nanmax(pos_(:,3))])
+title("Theta phase Path Plot")
 box off
 end
 

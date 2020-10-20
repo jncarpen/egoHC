@@ -1,4 +1,4 @@
-function pathPlot_hd(pos, SpikeTimes, hd)
+function pathPlot_heading(pos, SpikeTimes)
 %PATHPLOT_HD: Make pathplot with spikes colored by head direction.
 
 %   INPUT:
@@ -17,14 +17,14 @@ function pathPlot_hd(pos, SpikeTimes, hd)
 % add BNT to path
 addpath(genpath('C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001'));
 
-% remove [x2 y2] if present
-if length(pos) > 3
-    pos = pos(:,1:3);
-end
-
+% parse position
 t = pos(:,1);
 x = pos(:,2); % grab xpos
 y = pos(:,3); % grab ypos
+
+% grab heading direction values
+[md_1, md_2, md_3] = get_moving_direction(pos);
+heading_dir = md_1';
 
 spkPos = [];
 spkAng = [];
@@ -36,7 +36,7 @@ col3 = [];
 
 idx = knnsearch(t, SpikeTimes);
 spkAng(:,1) = t(idx);
-spkAng(:,2) = hd(idx);
+spkAng(:,2) = heading_dir(idx);
 
 % Adjust vectors to match if needed
 if length(spkPos) > length(spkAng)
@@ -70,7 +70,7 @@ caxis([0 360])
 pbaspect([1 1 1])
 xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
 ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
-title("HD Path Plot")
+title("Heading Path Plot")
 set(gca,'xtick',[])
 set(gca,'ytick',[])
 box off

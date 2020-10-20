@@ -1,6 +1,6 @@
 % Messy script for lab meeting presentation
 % Started: October 5, 2020
-% Last updated: October 12, 2020.
+% Last updated: October 19, 2020.
 % J. Carpenter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -49,23 +49,26 @@ speed_idx = find(speed_OVC<5); % find indices when animal was moving slow
 binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
 binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpkTrn = binnedSpikes;
-
-
 %% (3) Simulated Egocentric bearing cell
 boxSize = 80; % for Seb's data
-ref_point = [43, 38]; % object trial
+% ref_point = [43, 38]; % object trial
+ref_point = [42, 59]; % object moved trial
 angle_of_interest = 90; % deg
 [corrPos] = correct_pos_general(positions, boxSize);
 [SpikeTimes_sim, SpkTrn, head_direction] = simulate_ego_cell(corrPos, ref_point, angle_of_interest);
+SpkTrn = SpkTrn';
+
 
 %% (4) Simulated Egocentric bearing + distance cell
 boxSize = 80; % for Seb's data
-ref_point = [43, 38]; % object trial
+% ref_point = [43, 38]; % object trial
+ref_point = [42, 59]; % object moved trial
 angle_of_interest = 90; % deg
 radius = 20; % dist from reference
 [corrPos] = correct_pos_general(positions, boxSize);
+figure
 [SpikeTimes_sim, SpkTrn, head_direction] = simulate_egoDist_cell(corrPos, ref_point, angle_of_interest, radius);
-
+SpkTrn = SpkTrn';
 
 %% (5) Simulated allocentric bearing cell
 boxSize = 80; % for Seb's data
@@ -73,7 +76,7 @@ ref_point = [43, 38]; % object trial
 angle_of_interest = 90; % deg
 [corrPos] = correct_pos_general(positions, boxSize);
 [SpikeTimes_sim, SpkTrn, head_direction] = simulate_allo_cell(corrPos, ref_point, angle_of_interest);
-
+SpkTrn = SpkTrn';
 
 %% (6) Simulated OVC
 boxSize = 80; % for Seb's data
@@ -82,29 +85,33 @@ angle_of_interest = 90; % deg
 radius = 20; % dist from reference
 [corrPos] = correct_pos_general(positions, boxSize);
 [SpikeTimes_sim, SpkTrn, head_direction] = simulate_OVC(corrPos, ref_point, angle_of_interest, radius);
-
+SpkTrn = SpkTrn';
 
 %% (7) Simulated HD cell
 boxSize = 80; % for Seb's data
 ref_point = [43, 38]; % object trial
 angle_of_interest = 90; % deg
 [corrPos] = correct_pos_general(positions, boxSize);
-[SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_HD(corrPos, angle_of_interest);
-
+[SpikeTimes_sim, SpkTrn, head_direction] = simulate_HD(corrPos, angle_of_interest);
+SpkTrn = SpkTrn';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% II. CALCULATE TUNING CURVES & STATISTICS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % get a vector of all the reference points you're interested in
-position = pos_cm{1,27};
+position = corrPos;
 nBins = 100; % increase this # when ready to run
 [refVec, in_out_index] = generate_reference_pnts(position, "True", nBins); % the number of reference points you get is nBins^2
 
 % clear vectors from past runs
 ego_test_MVL=[]; allo_test_MVL=[]; hd_test_MVL=[];
 ego_test_MD=[]; allo_test_MD=[]; hd_test_MD=[];
-ego_test_pr=[]; allo_test_pr=[]; hd_test_pr=[];
+ego_test_pr=[];allo_test_pr=[]; hd_test_pr=[];
+
+HD_TC=cell(1, nBins^2); ALLO_TC=cell(1, nBins^2); EGO_TC=cell(1, nBins^2);
+allo_AAP=cell(1, nBins^2); ego_AAP=cell(1, nBins^2);
+allo_CV = NaN(1, nBins^2); ego_CV = NaN(1, nBins^2);
 
 % loop through vector of reference points (refVec)
 fileCount = 1;
@@ -115,23 +122,27 @@ for refPt = 1:nBins^2
     logical_circle = in_out_index(refPt); % points inside circles equal [1]. points outside equal [0].
     
     if logical_circle == 1 % if the point is INSIDE the circle
+        
         % compute tuning curves + stats for this *reference point*
-        [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refVec, refLoc, fileCount);
-
+        [HD_TC{1,refPt}, ALLO_TC{1,refPt}, EGO_TC{1,refPt}, HD_ST, ALLO_ST, EGO_ST, allo_AAP(refPt), ego_AAP{1,refPt}, allo_CV{1,refPt}, ego_CV(refPt)] = TC_stats_2DBins(position, head_direction, SpkTrn, refLoc, fileCount);
+                
+        
         % get scores for this reference points
         [HD_mean_stats, HD_sum_stats] = score_tuning_curve(HD_ST);
         [ALLO_mean_stats, ALLO_sum_stats] = score_tuning_curve(ALLO_ST);
         [EGO_mean_stats, EGO_sum_stats] = score_tuning_curve(EGO_ST);
 
-        % lets test MVL
+        % mean vector length
         ego_test_MVL(refPt) = EGO_sum_stats.MVL;
         allo_test_MVL(refPt) = ALLO_sum_stats.MVL;
         hd_test_MVL(refPt) = HD_sum_stats.MVL;
-
+        
+        % mean direction
         ego_test_MD(refPt) = EGO_mean_stats.mean_direction;
         allo_test_MD(refPt) = ALLO_mean_stats.mean_direction;
         hd_test_MD(refPt) = HD_mean_stats.mean_direction;
-
+        
+        % peak rate
         ego_test_pr(refPt) = EGO_sum_stats.peak_rate;
         allo_test_pr(refPt) = ALLO_sum_stats.peak_rate;
         hd_test_pr(refPt) = HD_sum_stats.peak_rate;
@@ -139,7 +150,10 @@ for refPt = 1:nBins^2
         fileCount = fileCount + 1;
         
     elseif logical_circle == 0
-         % set all values to 0.
+        % set all values to 0.
+        allo_CV(refPt) = NaN;
+        ego_CV(refPt) = NaN;
+        
         ego_test_MVL(refPt) = NaN;
         allo_test_MVL(refPt) = NaN;
         hd_test_MVL(refPt) = NaN;
@@ -157,8 +171,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% III. GENERATE PLOTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% divide circular variance by mean vector length
+% test2 = allo_test_MVL;
 
-test2 = ego_test_MVL;
+test2 = ego_CV;
 % reshape the matrix
 sumMat=[];
 start = 1; stop = nBins;
@@ -172,9 +188,11 @@ end
 figure
 set(gcf,'color','w');
 imagesc(sumMat)
-title("SimCell(Obj): ALLO PR")
+title("SimCell(EBD): egoCV/MVL")
 pbaspect([1 1 1])
+colormap(flipud(parula))
 colorbar
+% caxis([0 1])
 box off
 
 % subplot(1,2,2)
@@ -198,54 +216,127 @@ box off
 % % set(gca,'YDir','normal')
 % box off
 
-%% plot preferred refPoint
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% IV. PLOT PREFERRED REFERENCE POINTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % find refPnt with max MVL
-[M, I] = nanmax(test2);
-[Mmin, Imin] = nanmin(test2);
-max_refPnt = refVec(I, :);
-min_refPnt = refVec(Imin,:);
-true_refPnt = [42, 38];
+% [M, I] = nanmax(test2);
+% [Mmin, Imin] = nanmin(test2);
+% max_refPnt = refVec(I, :);
+% min_refPnt = refVec(Imin,:);
+% true_refPnt = [42, 38]; % for object
 
-% plot 
-[HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST] = TC_stats_2DBins(position, head_direction, SpkTrn, refVec, true_refPnt, 1);
+% test reference points (Oct 19)
+% refPnt_test = [-35, 35]; % object moved
+refPnt_test = [42, 59]; % refpnt2
+
+% clear the variable names that we want to use
+ego_test_MVL=[]; allo_test_MVL=[]; hd_test_MVL=[];
+ego_test_MD=[]; allo_test_MD=[]; hd_test_MD=[];
+ego_test_pr=[];allo_test_pr=[]; hd_test_pr=[];
+
+% run 'TC_stats_2DBins.m' for a particular reference point (refPnt)
+[HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST, allo_angleAtPeak, ego_angleAtPeak, allo_circVar, ego_circVar, ctrLocs] = TC_stats_2DBins(position, head_direction, SpkTrn, refPnt_test, 1);
+
+% get scores for this reference points
+[HD_mean_stats, HD_sum_stats] = score_tuning_curve(HD_ST);
+[ALLO_mean_stats, ALLO_sum_stats] = score_tuning_curve(ALLO_ST);
+[EGO_mean_stats, EGO_sum_stats] = score_tuning_curve(EGO_ST);
+
+% mean vector length
+ego_test_MVL = EGO_sum_stats.MVL;
+allo_test_MVL = ALLO_sum_stats.MVL;
+hd_test_MVL = HD_sum_stats.MVL;
+
+% mean direction
+ego_test_MD = EGO_mean_stats.mean_direction;
+allo_test_MD = ALLO_mean_stats.mean_direction;
+hd_test_MD = HD_mean_stats.mean_direction;
+
+% peak rate
+ego_test_pr = EGO_sum_stats.peak_rate;
+allo_test_pr = ALLO_sum_stats.peak_rate;
+hd_test_pr = HD_sum_stats.peak_rate;
+
+
 
 % make a bunch of subplots with polar tuning curves
-
 % (this needs to be the same as it is in the TC_stats_2DBins.m script)
+% can also try this
+% scrsz = get(0,'ScreenSize');
+% set(figure,'position',scrsz);
 
-figure
+fig = figure('units','normalized','outerposition',[0 0 1 1]);
+set(fig,'color','w');
+set(fig, 'PaperPositionMode', 'auto')
+sgtitle("RefPnt=[42,59]\CV:.7581\MVLScore:81.2844")
 cellNum = 1;
 for row = 1:10
     for col = 1:10
         map_axis = deg2rad(EGO_TC{row,col}(:,1));
         tc_vals = EGO_TC{row,col}(:,2);
         
+        % get mean vector length
+        binWidth = 9; % should be same as that in 'TC_stats_2DBins'
+        percentile = 95; % this is arbitary for the information we're looking at
+        tcStat = analyses.tcStatistics(EGO_TC{row,col}, binWidth, percentile);
+        tcStat_hd = analyses.tcStatistics(HD_TC{row,col}, binWidth, percentile);
+
+        % make scale vector (for quiver plot)
+        MVL_ego(cellNum) = tcStat.r;
+        MVL_hd(cellNum) = tcStat_hd.r;
+        peakDir_ego(cellNum) = tcStat.peakDirection;
+        peakDir_hd(cellNum) = tcStat_hd.peakDirection;
+
+        % name each plot
+%         plot_title = strcat('MVL:', sprintf('%.4f', tcStat.r), '\PR:', sprintf('%.2f', nanmax(tc_vals)));
+        plot_title = strcat('MVL:', sprintf('%.4f', tcStat.r), '\PD:', sprintf('%.f', peakDir_ego(cellNum)));
+
+
         % make it wrap around
         map_axis = [map_axis;0]; 
         tc_vals = [tc_vals; tc_vals(1)];
         
-        subplot(10,10,cellNum)
-        polarplot(map_axis,tc_vals)
+        subplot(10,10,cellNum) 
+        polarplot(map_axis,tc_vals, 'LineWidth', 1.10, 'color', 'red')
         ax = gca;
         ax.ThetaTick = [0 90 180 270];
-        ax.RTick = [nanmax(tc_vals)];
-        cellNum = cellNum + 1;    
+        ax.RTick = [];
+        title(plot_title)
+        cellNum = cellNum + 1;
     end
 end
 
-% plot minimum and max reference points
+% try to save the figure as it appears on screen
+img = getframe(gcf);
+imwrite(img.cdata, ['D:\egoAnalysis\Oct19\goal_loc', '.png']);
+
+% plot reference points of interest
+refPnt_test1 = [-35, 35]; % object moved
+refPnt_test2 = [42, 59]; % refpnt2
+S = SpikeTimes_sim; % for simulated cell
+
 figure
 set(gcf,'color','w');
-pathPlot_HD(position, S, head_direction)
+pathPlot_hd(position, S, head_direction)
 
-h1 = plot(max_refPnt(1,1), max_refPnt(1,2), 'o', 'MarkerSize', 12);
+h1 = plot(refPnt_test1(1,1), refPnt_test1(1,2), 'o', 'MarkerSize', 12);
 set(h1, 'markerfacecolor', 'k');
 
-h2 = plot(min_refPnt(1,1), min_refPnt(1,2), 'o', 'MarkerSize', 12);
+h2 = plot(refPnt_test2(1,1), refPnt_test2(1,2), 'o', 'MarkerSize', 12);
 set(h2, 'markerfacecolor', 'red');
 
-legend("path", "spikes", "max", "min", "Location", "northwestoutside")
+legend("path", "spikes", "other", "goal loc", "Location", "northwestoutside")
 hold off;
+
+
+% % plot bin ctrs
+% figure
+% hold on;
+% for row = 1:length(ctrLocs)
+%     plot(ctrLocs(row,1), ctrLocs(row,2), 'o')
+% end
 
 

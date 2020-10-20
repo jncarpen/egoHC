@@ -1,4 +1,4 @@
-function [spkSpd] = getSpikeSpeed(pos_, speed_,SpikeTimes_)
+function [spkSpd] = getSpikeSpeed(pos_,SpikeTimes_)
 %GETSPIKESPEED Find speed of the animal each time the cell fired.
 %   INPUT
 %   speed:              [spdLED1 spdLED2]
@@ -12,8 +12,29 @@ function [spkSpd] = getSpikeSpeed(pos_, speed_,SpikeTimes_)
 %   Jordan Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% get speed (in cm/s)
+numLeds = 2; 
+% parse and medfilt pos vector to eliminate major outliers
+t = pos_(:,1); % in seconds
+x = medfilt1(pos_(:,2)); 
+x2 = medfilt1(pos_(:,4));
+y = medfilt1(pos_(:,3)); 
+y2 = medfilt1(pos_(:,5));
+v = zeros(size(pos_,1), numLeds); % velocity
+
+for i = 2:size(pos_,1)-1
+v(i, 1) = sqrt((x(i+1) - x(i-1))^2 + (y(i+1) - y(i-1))^2) / (t(i+1) - t(i-1));
+v(i, 2) = sqrt((x2(i+1) - x2(i-1))^2 + (y2(i+1) - y2(i-1))^2) / (t(i+1) - t(i-1));
+end
+
+% pad the vector
+v(1,1) = v(2,1);
+v(1,2) = v(2,2);
+v(end, 2) = v(end-1, 2);
+v(end, 1) = v(end-1, 1);        
+        
 % grab speed for first LED
-spdLED1 = speed_(:,1);
+spdLED1 = v(:,1);
 minSpd = nanmin(spdLED1);
 maxSpd = nanmax(spdLED1);
 t = pos_(:,1);
@@ -49,11 +70,8 @@ spkSpd = spdLED1(idx);
     title("Speed TC")
     xlabel("speed (cm/s)")
     ylabel("fr (Hz)")
-    xlim([0 300])
-    % xticks([-pi -pi/2 0 pi/2 pi])
-    % xticklabels({'-\pi','-\pi/2','0','\pi/2', '\pi'})
+    xlim([0 nanmax(spdLED1)])
     box off
-
     
     return
 

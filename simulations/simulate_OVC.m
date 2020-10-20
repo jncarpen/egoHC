@@ -36,7 +36,7 @@ midX=(x+x2)/2; midY=(y+y2)/2;
 alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
 
 % define angles of interest
-plus_minus_orien = 15; % how many degrees are acceptable
+plus_minus_orien = 10; % how many degrees are acceptable
 min_angle = angle_of_interest - plus_minus_orien;
 max_angle = angle_of_interest + plus_minus_orien;
 
@@ -44,7 +44,7 @@ max_angle = angle_of_interest + plus_minus_orien;
 dist_from_ref = sqrt((rlX - midX).^2+ (rlY - midY).^2);
 
 % define distance range
-plus_minus_distance = 7; % (in cm)
+plus_minus_distance = 5; % (in cm)
 min_dist = radius - plus_minus_distance;
 max_dist = radius + plus_minus_distance;
 
@@ -53,7 +53,7 @@ logical = alloAng>min_angle & alloAng<max_angle & dist_from_ref>min_dist & dist_
 idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
 
 % define how many spikes to keep
-throw_away = .2;
+throw_away = .35;
 sz = floor(length(idx)-length(idx)*throw_away);
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);
@@ -84,13 +84,14 @@ binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
 
 % show user their cell!
-figure
+% figure
 hold on;
 set(gcf,'color','w');
-pathPlot_HD(pos_in, SpikeTimes_sim, hd_sim)
-h1 = plot(rlX, rlY, 'o', 'MarkerSize', 12);
+pathPlot_hd(pos_in, SpikeTimes_sim, hd_sim)
+h1 = plot(rlX, rlY, 'o', 'MarkerSize', 8);
 set(h1, 'markerfacecolor', 'k');
-legend("path", "spikes", "refLoc", "Location", "northwestoutside")
+% legend("path", "spikes", "refLoc", "Location", "northwestoutside")
+title("Allocentric Bearing + Distance (OVC)")
 hold off;
 
 

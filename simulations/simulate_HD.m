@@ -23,7 +23,7 @@ logical = hd_sim>min_angle & hd_sim<max_angle;
 idx = find(logical==1);
 
 % define how many spikes to keep
-throw_away = .3;
+throw_away = .25;
 sz = floor(length(idx)-length(idx)*throw_away);
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);
@@ -54,11 +54,11 @@ binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
 
 % show user their cell!
-figure
+% figure
 hold on;
 set(gcf,'color','w');
-pathPlot_HD(pos_in, SpikeTimes_sim, hd_sim)
-title("Simulated HD cell")
+pathPlot_hd(pos_in, SpikeTimes_sim, hd_sim)
+title("Head-Direction")
 hold off;
 
 end
