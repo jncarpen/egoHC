@@ -164,7 +164,7 @@ for sessNum = 27%1:length(SpikeTrain)
                 % EGO BEARING
                 % LEGEND: blackLine = ctrCoord; redLine = refCoord (hwLoc)
                 subplot(4,5,17)
-                [tcVals_egoAng] = egoBearing(pos_cm, ST, ctrCoord, refCoord, hd, sessNum, "True", "deg");
+                [tcVals_egoAng] = egoBearing(P, ST, ctrCoord, refCoord, "True", "deg");
                
 
                 % HD TUNING CURVE

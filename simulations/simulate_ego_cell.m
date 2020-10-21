@@ -1,4 +1,4 @@
-function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_ego_cell(pos_in, ref_point, angle_of_interest)
+function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_ego_cell(position, ref_point, angle_of_interest)
 %SIMULATE_EGO_CELL Simulate an egocentric bearing cell.
 %   Inputs:
 %   'pos_in'                    real position data [t x1 y1 x2 y2]
@@ -21,9 +21,9 @@ function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_ego_cell(pos_in, re
 % boxSize = 150; (boxsize for jan's data)
 
 % parse position vector
-t = pos_in(:,1);
-x = pos_in(:,2); y = pos_in(:,3);
-x2 = pos_in(:,4); y2 = pos_in(:,5);
+t = position(:,1);
+x = position(:,2); y = position(:,3);
+x2 = position(:,4); y2 = position(:,5);
 
 % get head_direction values
 hd_sim = rem(atan2d(y2-y, x2-x) + 180, 360);
@@ -89,7 +89,7 @@ SpikeTrain_sim = binnedSpikes;
 % figure
 hold on;
 set(gcf,'color','w');
-pathPlot_hd(pos_in, SpikeTimes_sim, hd_sim)
+pathPlot_hd(position, SpikeTimes_sim, hd_sim)
 h1 = plot(rlX, rlY, 'o', 'MarkerSize', 8);
 set(h1, 'markerfacecolor', 'k');
 title("Egocentric Bearing")

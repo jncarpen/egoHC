@@ -1,10 +1,10 @@
-function Jercog_TC(pos_, hd_, SpikeTrain_)
+function Jercog_TC(position, head_direction, ST)
 %HDMOD: Jercog et al. analysis knockoff
 
     %   INPUT:
-    %   pos:                Position samples, [t x y]
-    %   hd:                 Vector of head direction values
-    %   SpikeTrain:         Spike train for cell
+    %   position:                       Position samples, [t x y]
+    %   head_direction:                 Vector of head direction values
+    %   ST:                             Spike train for cell
 
     %   OUTPUT:
     %   A bunch of stuff right now, will be refined once function is
@@ -15,12 +15,12 @@ function Jercog_TC(pos_, hd_, SpikeTrain_)
 %% Set everything up
     
     % Parse position vector
-    t = pos_(:,1);
-    x = pos_(:,2);
-    y = pos_(:,3);
+    t = position(:,1);
+    x = position(:,2);
+    y = position(:,3);
     
     % convert HD from degrees to radians (-pi:+pi)
-    hd_rad = deg2rad(hd_)-pi;
+    hd_rad = deg2rad(head_direction)-pi;
     
     % Set default bin size to 10
     nBins = 10;
@@ -84,7 +84,7 @@ function Jercog_TC(pos_, hd_, SpikeTrain_)
             % calculate values for current 2D spatial bin
             hd_here = hd_rad(indices); % head direction values in this spatial bin
 %             time_here = t(indices); % time values in this spatial bin
-            spikes_here = SpikeTrain_(indices); % spiketrain in this spatial bin
+            spikes_here = ST(indices); % spiketrain in this spatial bin
             
             % find head-direction at times of spikes (angSpk)
             
@@ -99,7 +99,7 @@ function Jercog_TC(pos_, hd_, SpikeTrain_)
 %             end
             
             % compute firing rate map
-            rateMap(xx,yy) = sum(SpikeTrain_(indices))/(timeInBin); % normal rate map [r(x,y)]
+            rateMap(xx,yy) = sum(ST(indices))/(timeInBin); % normal rate map [r(x,y)]
 
             % compute occupancy for each HD bin
             histAng = histcounts(hd_rad(indices), angBins);

@@ -9,10 +9,11 @@ function plot_circ_hist(sDist,nBins)
 %   'nBins'         number of bins to use in the histogram
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% make initial plot
-fH = figure;
-ax = polaraxes(fH);
+% fH = figure;
+% ax = polaraxes(fH);
+ax = polaraxes();
 obj1 = CircHist(sDist, nBins, 'parent', ax);
-fH.Visible = 'on';
+% fH.Visible = 'on';
 
 %% adjust appearance
 % change color of bars

@@ -10,10 +10,11 @@
 %% (1) for Jan Sigurd's data:
 % define variables for the session you're interested in
 sessNum = 27; unitNum = 4;
-position = pos_cm{1,sessNum}; head_direction = hd{1,sessNum};
+position = pos_cm{1,sessNum}; head_direction = get_hd(position);
 [spkTrainNow_thresh] = spkTrain_thresh(pos_cm, SpikeTimes_thresh, SpikeTrain); % get speed-thresholded spiketrain
 SpkTrn = spkTrainNow_thresh{1,sessNum}{1,unitNum}';
-
+S = SpikeTimes_thresh{1,sessNum}{1,unitNum}; % spikeTimes (thresholded)
+ref_point = hwCoord{1,sessNum};
 
 %% (2) for Sebastian's data:
 % correct position data (cm) 
@@ -50,11 +51,15 @@ binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
 binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpkTrn = binnedSpikes;
 %% (3) Simulated Egocentric bearing cell
-boxSize = 80; % for Seb's data
+% for Seb's data
+% boxSize = 80;
+% [corrPos] = correct_pos_general(positions, boxSize);
 % ref_point = [43, 38]; % object trial
-ref_point = [42, 59]; % object moved trial
+% ref_point = [42, 59]; % object moved trial
+
+% for JS's data
+corrPos = position;
 angle_of_interest = 90; % deg
-[corrPos] = correct_pos_general(positions, boxSize);
 [SpikeTimes_sim, SpkTrn, head_direction] = simulate_ego_cell(corrPos, ref_point, angle_of_interest);
 SpkTrn = SpkTrn';
 
@@ -230,8 +235,10 @@ box off
 
 % test reference points (Oct 19)
 % refPnt_test = [-35, 35]; % object moved
-refPnt_test = [42, 59]; % refpnt2
+% refPnt_test = [42, 59]; % refpnt2
 
+
+refPnt_test = ref_point; % jan sigurd's data
 % clear the variable names that we want to use
 ego_test_MVL=[]; allo_test_MVL=[]; hd_test_MVL=[];
 ego_test_MD=[]; allo_test_MD=[]; hd_test_MD=[];
@@ -289,6 +296,8 @@ for row = 1:10
         MVL_hd(cellNum) = tcStat_hd.r;
         peakDir_ego(cellNum) = tcStat.peakDirection;
         peakDir_hd(cellNum) = tcStat_hd.peakDirection;
+        mean_ego(cellNum) = tcStat.mean; % mean direction
+        mean_hd(cellNum) = tcStat_hd.mean;
 
         % name each plot
 %         plot_title = strcat('MVL:', sprintf('%.4f', tcStat.r), '\PR:', sprintf('%.2f', nanmax(tc_vals)));
@@ -299,12 +308,14 @@ for row = 1:10
         map_axis = [map_axis;0]; 
         tc_vals = [tc_vals; tc_vals(1)];
         
-        subplot(10,10,cellNum) 
-        polarplot(map_axis,tc_vals, 'LineWidth', 1.10, 'color', 'red')
-        ax = gca;
-        ax.ThetaTick = [0 90 180 270];
-        ax.RTick = [];
-        title(plot_title)
+%         % plot
+%         subplot(10,10,cellNum) 
+%         polarplot(map_axis,tc_vals, 'LineWidth', 1.10, 'color', 'red')
+%         ax = gca;
+%         ax.ThetaTick = [0 90 180 270];
+%         ax.RTick = [];
+%         title(plot_title)
+
         cellNum = cellNum + 1;
     end
 end

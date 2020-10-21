@@ -9,11 +9,12 @@ yMax = nanmax(pos_cm(:,2));
 
 boxCtrX = (xMin+xMax)/2;
 boxCtrY = (yMin+yMax)/2;
+end
 
+%% SCRATCH CODE
 % plot vertices of box
 % plot(xMin,yMin, 'o')
 % % hold on
 % plot(xMin,yMax, 'o')
 % plot(xMax,yMin, 'o')
 % plot(xMax,yMax, 'o')
-end

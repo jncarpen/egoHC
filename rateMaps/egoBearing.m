@@ -1,36 +1,31 @@
-function [tcVals_egoAng] = egoBearing(pos_cm, SpikeTimes, refLoc, refLoc2, hd, sessNum, doPlot, deg_or_rad)
-%EGOBEARING Summary of this function goes here
+function [tcVals_egoAng] = egoBearing(position, SpikeTimes, refLoc, refLoc2, doPlot, deg_or_rad)
+%EGOBEARING Compute tuning curve for egocentric bearing
 
-% grab stuff
-% if sessNum == "False"
-%     pos_ = pos_cm;
-%     SpikeTimes_ = SpikeTimes;
-%     hd_ = hd;
-% else
-    pos_ = pos_cm{1,sessNum};
-    SpikeTimes_ = SpikeTimes;
-    hd_ = hd{1,sessNum};
-% end
+% rename inputs (this is for debugging)- change later
+ST = SpikeTimes;
+
+% calculate head direction
+[head_direction] = get_hd(position);
 
 % decide whether to convert to radians or keep in degrees
 if deg_or_rad == "rad"
-    hd_ = deg2rad(hd_)-pi; % range(-pi,+pi)
+    head_direction = deg2rad(head_direction)-pi; % range(-pi,+pi)
 elseif deg_or_rad == "deg"
-    hd_ = hd_;
+    head_direction = head_direction;
 end
 
 % Grab window limits for pos tracking
 expansionFactor = 5;
-xMin = nanmin(pos_(:,2))-expansionFactor;
-xMax = nanmax(pos_(:,2))+expansionFactor;
-yMin = nanmin(pos_(:,3))-expansionFactor;
-yMax = nanmax(pos_(:,2))+expansionFactor;
+xMin = nanmin(position(:,2))-expansionFactor;
+xMax = nanmax(position(:,2))+expansionFactor;
+yMin = nanmin(position(:,3))-expansionFactor;
+yMax = nanmax(position(:,2))+expansionFactor;
 
 % find point between 2 LEDs
-t = pos_(:,1); 
+t = position(:,1); 
 sampleRate = mode(diff(t));
-x1 = pos_(:,2); y1 = pos_(:,3);
-x2 = pos_(:,4); y2 = pos_(:,5);
+x1 = position(:,2); y1 = position(:,3);
+x2 = position(:,4); y2 = position(:,5);
 midX = (x1+x2)/2;
 midY = (y1+y2)/2;
 
@@ -42,43 +37,38 @@ rlY = refLoc(1,2);
 rlX2 = refLoc2(1,1);
 rlY2 = refLoc2(1,2);
 
-% compute egocentric angle to reference loc
-% which one is correct?
-% egoAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
-
-% this is the way I was originally computing ego angle.
-% egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
-
 if deg_or_rad == "deg"
-    % this is the way i computed it in the python script
     alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
-    egoAng = alloAng - hd_;
+    egoAng = alloAng - head_direction;
     % correct for negative angles if any are found
     neg_idx = find(egoAng<0);
     egoAng(neg_idx) = egoAng(neg_idx)+360;
     
+%     egoAng = mod(egoAng, 360);
+%     egoAng = rem(egoAng, 360);
+    
 elseif deg_or_rad == "rad"
     alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
-    egoAng = deg2rad(alloAng-hd_)-pi;
+    egoAng = deg2rad(alloAng-head_direction)-pi; % or is it 2pi?
 end
 
 % same, but for ref2
 if deg_or_rad == "deg"
     % this is the way i computed it in the python script
     alloAng2 = rem(atan2d(rlY2-midY, rlX2-midX)+180, 360);
-    egoAng2 = alloAng2 - hd_;
+    egoAng2 = alloAng2 - head_direction;
     % correct for negative angles if any are found
     neg_idx2 = find(egoAng2<0);
     egoAng2(neg_idx2) = egoAng2(neg_idx2)+360;
     
 elseif deg_or_rad == "rad"
     alloAng2 = rem(atan2d(rlY2-midY, rlX2-midX)+180, 360);
-    egoAng2 = deg2rad(alloAng2-hd_)-pi;
+    egoAng2 = deg2rad(alloAng2-head_direction)-pi;
 end
 
 
 % find time indices when cell spikes
-idx = knnsearch(t, SpikeTimes_);
+idx = knnsearch(t, ST);
 spkX = x1(idx); spkY = y2(idx);
 spk_egoAng = egoAng(idx);
 spk_egoAng2 = egoAng2(idx); % for ref #2
@@ -95,6 +85,8 @@ end
     
 
 %% egoAng
+% fix these tuning curves to account for occucpancy where spikes are
+% speed-thresholded.
 [spkEgoAngMap, mapAxis_EgoAng] = histcounts(spk_egoAng,angEdges);
 [allEgoAngMap] = histcounts(egoAng,angEdges);
 
@@ -126,7 +118,7 @@ tcVals_egoAng2 = imgaussfilt(tcVals_egoAng2, 2, 'Padding', 'circular');
 
 %% plot
 if doPlot == "True"
-%     figure
+    figure
     plot(binCtrs_egoAng, tcVals_egoAng, 'Color', 'k', 'LineWidth', 1.10)
     hold on
     plot(binCtrs_egoAng2, tcVals_egoAng2, 'LineStyle', ':', 'Color', 'r', 'LineWidth', 1.10)
@@ -150,3 +142,18 @@ if doPlot == "True"
 end
 end
 
+%% SCRATCH CODE
+% grab stuff
+% if sessNum == "False"
+%     pos_ = pos_cm;
+%     SpikeTimes_ = SpikeTimes;
+%     hd_ = hd;
+% else
+% end
+
+% compute egocentric angle to reference loc
+% which one is correct?
+% egoAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
+
+% this is the way I was originally computing ego angle.
+% egoAng = rem(atan2d(midY-rlY, midX-rlX)+180, 360);
