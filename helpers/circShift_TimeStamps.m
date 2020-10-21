@@ -1,14 +1,17 @@
-function ST_shftd = circShift_TimeStamps(pos_cm, SpikeTimes_thresh, sessNum, unitNum, shiftVal)
+function ST_shftd = circShift_TimeStamps(position, ST, shiftVal)
 %CIRCSHIFT_TIMESTAMPS Summary of this function goes here
 %   Circularly shift timestamps (shiftVal is in seconds)
+%   Inputs:
+%   'position'          [t x y x2 y2]
+%   'ST'                spiketimes array, with times in seconds
+%   'shiftVal'          value to shift the spikes by (in seconds)
+%   Outputs:
+%   'ST_shftd'          circularly shifted timestamps
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if sessNum == "False" && unitNum == "False"
-    t = pos_cm(:,1);
-    ST = SpikeTimes_thresh;
-else
-    t = pos_cm{1,sessNum}(:,1);
-    ST = SpikeTimes_thresh{1,sessNum}{1,unitNum};
-end
+% get timestamps
+t = position(:,1);
 
 tMax = nanmax(t); tMin = nanmin(t);
 
@@ -25,5 +28,6 @@ end
 
 % sort values in ascending order
 ST_shftd = sort(ST_shftd', 'ascend');
+
 end
 

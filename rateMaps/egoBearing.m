@@ -1,4 +1,4 @@
-function [tcVals_egoAng] = egoBearing(position, SpikeTimes, refLoc, refLoc2, doPlot, deg_or_rad)
+function [tcVals_egoAng, binCtrs_egoAng] = egoBearing(position, SpikeTimes, refLoc, refLoc2, doPlot, deg_or_rad)
 %EGOBEARING Compute tuning curve for egocentric bearing
 
 % rename inputs (this is for debugging)- change later

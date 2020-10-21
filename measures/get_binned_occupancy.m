@@ -32,27 +32,7 @@ egoAng = alloAng - head_direction;
 neg_idx = find(egoAng<0);
 egoAng(neg_idx) = egoAng(neg_idx)+360;
 
-%% compute spatial bin centers 
-for i = 1:length(xEdges)
-    if i+1 <= length(xEdges)
-        xCenter(i) = ((xEdges(i+1)-xEdges(i))/2)+xEdges(i);
-    end
-end
-
-for i = 1:length(yEdges)
-    if i+1 <= length(yEdges)
-        yCenter(i) = ((yEdges(i+1)-yEdges(i))/2)+yEdges(i);
-    end
-end
-
-% make a vector of the bin centers
-count = 1;
-for xx = 1:length(xCenter)
-    for yy = 1:length(yCenter)
-        ctrLocs(count,1:2) = [xCenter(xx), yCenter(yy)];
-        count = count+1;
-    end
-end
+%% plot
 
 % initalize cell arrays
 hd_occ = cell(10,10);
@@ -63,6 +43,8 @@ time_occ = cell(10,10);
 hist_bins = 20; % number of bins for histogram
 
 fH = figure('Visible', 'on');
+set(gcf,'color','w');
+
 count = 1;
 for xx = 1:nBins
     for yy = 1:nBins
@@ -73,10 +55,8 @@ for xx = 1:nBins
         hd_occ{xx,yy} = head_direction(indices); 
         allo_occ{xx,yy} = alloAng(indices); 
         ego_occ{xx,yy} = egoAng(indices);
-
-        
-        
-        
+            
+        % choose which measure to plot
         switch whichPlot
             case "hd"
                 sDist = hd_occ{xx,yy};
@@ -86,36 +66,19 @@ for xx = 1:nBins
                 sDist = ego_occ{xx,yy};
         end
         
-        % plot that giiiirl
+        % plot
         subplot(10,10,count)
-        h{xx,yy} = polarhistogram(sDist,20);
+        h{xx,yy} = polarhistogram(sDist,20,'FaceAlpha',.3);
         pax{xx,yy} = gca;
+        thetaticks([0]);
+        rticks([(nanmax(h{xx,yy}.Values))]);
+%         plot_title = strcat('x:', sprintf('%.f', xx), ', y:', sprintf('%.f', yy));
+%         title(plot_title);
+        
         count = count + 1;
         
     end
 end
-
-% make the polar plots
-count = 1;
-for xx = 1:nBins
-    for yy = 1:nBins
-    maxVal(count) = nanmax(h{xx,yy}.Values);
-    count = count + 1;
-    end
-end
-
-% find maximum value
-maxmax = nanmax(maxVal);
-
-% change max value for all plots (normalize)
-count = 1;
-for xx = 1:nBins
-    for yy = 1:nBins
-    pax{xx,yy}.RLim = [1, maxmax];
-    count = count + 1;
-    end
-end
-
 
 end
 
@@ -130,4 +93,58 @@ end
 %         obj{xx,yy}.drawArrow(obj{xx,yy}.avgAng, obj{xx,yy}.r * range(rl), 'HeadWidth', 10, 'LineWidth', 2, 'Color', 'r')
 %         plotName = strcat('x=', sprintf('%.f', xx), ',y=', sprintf('%.f', yy));        
 %         title(plotName)
+
+% % make the polar plots
+% count = 1;
+% for xx = 1:nBins
+%     for yy = 1:nBins
+%     maxVal(count) = nanmax(h{xx,yy}.Values);
+%     count = count + 1;
+%     end
+% end
+% 
+% % find maximum value
+% maxmax = nanmax(maxVal);
+% 
+% % change max value for all plots (normalize)
+% count = 1;
+% for xx = 1:nBins
+%     for yy = 1:nBins
+%     pax{xx,yy}.RLim = [1, maxmax];
+%     count = count + 1;
+%     end
+% 
+
+
+% %% compute spatial bin centers 
+% for i = 1:length(xEdges)
+%     if i+1 <= length(xEdges)
+%         xCenter(i) = ((xEdges(i+1)-xEdges(i))/2)+xEdges(i);
+%     end
+% end
+% 
+% for i = 1:length(yEdges)
+%     if i+1 <= length(yEdges)
+%         yCenter(i) = ((yEdges(i+1)-yEdges(i))/2)+yEdges(i);
+%     end
+% end
+% 
+% % make a vector of the bin centers
+% count = 1;
+% for xx = 1:length(xCenter)
+%     for yy = 1:length(yCenter)
+%         ctrLocs(count,1:2) = [xCenter(xx), yCenter(yy)];
+%         count = count+1;
+%     end
+% end
+% 
+% % reshape the bin centers
+% binCtrs=[];
+% number = 1;
+% for ii = 1:10
+%     binCtrs= [binCtrs; binCenters(ii:10:end,:)];
+%     number = number + 1;
+% end
+
+
 

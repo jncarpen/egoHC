@@ -18,10 +18,14 @@ ref_point2 = boxCtr{1,sessNum};
 nBins = 10; % divide the arena into 100 2D spatial bins
 [binCtrs] = get_spatial_bin_centers(position, nBins);
 
+% define 'angle_of_interest'
+angle_of_interest = 90;
+
 % simulate an egocentric bearing cell with behavioral data
 [S, SpkTrn, head_direction] = simulate_ego_cell(position, ref_point, angle_of_interest);
 SpkTrn = SpkTrn';
 
+trialType{1,sessNum}
 
 
 % % (for real data):
@@ -44,6 +48,13 @@ set(h1, 'markerfacecolor', 'k');
 hold off;
 
 %% III. Calculate (+plot) tuning curves + statistics
+
+% make binned occupancy plots
+
+[hd_occ, allo_occ, ego_occ, time_occ] = get_binned_occupancy(position, ref_point, "ego");
+sgtitle("Occupancy(Egocentric Bearing): Session 27")
+
+
 % run 'TC_stats_2DBins.m' for a particular reference point (refPnt)
 [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST, allo_angleAtPeak, ego_angleAtPeak, allo_circVar, ego_circVar, ctrLocs] = TC_stats_2DBins(position, head_direction, SpkTrn, ref_point, 1);
 
