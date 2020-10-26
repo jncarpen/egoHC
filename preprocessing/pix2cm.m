@@ -1,6 +1,6 @@
 function [posCm, velocity_cm] = pix2cm(pos, sessInfo)
 %PIX2CM Summary of this function goes here
-%   Assuming the box is 1x1m in size.
+%   Assuming the box is 1.5x1.5m in size.
 %   1m = 100cm
 %   I am now learning that I might not need this function at all...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,9 +18,12 @@ min_x = str2double(sessInfo.window_min_x{1,1});
 max_y = str2double(sessInfo.window_max_y{1,1});
 min_y = str2double(sessInfo.window_min_y{1,1});
 
+% define box size
+boxSize = 150;
+
 % compute window range for x/y
-Xfactor = 100/(max_x - min_x);
-Yfactor = 100/(max_y - min_y);
+Xfactor = boxSize/(max_x - min_x);
+Yfactor = boxSize/(max_y - min_y);
 
 % create a new position matrix
 posCm = [t, Xfactor.*x, Yfactor.*y, Xfactor.*x2, Yfactor.*y2];

@@ -74,6 +74,8 @@ md_2(movement_distance == 0) = nan;
 clear i
 md_3 = angle(md(:,1) + md(:,2) * 1i); % range is from -pi to +pi
 
+% need to shift values
+
 % convert to degrees (if you want)
 md_3 = rad2deg(md_3+pi);
 end

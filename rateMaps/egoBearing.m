@@ -1,8 +1,5 @@
-function [tcVals_egoAng, binCtrs_egoAng] = egoBearing(position, SpikeTimes, refLoc, refLoc2, doPlot, deg_or_rad)
+function [tcVals_egoAng, binCtrs_egoAng] = egoBearing(position, ST, refLoc, refLoc2, doPlot, deg_or_rad)
 %EGOBEARING Compute tuning curve for egocentric bearing
-
-% rename inputs (this is for debugging)- change later
-ST = SpikeTimes;
 
 % calculate head direction
 [head_direction] = get_hd(position);
@@ -66,14 +63,6 @@ elseif deg_or_rad == "rad"
     egoAng2 = deg2rad(alloAng2-head_direction)-pi;
 end
 
-
-% find time indices when cell spikes
-idx = knnsearch(t, ST);
-spkX = x1(idx); spkY = y2(idx);
-spk_egoAng = egoAng(idx);
-spk_egoAng2 = egoAng2(idx); % for ref #2
-
-
 %% compute tuning curves
 nBins = 40; % 9 degree bins
 
@@ -82,11 +71,15 @@ if deg_or_rad == "rad"
 elseif deg_or_rad == "deg"
     angEdges = linspace(0,360,nBins);
 end
-    
+
+% find time indices when cell spikes
+idx = knnsearch(t, ST);
+spkX = x1(idx); spkY = y2(idx);
+spk_egoAng = egoAng(idx);
+spk_egoAng2 = egoAng2(idx);
 
 %% egoAng
-% fix these tuning curves to account for occucpancy where spikes are
-% speed-thresholded.
+
 [spkEgoAngMap, mapAxis_EgoAng] = histcounts(spk_egoAng,angEdges);
 [allEgoAngMap] = histcounts(egoAng,angEdges);
 

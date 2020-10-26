@@ -6,18 +6,19 @@
 % Jordan Carpenter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+P = pos_cm;
 
 % initialize speed cell array
-SpeedMedFilt = cell(1,length(pos));
+speed_cm = cell(1,length(P));
 
-for sess = 1:length(pos)
+for sess = 1:length(P)
     
     % pull out current session
-    t = pos{1,sess}(:,1);
-    x = medfilt1(pos{1,sess}(:,2));
-    y = medfilt1(pos{1,sess}(:,3));
-    x2 = medfilt1(pos{1,sess}(:,4));
-    y2 = medfilt1(pos{1,sess}(:,5));
+    t = P{1,sess}(:,1);
+    x = medfilt1(P{1,sess}(:,2));
+    y = medfilt1(P{1,sess}(:,3));
+    x2 = medfilt1(P{1,sess}(:,4));
+    y2 = medfilt1(P{1,sess}(:,5));
     v = zeros(length(t), 2);
 
     
@@ -33,6 +34,6 @@ for sess = 1:length(pos)
     v(end, 1) = v(end-1, 1);
     
     % save session to speed vector
-    SpeedMedFilt{1,sess} = v;
+    speed_cm{1,sess} = v;
        
 end

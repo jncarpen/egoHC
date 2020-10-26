@@ -1,4 +1,4 @@
-function [hd_occ, allo_occ, ego_occ, time_occ] = get_binned_occupancy(position, refLoc, whichPlot)
+function [hd_occ, allo_occ, ego_occ, time_occ, CVM_Dist] = get_binned_occupancy(position, refLoc, whichPlot)
 %PLOT_BINNED_OCCUPANCY Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -40,10 +40,28 @@ allo_occ = cell(10,10);
 ego_occ = cell(10,10);
 time_occ = cell(10,10);
 
-hist_bins = 20; % number of bins for histogram
-
 fH = figure('Visible', 'on');
 set(gcf,'color','w');
+
+% number of bins for histogram
+num_bins = 20;
+        
+% generate a uniform distribution between 0 and 360
+% figure
+% a = 0; b = 360;
+% uniDist = (b-a).*rand(100000,1) + a;
+% uniHist = polarhistogram(deg2rad(uniDist),num_bins,'FaceAlpha',.3);  % output in radians
+% data = uniHist.Data;
+
+% % find the average value in each bin
+% edges = uniHist.BinEdges'; data = uniHist.Data;
+% for bb = 1:length(edges)-1
+%     for dd = 1:length(data)
+%         data_binned = data(data>edges(bb)&data<=edges(bb+1));
+%         uniMean(bb) = nanmean(data_binned);
+%     end
+% end
+
 
 count = 1;
 for xx = 1:nBins
@@ -66,14 +84,45 @@ for xx = 1:nBins
                 sDist = ego_occ{xx,yy};
         end
         
+        % find PDF of sDist
+        P1 = [];
+        sDist_rnd = round(sDist);
+        for val = 1:360
+            if or(val == 0, val == 360)
+                sum_wrap = sum(sDist_rnd == 0) + sum(sDist_rnd == 360);
+                P1(360) = sum_wrap/length(sDist_rnd);
+            else
+                P1(val) = sum(sDist_rnd == val)/length(sDist_rnd);
+            end
+        end
+            
+        % define pdf vectors
+        X = linspace(1, 360, 360)';
+        P1 = P1' + eps;
+        P2 = ones(360,1)/360; % PDF of uniform distribution
+        
+%         dist(xx,yy) = abs(sum(P1-P2))*100000000000000;
+        
+        % find Kullback-Leibler divergence
+%         KL(xx,yy) = kldiv(X,P1,P2);
+        CVM_Dist(xx,yy) = Cramer_Von_Mises(P1,P2);
+%         WS_Dist(xx,yy) = Wasserstein_Dist(P1,P2);
+        
+        
+        % find distance from uniform distribution
+%         dist_from_uni(xx,yy) = abs(deg2rad(mean(sDist))-mean(data));
+        
+
         % plot
         subplot(10,10,count)
-        h{xx,yy} = polarhistogram(sDist,20,'FaceAlpha',.3);
+        h{xx,yy} = polarhistogram(sDist,num_bins,'FaceAlpha',.3);
         pax{xx,yy} = gca;
         thetaticks([0]);
         rticks([(nanmax(h{xx,yy}.Values))]);
-%         plot_title = strcat('x:', sprintf('%.f', xx), ', y:', sprintf('%.f', yy));
-%         title(plot_title);
+%         uniform_count = repmat(round(sum(h{xx,yy}.Values)/num_bins), 1, num_bins);
+%         dist_from_uni(xx,yy) = sum(h{1,1}.Values-uniform_count);
+        plot_title = strcat('CVM', sprintf('%.2f', CVM_Dist(xx,yy)));
+        title(plot_title);
         
         count = count + 1;
         

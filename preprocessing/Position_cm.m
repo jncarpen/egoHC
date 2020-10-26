@@ -5,9 +5,18 @@ function [corrPos] = Position_cm(pos, sessInfo, sessNum)
 %   cm since the box size is 1.5x1.5 m
 
 % convert to centimeters and shift to start at 0
-conversionFactor = 2.6;
 minX = str2double(sessInfo{1,sessNum}.window_min_x{1,1});
 minY = str2double(sessInfo{1,sessNum}.window_min_y{1,1});
+maxX = str2double(sessInfo{1,sessNum}.window_max_x{1,1});
+maxY = str2double(sessInfo{1,sessNum}.window_max_y{1,1});
+
+% define box size
+boxSize = 150; % for Jan's data
+
+% set conversion factor to cm
+conversionFactor = (maxY-minY)/boxSize;
+
+% grab position for current session
 posNow = pos{1,sessNum};
 
 pos_ = zeros(length(posNow),5);

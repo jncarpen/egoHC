@@ -5,7 +5,7 @@
 % A. For Jan Sigurd's data:
 
 % choose a session/unit number
-sessNum = 27; % unitNum = 4;
+sessNum = 23; % unitNum = 4;
 
 % get position data for session
 position = pos_cm{1,sessNum};
@@ -21,11 +21,12 @@ nBins = 10; % divide the arena into 100 2D spatial bins
 % define 'angle_of_interest'
 angle_of_interest = 90;
 
+%% simulate
 % simulate an egocentric bearing cell with behavioral data
 [S, SpkTrn, head_direction] = simulate_ego_cell(position, ref_point, angle_of_interest);
 SpkTrn = SpkTrn';
 
-trialType{1,sessNum}
+trialType{1,sessNum};
 
 
 % % (for real data):
@@ -50,9 +51,27 @@ hold off;
 %% III. Calculate (+plot) tuning curves + statistics
 
 % make binned occupancy plots
-
-[hd_occ, allo_occ, ego_occ, time_occ] = get_binned_occupancy(position, ref_point, "ego");
+[hd_occ, allo_occ, ego_occ, time_occ, CVM_Dist] = get_binned_occupancy(position, ref_point, "ego");
 sgtitle("Occupancy(Egocentric Bearing): Session 27")
+
+% make a heatmap of the circular variance
+figure
+imagesc(CVM_Dist);
+% set(gca,'YDir','normal')
+colormap(flipud(bone))
+colorbar
+% caxis([0 1])
+pbaspect([1 1 1])
+title("Kullback-Leibler Divergence")
+
+figure
+imagesc(ang_var);
+% set(gca,'YDir','normal')
+colormap(pink)
+colorbar
+caxis([0 1])
+pbaspect([1 1 1])
+title("Angular variance of egocentric bearing")
 
 
 % run 'TC_stats_2DBins.m' for a particular reference point (refPnt)
