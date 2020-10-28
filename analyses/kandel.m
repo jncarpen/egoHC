@@ -5,7 +5,7 @@
 % A. For Jan Sigurd's data:
 
 % choose a session/unit number
-sessNum = 23; % unitNum = 4;
+sessNum = 27; unitNum = 4;
 
 % get position data for session
 position = pos_cm{1,sessNum};
@@ -18,15 +18,24 @@ ref_point2 = boxCtr{1,sessNum};
 nBins = 10; % divide the arena into 100 2D spatial bins
 [binCtrs] = get_spatial_bin_centers(position, nBins);
 
+% 
+xGoal = ref_point(1,1);
+yGoal = ref_point(1,2);
+S = SpikeTimes{1,sessNum}{1,unitNum};
+SpkTrn = SpikeTrain{1,sessNum}{1,unitNum};
+x = position(:,2); y = position(:,3);
+t = position(:,1); fs = mode(diff(t));
+
+
+%% simulate
 % define 'angle_of_interest'
 angle_of_interest = 90;
 
-%% simulate
 % simulate an egocentric bearing cell with behavioral data
 [S, SpkTrn, head_direction] = simulate_ego_cell(position, ref_point, angle_of_interest);
 SpkTrn = SpkTrn';
 
-trialType{1,sessNum};
+% trialType{1,sessNum};
 
 
 % % (for real data):
@@ -51,18 +60,20 @@ hold off;
 %% III. Calculate (+plot) tuning curves + statistics
 
 % make binned occupancy plots
-[hd_occ, allo_occ, ego_occ, time_occ, CVM_Dist] = get_binned_occupancy(position, ref_point, "ego");
-sgtitle("Occupancy(Egocentric Bearing): Session 27")
+[hd_occ, allo_occ, ego_occ, time_occ, KL, KLI] = get_binned_occupancy(position, ref_point, "ego");
+sgtitle("Occupancy(Egocentric Bearing): A25398,S3", 'FontName', 'Calibri')
 
 % make a heatmap of the circular variance
 figure
-imagesc(CVM_Dist);
+imagesc(KL)
 % set(gca,'YDir','normal')
-colormap(flipud(bone))
-colorbar
-% caxis([0 1])
+% colormap(flipud(bone))
+c = colorbar;
+c.FontSize = 12;
+c.Box = "off";  c.FontName='Calibri';
 pbaspect([1 1 1])
-title("Kullback-Leibler Divergence")
+axis off
+title("Kullback-Leibler Divergence", 'FontSize', 14, 'FontName', 'Calibri')
 
 figure
 imagesc(ang_var);
@@ -73,7 +84,7 @@ caxis([0 1])
 pbaspect([1 1 1])
 title("Angular variance of egocentric bearing")
 
-
+%%
 % run 'TC_stats_2DBins.m' for a particular reference point (refPnt)
 [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST, allo_angleAtPeak, ego_angleAtPeak, allo_circVar, ego_circVar, ctrLocs] = TC_stats_2DBins(position, head_direction, SpkTrn, ref_point, 1);
 

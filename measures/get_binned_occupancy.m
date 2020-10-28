@@ -1,4 +1,4 @@
-function [hd_occ, allo_occ, ego_occ, time_occ, CVM_Dist] = get_binned_occupancy(position, refLoc, whichPlot)
+function [hd_occ, allo_occ, ego_occ, time_occ, KL, KLI] = get_binned_occupancy(position, refLoc, whichPlot)
 %PLOT_BINNED_OCCUPANCY Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -98,14 +98,15 @@ for xx = 1:nBins
             
         % define pdf vectors
         X = linspace(1, 360, 360)';
-        P1 = P1' + eps;
+        P1 = P1' + eps; % real distribution
         P2 = ones(360,1)/360; % PDF of uniform distribution
         
 %         dist(xx,yy) = abs(sum(P1-P2))*100000000000000;
         
         % find Kullback-Leibler divergence
-%         KL(xx,yy) = kldiv(X,P1,P2);
-        CVM_Dist(xx,yy) = Cramer_Von_Mises(P1,P2);
+        KL(xx,yy) = kldiv(X,P1,P2);
+        KLI(xx,yy) = kldiv(X,P2,P1); % inverse (b/c KL div is NOT symmetrical)
+%         CVM_Dist(xx,yy) = Cramer_Von_Mises(P1,P2);
 %         WS_Dist(xx,yy) = Wasserstein_Dist(P1,P2);
         
         
@@ -121,8 +122,8 @@ for xx = 1:nBins
         rticks([(nanmax(h{xx,yy}.Values))]);
 %         uniform_count = repmat(round(sum(h{xx,yy}.Values)/num_bins), 1, num_bins);
 %         dist_from_uni(xx,yy) = sum(h{1,1}.Values-uniform_count);
-        plot_title = strcat('CVM', sprintf('%.2f', CVM_Dist(xx,yy)));
-        title(plot_title);
+        plot_title = strcat('KL', sprintf('%.2f', KL(xx,yy)));
+        title(plot_title, 'FontName', 'Calibri');
         
         count = count + 1;
         

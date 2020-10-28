@@ -36,7 +36,7 @@ rlY = ref_point(1,2);
 midX=(x+x2)/2; midY=(y+y2)/2;
 
 % calculate allocentric bearing
-alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
+alloAng = atan2d(rlY-midY, rlX-midX)+180;
 
 % calculate egocentric bearing
 egoAng = alloAng - hd_sim;

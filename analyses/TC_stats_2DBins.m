@@ -35,7 +35,7 @@ midX = (x1+x2)/2; midY = (y1+y2)/2;
 rlX = refLoc(1,1); rlY = refLoc(1,2);
 
 % find allocentric + egocentric 'bearing' at each timepoint (AB/EB)
-alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
+alloAng = atan2d(rlY-midY, rlX-midX)+180;
 egoAng = alloAng - head_direction;
 % correct for negative angles (egoAng)
 neg_idx = find(egoAng<0);
