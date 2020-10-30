@@ -5,10 +5,11 @@
 % A. For Jan Sigurd's data:
 
 % choose a session/unit number
-sessNum = 27; unitNum = 4;
+sessNum = 3; unitNum = 3;
 
 % get position data for session
 position = pos_cm{1,sessNum};
+head_direction = hd{1,sessNum};
 
 % choose reference points
 ref_point = hwCoord{1,sessNum};
@@ -50,7 +51,7 @@ figure
 set(gcf,'color','w');
 hold on;
 pathPlot_hd(position, S, head_direction)
-h1 = plot(ref_point(1,1), ref_point(1,2), 'o', 'MarkerSize', 12);
+h1 = plot(ref_point(1,1), ref_point(1,2), 'o', 'MarkerSize', 10);
 set(h1, 'markerfacecolor', 'k');
 % h2 = plot(ref_point2(1,1), ref_point2(1,2), 'o', 'MarkerSize', 12);
 % set(h2, 'markerfacecolor', 'red');
@@ -67,7 +68,7 @@ sgtitle("Occupancy(Egocentric Bearing): A25398,S3", 'FontName', 'Calibri')
 figure
 imagesc(KL)
 % set(gca,'YDir','normal')
-% colormap(flipud(bone))
+colormap(flipud(bone))
 c = colorbar;
 c.FontSize = 12;
 c.Box = "off";  c.FontName='Calibri';

@@ -61,7 +61,7 @@ end
 % make path plot
 % figure
 plot(x, y, 'Color', [.7 .7 .7]);
-hold on
+hold on;
 scatter(spkPos(:,2), spkPos(:,3), [50], spkAng(:,2), '.')
 % newmap = brighten(hsv,-.8);
 colormap(hsv);
@@ -70,9 +70,10 @@ caxis([0 360])
 pbaspect([1 1 1])
 xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
 ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
-title("HD Path Plot")
+title("Spike Plot (colored by HD)", 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
 set(gca,'xtick',[])
 set(gca,'ytick',[])
 box off
+% hold off;
 end
 
