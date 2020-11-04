@@ -1,19 +1,26 @@
-%% October 28, 2020
-% J. Carpenter
-% Scratch: parse task
+function [homeRun] = getHomeRuns(position, ST, hd, goal_loc, fmEvents)
+%GETHOMERUNS Summary of this function goes here
+%   Inputs:
+%   'position'              Tx3 position vector in the form [t x y], where
+%                           T is the number of position samples
+%   'ST'                    Sx1 vector of spike times, where S is the
+%                           number of spikes the neuron had in a given session.
+%   'goal_loc'              1x2 vector with specified goal location
+%   Outputs:
+%   'HomeRuns'              struct.
+%   J.Carpenter
+%   Last modified: October 30, 2020
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% what session are we looking at?
-sessNum = 2; unitNum = 2;
-
-% get position information
-position = pos_cm{1,sessNum};
+% parse position
 t = position(:,1); % time (s)
 x = position(:,2);
 y = position(:,3);
-fs = mode(diff(t)); % video sampling freq
-ST = SpikeTimes{1,sessNum}{1,unitNum};
-hd = get_hd(position);
+fs = mode(diff(t)); % sampling freq
+
+% parse goal/reference location
+xGoal = goal_loc(1,1);
+yGoal = goal_loc(1,2);
 
 % make spiketrain for cell (unsmoothed) *
 % not sure if its less biased to smooth before or after?
@@ -22,18 +29,12 @@ ST = ST(ST < stopTime & ST > startTime);
 edgesT = linspace(startTime,stopTime,numel(t)+1);
 spiketrain = histcounts(ST,edgesT);
 
-% grab goal/reference location
-goal_loc = hwCoord{1,sessNum};
-xGoal = goal_loc(1,1);
-yGoal = goal_loc(1,2);
-
-% grab info for this session
+% grab info for this session (figure out how this is done in dMan)
 eventStruct = fmEvents{1,sessNum}.fmEvents;
 type = eventStruct.type;
 times = eventStruct.times; % seconds?
-locs = eventStruct.locations;
+locs = eventStruct.locations; % don't think we need this?
 
-%% decision point --> onset of home drinking (indices/times)
 % grab home drinking events
 type_count = count(type, "DRINKING_HOME");
 home = times.*type_count; % pull out drinking_random events
@@ -87,11 +88,6 @@ for evnt = 1:length(decision)
 end
 event_spiketimes = ST(st_indices);
 
-% make spiketrain for events
-edgesT = linspace(startTime,stopTime,numel(t)+1); % binsize is close to video frame rate
-binnedSpikes = histcounts(tSpk,edgesT);
-sigma = 2; % smoothing factor
-SpkTrn = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate'); % smooth spiketrain
 
 %% put everything into a struct for later use
 homeRun.indices = event_indices;
@@ -101,20 +97,5 @@ homeRun.spiketrain = event_spiketrain;
 homeRun.spiketrain_smooth = event_spiketrain_smooth;
 homeRun.spiketimes = event_spiketimes;
 
+end
 
-
-%% plot stuff
-
-% event_spiketimes = event_timestamps(knnsearch(event_timestamps, ST)); 
-pathPlot_hd(event_position, event_spiketimes, event_hd)
-
-% plot the 'home run' trajectories
-figure; 
-hold on;
-ax = gca;
-set(gcf,'color','w');
-plot(event_x, event_y, 'LineWidth', 1, 'Color', [.3 .5 1])
-plot(xGoal, yGoal, 'o', 'MarkerSize', 10 ,'MarkerEdgeColor','r', 'markerfacecolor', 'r')
-title(ax, 'Home Run Trajectories', 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
-box(ax, "off")
-hold off;

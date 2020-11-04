@@ -32,3 +32,14 @@ filtered = filtfilt(b, a, lfp);
 
 end
 
+% % for a bandpass filter
+% inputsig = eeg_voltage;
+% order = 3;
+% fcutlow=45;
+% fcuthigh=55;
+% 
+% [b,a]=butter(order,[fcutlow,fcuthigh]/nyquistLim,'bandpass');
+% filtsig=filter(b,a,inputsig);  %filtered signal
+
+
+
