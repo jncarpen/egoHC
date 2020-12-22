@@ -1,4 +1,4 @@
-function [tcVals_egoAng, binCtrs_egoAng] = egoBearing(position, ST, refLoc, refLoc2, doPlot, deg_or_rad)
+function [tcVals_egoAng, binCtrs_egoAng] = egoBearing(position, ST, refLoc, refLoc2, nBins, doPlot, deg_or_rad)
 %EGOBEARING Compute tuning curve for egocentric bearing
 
 % calculate head direction
@@ -35,7 +35,7 @@ rlX2 = refLoc2(1,1);
 rlY2 = refLoc2(1,2);
 
 if deg_or_rad == "deg"
-    alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
+    alloAng = atan2d(rlY-midY, rlX-midX)+180; 
     egoAng = alloAng - head_direction;
     % correct for negative angles if any are found
     neg_idx = find(egoAng<0);
@@ -64,12 +64,12 @@ elseif deg_or_rad == "rad"
 end
 
 %% compute tuning curves
-nBins = 40; % 9 degree bins
+% nBins = 40; % 9 degree bins
 
 if deg_or_rad == "rad"
-    angEdges = linspace(-pi,pi,nBins);
+    angEdges = linspace(-pi,pi,nBins+1);
 elseif deg_or_rad == "deg"
-    angEdges = linspace(0,360,nBins);
+    angEdges = linspace(0,360,nBins+1);
 end
 
 % find time indices when cell spikes
@@ -111,12 +111,12 @@ tcVals_egoAng2 = imgaussfilt(tcVals_egoAng2, 2, 'Padding', 'circular');
 
 %% plot
 if doPlot == "True"
-    figure
+%     figure
     plot(binCtrs_egoAng, tcVals_egoAng, 'Color', 'k', 'LineWidth', 1.10)
     hold on
     plot(binCtrs_egoAng2, tcVals_egoAng2, 'LineStyle', ':', 'Color', 'r', 'LineWidth', 1.10)
-    % legend('center','hw', 'Location','northeastoutside', 'orientation', 'vertical')
-    title("Egocentric Angle")
+    legend('center','hw', 'Location','northeastoutside', 'orientation', 'vertical')
+    title("Egocentric Angle Tuning", 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
     ylabel("fr (Hz)")
     box off
     

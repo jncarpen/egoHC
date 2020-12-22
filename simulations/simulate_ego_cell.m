@@ -1,17 +1,14 @@
-function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_ego_cell(position, ref_point, angle_of_interest)
+function [sim] = simulate_ego_cell(param)
 %SIMULATE_EGO_CELL Simulate an egocentric bearing cell.
-%   Inputs:
-%   'pos_in'                    real position data [t x1 y1 x2 y2]
-%   'ref_point'                 reference point [rlX, rlY]
-%   'angle_of_interest'         range from 0-360 (need to wrap)
-%   'plus_minus'                keep spikes within this range of
-%                               angle_of_interest
+%   INPUT STRUCT -
+%   param.position
+%   param.ref_point
+%   param.theta
 %
-%   Outputs:
-%   'pos_sim'                   position data for simulated cell
-%   'hd_sim'                    head direction values for simulated cell
-%   'SpikeTimes_sim'            spiketimes for simulated cell
-%   'SpikeTrain_sim'            spike train for simulated cell
+%   OUTPUT STRUCT - 
+%   sim.hd                      head direction values for simulated cell
+%   sim.spiketimes              spiketimes for simulated cell
+%   sim.spiketrain              spike train for simulated cell
 %
 % J. Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,34 +18,27 @@ function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_ego_cell(position, 
 % boxSize = 150; (boxsize for jan's data)
 
 % parse position vector
-t = position(:,1);
-x = position(:,2); y = position(:,3);
-x2 = position(:,4); y2 = position(:,5);
+t = param.position(:,1);
+x = param.position(:,2); y = param.position(:,3);
+x2 = param.position(:,4); y2 = param.position(:,5);
 
 % get head_direction values
 hd_sim = rem(atan2d(y2-y, x2-x) + 180, 360);
 
 % parse ref_point
-rlX = ref_point(1,1);
-rlY = ref_point(1,2);
+rlX = param.ref_point(1,1);
+rlY = param.ref_point(1,2);
 
 % define midpoint between two LEDs
 midX=(x+x2)/2; midY=(y+y2)/2;
 
 % calculate allocentric bearing
-alloAng = atan2d(rlY-midY, rlX-midX)+180;
-
-% calculate egocentric bearing
-egoAng = alloAng - hd_sim;
-
-% correct for negative angles (egoAng)
-neg_idx = find(egoAng<0);
-egoAng(neg_idx) = egoAng(neg_idx)+360;
+egoAng = mod((atan2d(rlY-midY, rlX-midX)+180) - hd_sim, 360);
 
 % define angles of interest
 plus_minus_orien = 10; % how many degrees are acceptable
-min_angle = angle_of_interest - plus_minus_orien;
-max_angle = angle_of_interest + plus_minus_orien;
+min_angle = param.theta - plus_minus_orien;
+max_angle = param.theta + plus_minus_orien;
 
 % find indices where egoAngle is within range
 logical = egoAng>min_angle & egoAng<max_angle;
@@ -85,15 +75,39 @@ binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
 binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
 
+sim.spiketimes = SpikeTimes_sim;
+sim.spiketrain = SpikeTrain_sim;
+sim.hd = hd_sim;
+
 % show user their simulated cell!
-% figure
+figure
 hold on;
 set(gcf,'color','w');
-pathPlot_hd(position, SpikeTimes_sim, hd_sim)
-h1 = plot(rlX, rlY, 'o', 'MarkerSize', 8);
+pathPlot_hd(param.position, SpikeTimes_sim, hd_sim) % from -180 to +180
+c1 = colorbar; c1.Ticks = [0 90 180 270 360]; c1.FontSize = 25;
+h1 = plot(rlX, rlY, 'o', 'MarkerSize',15);
 set(h1, 'markerfacecolor', 'k');
-title("Egocentric Bearing")
-% legend("path", "spikes", "refLoc", "Location", "northwestoutside")
-hold off;
+color_plot_title = strcat('theta_{pref} = ', sprintf('%.f',param.theta));
+title(color_plot_title, 'FontName', 'Calibri light', 'FontSize', 30, 'FontWeight', 'normal');
+
+
+figure
+pathPlot_quiver(param.position, SpikeTimes_sim, hd_sim)
+
+
+figure
+map = analyses.map(param.position, SpikeTimes_sim, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
+peakRate = nanmax(nanmax(map.z));
+rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
+plot.colorMap(map.z)
+pbaspect([1 1 1])
+colormap(gca,'jet')
+c2 = colorbar; c2.FontSize = 25;
+set(gca,'xtick',[])
+set(gca,'ytick',[])
+title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 30, 'FontWeight', 'normal');
+box off
+
+sim.position = param.position;
 
 end

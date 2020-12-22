@@ -14,3 +14,8 @@ inpaint_nans.m
 gauss2D.m
 opex_setup.ipynb
 +LFP/detectRipples.m
+simulations\simdata.mat
+*.mat
+measures\distance_measures/
+optimization/examples/
+

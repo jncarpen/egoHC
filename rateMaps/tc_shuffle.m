@@ -30,6 +30,7 @@ total_shuffles = 100;
 
 % tell the 'plot_egoBearing.m' function not to plot
 doPlot = "False";
+deg_or_rad = "deg";
 
 % generate random floating-point values between a & b
 a = -60; b = 60;
@@ -44,6 +45,8 @@ shiftVals = datasample(r_thresh, total_shuffles);
 % clear variables
 tcVals_shift = [];
 
+nBins = 39;
+
 for iter = 1:total_shuffles
     % how much to shift (in s) for this iteration
     shift = shiftVals(iter);
@@ -53,7 +56,7 @@ for iter = 1:total_shuffles
     
     % get values for tuning curve (egoBear)
 %     [tcVals_shift(iter,:), ~] = plot_egoBearing(position, ST_shift, ref_point, doPlot); % speed-thresholded (5cm/s)
-    [tcVals_shift(iter,:), ~] = egoBearing(position, ST_shift, ref_point, ref_point, doPlot, "deg");
+    [tcVals_shift(iter,:), ~] = egoBearing(position, ST_shift, ref_point, ref_point, nBins, doPlot, "deg");
 end
 
 % take mean (along the columns)
@@ -68,8 +71,8 @@ yl = mean_tc - 2*std_tc;
 
 
 %% II. Calculate 'real' tuning curve
-[tcVals_real, binCtrs] = plot_egoBearing(position, ST_shift, ref_point, doPlot); % speed-thresholded (5cm/s)
-
+[tcVals_real, binCtrs] = plot_egoBearing(position, ST, ref_point, doPlot); % speed-thresholded (5cm/s)
+binCtrs
 
 %% III. Plot tuning curves
 % figure
@@ -84,12 +87,13 @@ plot(binCtrs, mean_tc, ':k')
 plot(binCtrs, tcVals_real, 'Color', 'r', 'LineWidth', 1.5)
 
 % format the plot
-title("Egocentric Bearing")
-ylabel("fr (Hz)")
+% title("Egocentric Bearing")
+ylabel("fr (Hz)", 'FontSize', 20)
 pbaspect([1 1 1])
 xlim([0 360])
 xticks([0 90 180 270 360])
 xlabel("angle (deg)")
+set(gca,'FontSize',20, 'FontName', 'Calibri Light')
 box off
 
 hold off;

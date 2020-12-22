@@ -60,17 +60,17 @@ end
 
 % make path plot
 % figure
-plot(x, y, 'Color', [.7 .7 .7]);
+plot(x, y, 'Color', [.85 .85 .85]);
 hold on;
-scatter(spkPos(:,2), spkPos(:,3), [50], spkAng(:,2), '.')
+scatter(spkPos(:,2), spkPos(:,3), [45], spkAng(:,2), '.')
 % newmap = brighten(hsv,-.8);
 colormap(hsv);
-colorbar;
-caxis([0 360])
+c = colorbar; c.FontSize = 15; c.Ticks = [90 180 270]; c.Box = 'off';
+c.FontName = 'Calibri Light'; c.FontWeight = 'normal';
 pbaspect([1 1 1])
 xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
 ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
-title("Spike Plot (colored by HD)", 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
+% title("spike plot (colored by HD)", 'FontName', 'Calibri light', 'FontSize', 18, 'FontWeight', 'normal')
 set(gca,'xtick',[])
 set(gca,'ytick',[])
 box off

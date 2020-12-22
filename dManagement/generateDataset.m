@@ -12,13 +12,13 @@ addpath(genpath("C:\Users\17145\Documents\github_local\egoHC")); % project code
 
 % specify storage location (should be the same for all animals)
 storeLoc = "D:\Data\Dataset";
-filename = '24116.mat';
+filename = '25398_v3.mat';
 
 %% Run sessionDirectory.m function
 % Fill this section out with relevant information for the animal of interest 
-recFolderPath = 'D:\Data\24116\Axona recordings'; % change this for each animal (or make it into a function)
+recFolderPath = 'D:\Data\25398'; % change this for each animal (or make it into a function)
 [animal_trackfilelist, animal_fmEvents, animal_behaviourlist, animal_posfilelist, animal_tfilelist, animal_EEGfilelist] = sessionDirectory(recFolderPath);
-LabNotes_flnm = "D:\Data\Labnotes\24116.xlsx";
+LabNotes_flnm = "D:\Data\Labnotes\25398.xlsx";
 
 %% Run animalMAT.m script
 
@@ -49,6 +49,7 @@ for sessionNum = 1:totalSessions
     
     % read in files using path locations specified in the animal_xlists
     [spikeTimes{1, sessionNum}, unitID{1,sessionNum}] = LoadSpikes(animal_tfilelist{1,sessionNum});
+    spikeTimes{1, sessionNum} = LoadSpikes(animal_tfilelist{1,sessionNum});
     eegSession = animal_EEGfilelist{1,sessionNum};
     pullPos = io.axona.getPos(animal_posfilelist{1,sessionNum}{1,1}); % from BNT* /interpolate NaNs?
     [xInt1, yInt1] = general.interpolatePositions(pullPos(:,1), [pullPos(:,2), pullPos(:,3)]); % interpolate positions for LED1

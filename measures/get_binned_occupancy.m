@@ -40,8 +40,8 @@ allo_occ = cell(10,10);
 ego_occ = cell(10,10);
 time_occ = cell(10,10);
 
-fH = figure('Visible', 'on');
-set(gcf,'color','w');
+% fH = figure('Visible', 'on');
+% set(gcf,'color','w');
 
 % number of bins for histogram
 num_bins = 20;
@@ -95,6 +95,13 @@ for xx = 1:nBins
                 P1(val) = sum(sDist_rnd == val)/length(sDist_rnd);
             end
         end
+        
+        % force things to add up to one
+        if sum(P1) ~= 1
+            addto = 1 - sum(P1);
+            [~,max_idx] = max(P1);
+            P1(max_idx) = P1(max_idx) + addto;            
+        end
             
         % define pdf vectors
         X = linspace(1, 360, 360)';
@@ -115,15 +122,15 @@ for xx = 1:nBins
         
 
         % plot
-        subplot(10,10,count)
-        h{xx,yy} = polarhistogram(sDist,num_bins,'FaceAlpha',.3);
-        pax{xx,yy} = gca;
-        thetaticks([0]);
-        rticks([(nanmax(h{xx,yy}.Values))]);
-%         uniform_count = repmat(round(sum(h{xx,yy}.Values)/num_bins), 1, num_bins);
-%         dist_from_uni(xx,yy) = sum(h{1,1}.Values-uniform_count);
-        plot_title = strcat('KL', sprintf('%.2f', KL(xx,yy)));
-        title(plot_title, 'FontName', 'Calibri');
+%         subplot(10,10,count)
+%         h{xx,yy} = polarhistogram(sDist,num_bins,'FaceAlpha',.3);
+%         pax{xx,yy} = gca;
+%         thetaticks([0]);
+%         rticks([(nanmax(h{xx,yy}.Values))]);
+% %         uniform_count = repmat(round(sum(h{xx,yy}.Values)/num_bins), 1, num_bins);
+% %         dist_from_uni(xx,yy) = sum(h{1,1}.Values-uniform_count);
+%         plot_title = strcat('KL', sprintf('%.2f', KL(xx,yy)));
+%         title(plot_title, 'FontName', 'Calibri');
         
         count = count + 1;
         

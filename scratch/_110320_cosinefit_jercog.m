@@ -93,8 +93,6 @@ for xx = 1:length(xCenter)
     end
 end
 
-
-
     
 %% Calculate values
 % find allocentric + egocentric 'bearing' at each timepoint (AB/EB)
@@ -110,6 +108,14 @@ egoAng(neg_idx) = egoAng(neg_idx)+360;
 numBins_HD = 10; % 24 degree bins
 binWidth_deg = 360/numBins_HD;
 angBins = linspace(0,360,numBins_HD);
+
+% get angular bin centers
+angBinCtrs = [];
+for i = 1:length(angBins)
+    if i+1 <= length(angBins)
+        angBinCtrs(i) = ((angBins(i+1)-angBins(i))/2)+angBins(i);
+    end
+end
 
 % set up all the cell arrays youre gonna need
 HD_TC = cell(10,10); EGO_TC = cell(10,10); ALLO_TC = cell(10,10);
@@ -135,24 +141,23 @@ for xx = 1:nBins
         angSpk = hd_here(spikeInds); 
         alloSpk = allo_here(spikeInds); egoSpk = ego_here(spikeInds);
         
-        % compute angular occupany (in each angular bin)
-        [ang_occupancy, edges] = histcounts(ego_here, numBins_HD);
-        ang_occupancy = ang_occupancy .* fs;
+        % compute angular occupany in each *HD* bin
+        [ang_counts, edges] = histcounts(mod(hd_here, 360), angBins);
+        pdx_hd = ang_counts./sum(ang_counts); % probability distribution
+        ang_occupancy = ang_counts .* fs; % how many seconds the animal was in each angular bin
 
-        if ~isempty(spikeInds) && length(spikeInds) > 5 && timeInBin > 0.5 % thresholds
-%         if ~isempty(spikeInds) && length(spikeInds) > 5 && timeInBin > 0.5 && all(ang_occupancy > .05)
+        if ~isempty(spikeInds) && length(spikeInds) > 10
+        % if ~isempty(spikeInds) && length(spikeInds) > 5 && timeInBin > 0.5 && all(ang_occupancy > .05)
             
             % compute normal firing rate map [r(x,y)] for this 2D spatial bin
-            rateMap_HD(xx,yy) = sum(SpkTrn(indices))./(timeInBin);
+            rxy = sum(spikes_here./timeInBin); % firing rate in this spatial bin
+            rateMap_HD(xx,yy) = rxy; % save for later
 
             % compute tuning curves (BNT)
             hd_tc = analyses.turningCurve(angSpk, hd_here, fs, 'smooth', 1, 'binWidth', binWidth_deg);
             allo_tc = analyses.turningCurve(alloSpk, allo_here, fs, 'smooth', 1, 'binWidth', binWidth_deg);
             ego_tc = analyses.turningCurve(egoSpk, ego_here, fs, 'smooth', 1, 'binWidth', binWidth_deg);
-            
-            % find the fit of the tuning curves to a cosine (NEW)
-
-
+           
             % (allo): compute the orientations at the peak of the tuning curve
             allo_tc_vals = allo_tc(:,2); allo_tc_angles = allo_tc(:,1);
             [~, allo_idx] = nanmax(allo_tc_vals); 
@@ -188,6 +193,10 @@ for xx = 1:nBins
             hd_MVL(count)=hd_tcStat.r;
             allo_MVL(count)=allo_tcStat.r;
             ego_MVL(count)=ego_tcStat.r;
+            
+            for H = 1:length(angBins)
+                
+            end
 
         else
            disp(strcat('bin ', sprintf('%.f', count), ' did not pass criteria...'))
@@ -214,22 +223,25 @@ scale = ego_MVL'; % mean vector length
 
 % scale the scaling factor (make arrows bigger)
 % fac = .25;
-fac = 10;
+fac = 12;
 scale = scale.*fac;
 
 %%%%
 
-% % test 90s vector
-% theta = ones(length(theta),1)*90;
+% test 90s vector
+% angle = 180;
+% theta = ones(length(theta),1).*angle;
 % scale = ones(length(theta),1)*6;
 
-% % calculate an offset value
+% calculate an offset value
 % offset = atan2d(yGoal-binCenters(:,2), xGoal-binCenters(:,1))+180;
-% 
-% % shift theta values (circularly)
-% theta_shifted = theta+offset;
+
+% shift theta values (circularly)
+% theta_shifted = circ_add(theta, offset);
 % neg_idx = find(theta_shifted<0);
 % theta_shifted(neg_idx) = theta_shifted(neg_idx)+360;
+% over_360 = find(theta_shifted > 360);
+% theta_shifted(over_360) = theta_shifted(over_360) - ((floor(theta_shifted(over_360)./360)).*360);
 
 theta_shifted = theta;
 
@@ -252,11 +264,12 @@ vprime = v.*sf; % + eps;
 
 %% PLOT
 % format figure
-% f = figure;
-% set(gcf,'color','w');
-% ax = gca; % current axes
-% box(ax, "off")
-title("test title", 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
+f = figure;
+set(gcf,'color','w');
+ax = gca; % current axes
+box(ax, "off")
+
+% title('360 degrees', 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
 % xlim([-.25 1.75]);
 % ylim([-.25 1.75])
 
@@ -264,14 +277,14 @@ hold on;
 % plot theta 1 
 h1 = quiver(data(:,1), data(:,2), uprime, vprime, 0); % 0 turns autoscaling off
 custom_color = [.3 .5 1];
-set(h1, 'Color', custom_color, 'AutoScale', 'off', 'LineWidth',.60)
+set(h1, 'Color', 'k', 'AutoScale', 'off', 'LineWidth',.60)
 
 % plot reference location
 refPnt_plot = plot(xGoal, yGoal, 'o', 'MarkerSize', 6);
 set(refPnt_plot, 'MarkerEdgeColor','r', 'markerfacecolor', 'r');
 
 % set title
-title("test title", 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
+title("Preferred bearing: 180 degrees", 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
 
 hold off;
  

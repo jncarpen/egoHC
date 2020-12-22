@@ -56,12 +56,13 @@ end
 % smooth occ
 occ = imgaussfilt(occ, 2);
 
-% figure
+figure
 imagesc(occ)
 pbaspect([1 1 1])
 title("Spatial Occ")
 xlabel("X")
 ylabel("Y")
+colormap('jet')
 colorbar
 
 % figure

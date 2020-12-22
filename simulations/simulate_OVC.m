@@ -1,4 +1,4 @@
-function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_OVC(pos_in, ref_point, angle_of_interest, radius)
+function [sim] = simulate_OVC(param)
 %SIMULATE_OVC Summary of this function goes here
 %   Detailed explanation goes here
 %   Inputs:
@@ -16,6 +16,11 @@ function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_OVC(pos_in, ref_poi
 %
 % J. Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+pos_in = param.position;
+ref_point = param.ref_point;
+angle_of_interest = param.theta;
+radius = param.radius;
 
 % parse position vector
 t = pos_in(:,1);
@@ -36,7 +41,7 @@ midX=(x+x2)/2; midY=(y+y2)/2;
 alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
 
 % define angles of interest
-plus_minus_orien = 10; % how many degrees are acceptable
+plus_minus_orien = 15; % how many degrees are acceptable
 min_angle = angle_of_interest - plus_minus_orien;
 max_angle = angle_of_interest + plus_minus_orien;
 
@@ -44,7 +49,7 @@ max_angle = angle_of_interest + plus_minus_orien;
 dist_from_ref = sqrt((rlX - midX).^2+ (rlY - midY).^2);
 
 % define distance range
-plus_minus_distance = 5; % (in cm)
+plus_minus_distance = 15; % (in cm)
 min_dist = radius - plus_minus_distance;
 max_dist = radius + plus_minus_distance;
 
@@ -53,7 +58,7 @@ logical = alloAng>min_angle & alloAng<max_angle & dist_from_ref>min_dist & dist_
 idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
 
 % define how many spikes to keep
-throw_away = .35;
+throw_away = .25;
 sz = floor(length(idx)-length(idx)*throw_away);
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);
@@ -82,6 +87,10 @@ speed_idx = find(speed_OVC<5); % find indices when animal was moving slow
 binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
 binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
+
+sim.spiketimes = SpikeTimes_sim;
+sim.spiketrain = SpikeTrain_sim;
+sim.hd = hd_sim;
 
 % show user their cell!
 % figure

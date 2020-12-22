@@ -5,7 +5,7 @@
 % A. For Jan Sigurd's data:
 
 % choose a session/unit number
-sessNum = 3; unitNum = 3;
+sessNum = 5; unitNum = 4;
 
 % get position data for session
 position = pos_cm{1,sessNum};
@@ -66,8 +66,8 @@ sgtitle("Occupancy(Egocentric Bearing): A25398,S3", 'FontName', 'Calibri')
 
 % make a heatmap of the circular variance
 figure
-imagesc(KL)
-% set(gca,'YDir','normal')
+imagesc(flipud(KL))
+% set(gca,'YDir','reverse')
 colormap(flipud(bone))
 c = colorbar;
 c.FontSize = 12;
@@ -75,6 +75,8 @@ c.Box = "off";  c.FontName='Calibri';
 pbaspect([1 1 1])
 axis off
 title("Kullback-Leibler Divergence", 'FontSize', 14, 'FontName', 'Calibri')
+
+occupancyMap(position)
 
 figure
 imagesc(ang_var);

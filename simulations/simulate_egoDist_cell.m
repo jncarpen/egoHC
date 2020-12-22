@@ -1,4 +1,4 @@
-function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_egoDist_cell(pos_in, ref_point, angle_of_interest, radius)
+function [sim] = simulate_egoDist_cell(param)
 %SIMULATE_EGO_CELL Simulate an egocentric bearing cell.
 %   Inputs:
 %   'pos_in'                    real position data [t x1 y1 x2 y2]
@@ -19,10 +19,15 @@ function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_egoDist_cell(pos_in
 % boxSize = 80; (boxsize for seb's data)
 % boxSize = 150; (boxsize for jan's data)
 
+P = param.position;
+ref_point = param.ref_point;
+theta = param.theta;
+radius = param.radius;
+
 % parse position vector
-t = pos_in(:,1);
-x = pos_in(:,2); y = pos_in(:,3);
-x2 = pos_in(:,4); y2 = pos_in(:,5);
+t = P(:,1);
+x = P(:,2); y = P(:,3);
+x2 = P(:,4); y2 = P(:,5);
 
 % get head_direction values
 hd_sim = rem(atan2d(y2-y, x2-x) + 180, 360);
@@ -45,15 +50,15 @@ neg_idx = find(egoAng<0);
 egoAng(neg_idx) = egoAng(neg_idx)+360;
 
 % define angles of interest
-plus_minus_orien = 10; % how many degrees are acceptable
-min_angle = angle_of_interest - plus_minus_orien;
-max_angle = angle_of_interest + plus_minus_orien;
+plus_minus_orien = 15; % how many degrees are acceptable
+min_angle = theta - plus_minus_orien;
+max_angle = theta + plus_minus_orien;
 
 % calculate distance from reference point (for each timestamp)
 dist_from_ref = sqrt((rlX - midX).^2+ (rlY - midY).^2);
 
 % define distance range
-plus_minus_distance = 5; % (in cm)
+plus_minus_distance = 15; % (in cm)
 min_dist = radius - plus_minus_distance;
 max_dist = radius + plus_minus_distance;
 
@@ -93,13 +98,19 @@ binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
 
 % show user their cell!
-% figure
+figure
 hold on;
 set(gcf,'color','w');
-pathPlot_hd(pos_in, SpikeTimes_sim, hd_sim)
+pathPlot_hd(P, SpikeTimes_sim, hd_sim)
 h1 = plot(rlX, rlY, 'o', 'MarkerSize', 8);
 set(h1, 'markerfacecolor', 'k');
 title("Egocentric Bearing + Distance")
 % legend("path", "spikes", "refLoc", "Location", "northwestoutside")
 hold off;
+
+%% save things in a struct
+sim.spiketrain = SpikeTrain_sim;
+sim.spiketimes = SpikeTimes_sim;
+sim.position = param.position;
+sim.hd = hd_sim;
 end

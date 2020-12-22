@@ -1,8 +1,10 @@
-function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_HD(pos_in, angle_of_interest)
+function [sim] = simulate_HD(param)
 %SIMULATE_HD Simulate a head-direction cell
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+pos_in = param.position;
+angle_of_interest = param.theta;
 
 % parse position vector
 t = pos_in(:,1);
@@ -14,7 +16,7 @@ hd_sim = rem(atan2d(y2-y, x2-x) + 180, 360);
 
 
 % define angles of interest
-plus_minus_orien = 5; % +/- orientation
+plus_minus_orien = 15; % +/- orientation
 min_angle = angle_of_interest - plus_minus_orien;
 max_angle = angle_of_interest + plus_minus_orien;
 
@@ -52,6 +54,11 @@ speed_idx = find(speed_OVC<5); % find indices when animal was moving slow
 binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
 binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
+
+sim.spiketimes = SpikeTimes_sim;
+sim.spiketrain = SpikeTrain_sim;
+sim.hd = hd_sim;
+sim.position = param.position;
 
 % show user their cell!
 % figure

@@ -4,7 +4,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % what session are we looking at?
-sessNum = 2; unitNum = 2;
+sessNum = 68; unitNum = 2;
 
 % get position information
 position = pos_cm{1,sessNum};

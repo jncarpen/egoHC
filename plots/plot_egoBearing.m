@@ -65,11 +65,12 @@ tcVals_egoAng = imgaussfilt(tcVals_egoAng, 2, 'Padding', 'circular');
 
 switch doPlot
     case "True"
-        figure
+%         figure
         hold on;
-        plot(binCtrs_egoAng, tcVals_egoAng, 'Color', 'k', 'LineWidth', 1.10)
-        title("Egocentric Angle")
-        ylabel("fr (Hz)")
+        plot(binCtrs_egoAng, tcVals_egoAng, 'Color', [0 .4 .9], 'LineWidth', 1.10)
+%         title("Egocentric Angle", "FontName", "Calibri Light", "FontSize", 20)
+        ylabel("fr (Hz)"); xlabel("angle (deg)");
+        xticks([90 180 270 360])
         box off
     case "False"
         % do nothing

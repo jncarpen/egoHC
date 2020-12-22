@@ -1,6 +1,10 @@
-function [SpikeTimes_sim, SpikeTrain_sim, hd_sim] = simulate_allo_cell(pos_in, ref_point, angle_of_interest)
+function [sim] = simulate_allo_cell(param)
 %SIMULATE_ALLO_CELL Summary of this function goes here
 %   Detailed explanation goes here
+
+pos_in = param.position;
+ref_point = param.ref_point;
+angle_of_interest = param.theta;
 
 % parse position vector
 t = pos_in(:,1);
@@ -30,7 +34,7 @@ logical = alloAng>min_angle & alloAng<max_angle;
 idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
 
 % define how many spikes to keep
-throw_away = .25;
+throw_away = .45;
 sz = floor(length(idx)-length(idx)*throw_away);
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);
@@ -71,5 +75,9 @@ set(h1, 'markerfacecolor', 'k');
 title("Allocentric Bearing Cell")
 hold off;
 
+% save stuff
+sim.spiketimes = SpikeTimes_sim;
+sim.spiketrain = SpikeTrain_sim;
+sim.position = param.position;
 end
 

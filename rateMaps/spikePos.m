@@ -1,9 +1,9 @@
-function [spkPos,spkInd, posCounts] = spikePos(SpikeTimes, pos)
-%SPIKEPOS Summary of this function goes here
+function [spkPos,spkInd, posCounts] = spikePos(ST, position)
+%SPIKEPOS Get position of spikes
 %   Detailed explanation goes here
 
-t = pos(:,1); % time
-XY = pos; % duplicate pos matrix
+t = position(:,1); % time
+XY = position; % duplicate pos matrix
 XY(:,1) = []; % remove time column
 posCounts = zeros(size(t));
 
@@ -12,14 +12,14 @@ posCounts = zeros(size(t));
 % maxTime = nanmin(t) + sampleRate;
 
 % make sure SpikeTimes is a column vector
-SpikeTimes = SpikeTimes(:);
+ST = ST(:);
 
-N = size(SpikeTimes, 1);
-spkPos = zeros(N, size(pos, 2)); % N rows, 5 columns
+N = size(ST, 1);
+spkPos = zeros(N, size(position, 2)); % N rows, 5 columns
 spkInd = zeros(N, 1);
 
 % Find temporal spike index (TSI) by finding k-nearest neighbors
-TSI = knnsearch(t, SpikeTimes); 
+TSI = knnsearch(t, ST); 
 
 count = 0;
 for i = length(TSI)
