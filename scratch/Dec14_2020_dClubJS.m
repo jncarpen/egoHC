@@ -24,13 +24,14 @@ for nn = 1:length(n_interest)
         clear P
         sigma = 2;
         P = smooth_pos(P_raw, sigma);
+        HD = get_hd(P);
 
         % monte carlo
         for ii = 1:total_iters
             % generate random values for parameter intial conditions
             initial = choose_initial_conditions(P);
             % run the model
-            [model] = modelMe(P, ST, initial);
+            [model] = modelMe(P, ST, HD, initial);
 %             dclub.neurons(cellcell).model(ii) = model;
 %             dclub.neurons(cellcell).initial(ii) = initial;
             

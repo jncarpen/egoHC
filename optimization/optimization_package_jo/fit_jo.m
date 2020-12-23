@@ -1,5 +1,8 @@
-function [output] = fit(funName, params, freeList, varargin)
+function [output] = fit_jo(funName, params, freeList, varargin)
 % [params,err] = fit(funName, params, freeList, var1, var2,...)
+
+%% this is a modified version of the 'fit' function, which is described below.
+% modified by J. Carpenter, 2020. > @todo: describe changes made
 %
 % Helpful interface to MATLAB's 'fminsearch' function.
 %

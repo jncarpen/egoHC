@@ -1,6 +1,9 @@
-function [model] = modelMe(P, ST, params)
-%   P:      position
-%   ST:     spiketimes
+function [model] = modelMe(P, ST, head_direction, params)
+%   P:                  position [t x1 y1 x2 y2]
+%   ST:                 spiketimes 
+%   head_direction:     head direction
+%   params:             struct containing initial values for 4 parameters
+%   J. Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% get information about cell
 
@@ -12,40 +15,64 @@ y = P(:,3);
 x2 = P(:,4);
 y2 = P(:,5);
 
-% tSpk = ST;
-% position = P;
+%% option 1: apply a speed threshold
+% % speed
+% [s, ~] = get_speed(P);
+% s = s(:,1); % grab first column
+% 
+% % speed threshold before we make the spiketrain
+% % Get speed at time of spike and put into vector SpikeSpeed
+% SpikeSpeed = interp1 (t, s, ST); %in cm/s
+% 
+% % Set threshold
+% thr_d= 4; % this is the threshold set in jercog et al. (diff for dMan)       
+% thr_u= 100;
+% 
+% % Apply threshold 
+% a=find(SpikeSpeed>thr_d);
+% b=find(SpikeSpeed<thr_u);
+% 
+% % make position samples NaN
+% x(find(s<thr_d))=NaN; x(find(s>thr_u))=NaN;
+% y(find(s<thr_d))=NaN; y(find(s>thr_u))=NaN;
+% x2(find(s<thr_d))=NaN; x2(find(s>thr_u))=NaN;
+% y2(find(s<thr_d))=NaN; y2(find(s>thr_u))=NaN;
+% position = [t, x, y, x2, y2];
+% 
+% % Combined threshold 
+% c=intersect(a,b);
+% 
+% % Vector with filtered spikes - based on indexing from c
+% SpikeSpeed_fil=ST(c);
+% tSpk = SpikeSpeed_fil; % spike times
+% 
+% % MAKE SPIKE TRAIN (bin the spikes)- this is speed-thresholded
+% startTime = t(1);
+% stopTime = t(end);
+% 
+% % remove spike times that are outside the range of tracking times
+% tSpk = tSpk(tSpk < stopTime & tSpk > startTime);
+% 
+% edgesT = linspace(startTime,stopTime,numel(t)+1); % binsize is close to video frame rate
+% 
+% binnedSpikes = histcounts(tSpk,edgesT);
+% 
+% sigma = 2; % smoothing factor
+% SpkTrn = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate'); % smooth spiketrain
+% 
+% % get head direction values
+% % head_direction = get_hd(position);
+% 
+% % make sure that head direction ranges from 0-360 deg
+% if nanmax(head_direction) < 350
+%     head_direction = rad2deg(head_direction);
+% else
+%     head_direction = head_direction;
+% end
 
-%% speed threshold (optional)
-% speed
-[s, ~] = get_speed(P);
-s = s(:,1); % grab first column
-
-% speed threshold before we make the spiketrain
-% Get speed at time of spike and put into vector SpikeSpeed
-SpikeSpeed = interp1 (t, s, ST); %in cm/s
-
-% Set threshold
-thr_d= 4; % this is the threshold set in jercog et al. (diff for dMan)       
-thr_u= 100;
-
-% Apply threshold 
-a=find(SpikeSpeed>thr_d);
-b=find(SpikeSpeed<thr_u);
-
-% make position samples NaN
-x(find(s<thr_d))=NaN; x(find(s>thr_u))=NaN;
-y(find(s<thr_d))=NaN; y(find(s>thr_u))=NaN;
-x2(find(s<thr_d))=NaN; x2(find(s>thr_u))=NaN;
-y2(find(s<thr_d))=NaN; y2(find(s>thr_u))=NaN;
-position = [t, x, y, x2, y2];
-
-% Combined threshold 
-c=intersect(a,b);
-
-% Vector with filtered spikes - based on indexing from c
-SpikeSpeed_fil=ST(c);
-tSpk = SpikeSpeed_fil; % spike times
-
+%% option 2: make a spiketrain without speed thresholding
+tSpk = ST; % spike times
+position = P; % rename position
 
 % MAKE SPIKE TRAIN (bin the spikes)- this is speed-thresholded
 startTime = t(1);
@@ -61,18 +88,8 @@ binnedSpikes = histcounts(tSpk,edgesT);
 sigma = 2; % smoothing factor
 SpkTrn = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate'); % smooth spiketrain
 
-% get head direction values
-head_direction = get_hd(position);
-
-% make sure that head direction ranges from 0-360 deg
-if nanmax(head_direction) < 350
-    head_direction = rad2deg(head_direction);
-else
-    head_direction = head_direction;
-end
 
 %% bin the spatial arena
-
 % divide the arena into 100 2D spatial bins
 nBins = 10;
 [~, xEdges, yEdges, binX, binY] = histcounts2(x,y,nBins);
@@ -252,7 +269,7 @@ R = RR;
 
 % fit the model (make sure this is the modified 'fit' function (not the orig))
 clear output
-[output] = fit('cosErr',p,{'g','thetaP','xref','yref'},X,Y,H,R);
+[output] = fit_jo('cosErr',p,{'g','thetaP','xref','yref'},X,Y,H,R);
 
 % reassign variable name (debugging)
 OP = output.params;
@@ -314,8 +331,6 @@ end
 % find the 'overall RH modulation strength' (of the data) across all
 % spatial bins
 RHModStrength_model = mean(reshape(binWiseRHMod, nBins^2 ,1), 'omitnan');
-
-
 
 %% save outputs in a struct
 model.data = R;
