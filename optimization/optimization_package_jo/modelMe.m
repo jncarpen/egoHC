@@ -15,7 +15,7 @@ y2 = P(:,5);
 % tSpk = ST;
 % position = P;
 
-%% speed threshold
+%% speed threshold (optional)
 % speed
 [s, ~] = get_speed(P);
 s = s(:,1); % grab first column
@@ -182,26 +182,45 @@ for row = 1:nBins
                 R_xyh = r_xyh./r_xy; 
                 R_ratio{row,col}(H,1) = R_xyh; % save in cell array 
                 RR(row,col,H) = R_xyh;
+                
+                % calculate the 'tuning strength' for each HD bin (as
+                % defined in Jercog et al.
+                angularBinNow = angBinCtrs(H);
+                weightedVecforThisHDbin = R_xyh.*angularBinNow;
+                weightedModulationVectors{row,col}(H,1) = weightedVecforThisHDbin;
             end
             
+            % find the preferred heading vector for the current spatial bin
+            % by averaging the 'weightedModulationVectors' vector
+            binWiseHDMod(row,col) = sum(reshape(weightedModulationVectors{row,col}(:,1),length(angBinCtrs), 1), 'omitnan')/numBins_HD;
+            
+            % summed R_ratio, @todo: comment this better later... lol
             R_ratio_summed(row,col) = nansum(R_ratio{row,col});
 
         else
 %            disp(strcat('bin ', sprintf('%.f', count), ' did not pass criteria...'))
-           didNotPass = didNotPass + 1;
-           rateMap(row,col) = NaN;
-           r_xyh_mat(row,col,:) = NaN;
+           didNotPass = didNotPass + 1; % add one to the 'didNotPass' count
+           rateMap(row,col) = NaN; % throw a NaN into the rateMap
+           r_xyh_mat(row,col,:) = NaN; % throw a NaN into the rateMap that is conditioned on HD
+           binWiseHDMod(row,col) = NaN; % throw a nan into the HD modulation scoring schema
+        
+        
         end
+        
         count = count+1;
     end
 end
 
 didNotPass
 
+% find the 'overall HD modulation strength' (of the data) across all
+% spatial bins
+HDModStrength_data = mean(reshape(binWiseHDMod, nBins^2 ,1), 'omitnan');
+
 %% fit the model
 
 % get center of the box;
-[boxCtrX,boxCtrY] = getBoxCenter(P);
+% [boxCtrX,boxCtrY] = getBoxCenter(P);
 
 % set initial values for parameters to be fit
 % clear p
@@ -225,16 +244,21 @@ for h = 1:length(angBinCtrs)
     H(:,:,h) = repmat(angBinCtrs(h),10,10);
 end
 
+% make a copy of RR (save as R)
 R = RR;
 
 % have the model take a first guess given the parameters we've fed in
 % [firstGuess_pred, firstGuess_err] = cosFit(p,X,Y,H,R);
 
-% fit the model
+% fit the model (make sure this is the modified 'fit' function (not the orig))
+clear output
 [output] = fit('cosErr',p,{'g','thetaP','xref','yref'},X,Y,H,R);
 
-% best fit
-[model.pred, model.err] = cosFit(output.params,X,Y,H,R);
+% reassign variable name (debugging)
+OP = output.params;
+
+% best fit 
+[model.pred, model.err] = cosFit(OP, X, Y, H, R);
 
 % get hd tuning curves for each spatial bin (for predicted)
 clear pred_values_reshaped
@@ -243,10 +267,9 @@ for row=1:nBins
         pred_values_reshaped{row,col}(:) = model.pred(row,col,:);
     end
 end
-model.predcell = pred_values_reshaped;
+% correct for negative values of preferred theta(if there are any)
+output.params.thetaP = mod(OP.thetaP, 360);
 
-% correct for negative values of preferred theta
-output.params.thetaP = mod(output.params.thetaP, 360);
 
 %% compute variance explained (as in Jercog et al.)
 % (1) variance explained by place tuning (?)
@@ -260,6 +283,38 @@ numMod = r_xyh_mat - R;
 numMod = var(numMod, 0, [3 2 1], 'omitnan');
 denMod = var(r_xyh_mat, 0, [3 2 1], 'omitnan');
 var_model = 1 - (numMod/denMod);
+
+
+%% compute RH modulation strength of the model's prediction
+clear binWiseRHMod RH_tc_inThisSpatialBin weightedVecforThisRHbin weightedModulationVectors
+for row = 1:nBins
+    for col = 1:nBins
+        
+        % grab HD tuning curve from this spatial bin 
+        RH_tc_inThisSpatialBin = reshape(R(row,col,:), length(angBinCtrs), 1);
+        
+        % loop through all of the HD bins
+        for H = 1:length(angBinCtrs)
+            % what HD bin (center value) are we looking at now
+            angularBinNow = angBinCtrs(H);
+            
+            % grab the tuning curve value from this spatial bin and HD bin
+            weightedVecforThisRHbin = RH_tc_inThisSpatialBin(H).*angularBinNow;
+            weightedModulationVectors{row,col}(H,1) = weightedVecforThisRHbin;
+        end
+        
+        % find the preferred heading vector for the current spatial bin
+        % by averaging the 'weightedModulationVectors' vector
+        binWiseRHMod(row,col) = sum(reshape(weightedModulationVectors{row,col}(:,1), nBins, 1), 'omitnan')/numBins_HD;
+          
+    end
+    
+end
+
+% find the 'overall RH modulation strength' (of the data) across all
+% spatial bins
+RHModStrength_model = mean(reshape(binWiseRHMod, nBins^2 ,1), 'omitnan');
+
 
 
 %% save outputs in a struct
@@ -280,5 +335,8 @@ model.saved = output.saved;
 model.varExplained.place = var_place;
 model.varExplained.model = var_model;
 model.rxyh = r_xyh_mat;
+model.modStrength.HD = HDModStrength_data;
+model.modStrength.RH = RHModStrength_model;
+model.predcell = pred_values_reshaped; % % get hd tuning curves for each spatial bin (for predicted)
 end
 

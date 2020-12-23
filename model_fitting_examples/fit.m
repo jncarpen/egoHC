@@ -1,4 +1,4 @@
-function [params,err] = fit(funName, params, freeList, varargin)
+function [params_out,err] = fit(funName, params, freeList, varargin)
 % [params,err] = fit(funName, params, freeList, var1, var2,...)
 %
 % Helpful interface to MATLAB's 'fminsearch' function.
@@ -54,9 +54,9 @@ vars = params2var(params, freeList);
 vars = fminsearch('fitFunction', vars, options, funName, params, freeList, varargin);
 
 % assign final parameters into 'params'
-params = var2params(vars, params, freeList);
+params_out = var2params(vars, params, freeList);
 
 % evaluate the function 'funName' for error at minimum
-err = fitFunction(vars, funName, params, freeList, varargin);
+err = fitFunction(vars, funName, params_out, freeList, varargin);
 
 end

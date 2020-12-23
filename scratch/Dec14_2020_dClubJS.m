@@ -7,7 +7,7 @@
 
 n_interest = [1196 1140 1077 1079 1064 1060 1035 798 794 792 788 597 587 560 542 498 486 420];
 % decide on how many mc simulations to run
-total_iters = 100;
+total_iters = 1;
 
 
 clear errorValsMin errorVals dclub2
@@ -20,7 +20,7 @@ for nn = 1:length(n_interest)
         P_raw = units2cm(JZ.neurons(n_now).members(uu).P);
         ST = JZ.neurons(n_now).members(uu).ST;
 
-        % smooth position
+        % smooth position vectors
         clear P
         sigma = 2;
         P = smooth_pos(P_raw, sigma);
@@ -28,7 +28,7 @@ for nn = 1:length(n_interest)
         % monte carlo
         for ii = 1:total_iters
             % generate random values for parameter intial conditions
-            initial = choose_initial_conditions(P)
+            initial = choose_initial_conditions(P);
             % run the model
             [model] = modelMe(P, ST, initial);
 %             dclub.neurons(cellcell).model(ii) = model;
@@ -46,9 +46,18 @@ for nn = 1:length(n_interest)
     count_neuron = count_neuron + 1;
 end
 
+
+
+
+
+
+
+
+
+
+
 % now that we have found the iteration that retrieved the 
 % global minimum ('errorValsMin') we can plot the results -->
-
 %% FIGURES
 
 count = 1;
