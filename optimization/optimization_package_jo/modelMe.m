@@ -291,14 +291,14 @@ output.params.thetaP = mod(OP.thetaP, 360);
 %% compute variance explained (as in Jercog et al.)
 % (1) variance explained by place tuning (?)
 num = r_xyh_mat - rateMap;
-num = var(num, 0, [3 2 1], 'omitnan');
-den = var(r_xyh_mat, 0, [3 2 1], 'omitnan');
+num = var(num, 1, [3 2 1], 'omitnan');
+den = var(r_xyh_mat, 1, [3 2 1], 'omitnan');
 var_place = 1 - (num/den);
 
 % (2) variance explained overall (by the model)
-numMod = r_xyh_mat - R;
-numMod = var(numMod, 0, [3 2 1], 'omitnan');
-denMod = var(r_xyh_mat, 0, [3 2 1], 'omitnan');
+numMod = r_xyh_mat - model.pred;
+numMod = var(numMod, 1, [3 2 1], 'omitnan');
+denMod = var(r_xyh_mat, 1, [3 2 1], 'omitnan');
 var_model = 1 - (numMod/denMod);
 
 

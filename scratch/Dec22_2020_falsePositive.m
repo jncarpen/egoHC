@@ -15,16 +15,16 @@ clear optimSig
 
 %% run the model for one of the units
 % choose a neuron/unit to check
-% nn = 587; 
-% uu = 1;
-% 
+nn = 587; 
+uu = 1;
+
 % % pull information for this neuron
-% P_raw = units2cm(JZ.neurons(nn).members(uu).P);
-% ST = JZ.neurons(nn).members(uu).ST;
-% Fs = mode(diff(P(:,1))); % sampling frequency (50 samples/sec)
-% 
+P_raw = units2cm(JZ.neurons(nn).members(uu).P);
+ST = JZ.neurons(nn).members(uu).ST;
+Fs = mode(diff(P_raw(:,1))); % sampling frequency (50 samples/sec)
+
 % % smooth position vectors
-% sigma = 2; % width of Gaussian kernel
+sigma = 2; % width of Gaussian kernel
 P = smooth_pos(P_raw, sigma);
 
 % run the model on a simulated cell first
@@ -58,9 +58,9 @@ optimSig.modelReal = monte(errorValsMin).model;
 
 %% shuffle the head direction values
 % define the number of shuffles we want
-total_shuffles = 100;
-min_shuffle = floor(15/Fs); % 15 seconds
-max_shuffle = floor(120/Fs); % 120 seconds
+total_shuffles = 1000;
+min_shuffle = floor(30/Fs); % 15 seconds
+max_shuffle = floor(200/Fs); % 120 seconds
 
 % systematic shuffle (can be replaced with a pseudorandom shuffle)
 shuffle_vec = [linspace(-min_shuffle, -max_shuffle, total_shuffles/2), ...
@@ -102,8 +102,10 @@ for shuff_num = 1:total_shuffles
     error_shuff(shuff_num) = model_shuffled.err;
 end
 
+%% compare the results of the shuffled data with the real data
+
 % name the variables
-X = modstren_rh;
+X = modstren_hd;
 Xd = optimSig.modelReal.modStrength.RH;
 plotName = 'modulation strength (rh)';
 xname = 'modulation strength';
@@ -119,8 +121,33 @@ set(gca,'FontSize',20, 'FontName', 'Calibri Light', 'FontWeight', 'normal');
 l = legend('shuffled data', 'real data');
 box off;
 
-%% plot stuff about the current cell
-pathPlot_hd(P, ST, HD)
+%% plot autocorrelation of head direction
+% calculate and plot 
+[xcf,lags,bounds,h] = crosscorr(HD,ST, 'NumLags',100,'NumSTD',2);
+figure; set(gcf,'color','w');
+stem(lags*Fs, xcf, '.k');
+xlabel('lag (s)'); ylabel('xcf'); title('autocorrelation of hd')
+set(gca,'FontSize',20, 'FontName', 'Calibri Light', 'FontWeight', 'normal');
+box off;
+
+%% correlation of two variables
+% calculate the spiketrain from spiketimes
+[spikeTrain, spikeTrain_smooth] = binSpikes(P(:,1), ST);
+
+[s, ~] = get_speed(P);
+s = s(:,1); % grab first column
+
+% calculate and plot cross-correlation between head direction and
+% spiketrain
+[xcf,lags,bounds,h] = crosscorr(spikeTrain, s, 'NumLags',min_shuffle,'NumSTD',2);
+close all
+figure; set(gcf,'color','w');
+stem(lags*Fs, xcf, '.k');
+xlabel('lag (s)'); ylabel('xcf'); title('cross-correlation of speed and spiketrain')
+set(gca,'FontSize',20, 'FontName', 'Calibri Light', 'FontWeight', 'normal');
+box off;
+
+
 
 
 
