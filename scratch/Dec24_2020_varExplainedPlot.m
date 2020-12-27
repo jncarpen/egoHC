@@ -2,9 +2,9 @@
 % Check to see if all variance explained values are between 0 and 1 and if 
 % they can be plotted as they are in the Jercog paper
 
-clear varex_place varex_model modstren_hd modstren_rh err
+clear varex_place varex_model modstren_hd modstren_rh err test
 count = 1;
-for nn = 1000:1500 %length(JZ.neurons)
+for nn = 752:1252 %length(JZ.neurons)
     for uu = 1:length(JZ.neurons(nn).members)
         
         % pull information for this neuron
@@ -28,11 +28,52 @@ for nn = 1000:1500 %length(JZ.neurons)
         
         err(count) = model.err;
         
-        
+        test(count).model = model; % save the model for each iter
+        test(count).neuron = nn;
+        test(count).unit = uu;
+        test(count).ST = ST;
+        test(count).P = P;
+        test(count).HD = HD;
+
         count = count + 1;
 
     end
 end
+
+
+% figure out why some of the variance explained values are negative
+for i = 1:length(err)
+    if varex_model(i) < 0 
+%         model = test(i).model;
+%         ref_point = [model.bestParams.xref,model.bestParams.yref];
+        P = test(i).P; ST = test(i).ST;
+        pathPlot_hd(P, ST, get_hd(P))
+        pause
+        close all
+        
+%         t = P(:,1);
+        
+%         length(ST)
+
+%         % get angles associated with each spike
+%         spkhd = HD(knnsearch(t, ST));
+% 
+%         % make tuning curve (smooth and big bins)
+%         tc = analyses.turningCurve(spkhd, HD, Fs, 'smooth', 3, 'binWidth', 3);  
+%         
+%         % plot  
+%         fig = figure;
+%         plot(tc(:,1), tc(:,2))
+%         
+%         fileBody = strcat('unit', sprintf('%.f', i));
+%         filename = strcat('D:\egoAnalysis\Dec24_negVarEx_HDtc\', fileBody, '.png');
+%         saveas(fig, filename);
+%         
+%         close all
+    end
+    
+end
+
 
 
 
