@@ -203,7 +203,7 @@ for row = 1:nBins
                 % calculate the 'tuning strength' for each HD bin (as
                 % defined in Jercog et al.
                 angularBinNow = angBinCtrs(H);
-                weightedVecforThisHDbin = R_xyh.*angularBinNow;
+                weightedVecforThisHDbin = R_xyh.*angularBinNow;                
                 weightedModulationVectors{row,col}(H,1) = weightedVecforThisHDbin;
             end
             
@@ -332,6 +332,7 @@ end
 % spatial bins
 RHModStrength_model = mean(reshape(binWiseRHMod, nBins^2 ,1), 'omitnan');
 
+
 %% save outputs in a struct
 model.data = R;
 model.loc3d = loc3d;
@@ -353,5 +354,7 @@ model.rxyh = r_xyh_mat;
 model.modStrength.HD = HDModStrength_data;
 model.modStrength.RH = RHModStrength_model;
 model.predcell = pred_values_reshaped; % % get hd tuning curves for each spatial bin (for predicted)
+
+
 end
 
