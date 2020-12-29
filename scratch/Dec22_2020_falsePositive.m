@@ -366,8 +366,19 @@ for i = 1:100
     X_data(i) = Msim(i).modelData.modStrength.RH;
 end
 
-s = scatter(X_shuff, X_data, [20], 'k', 'filled');
+% find the mean of each of these distributions
+mean_dist = [mean(X_shuff, 'omitnan'), mean(X_data, 'omitnan')];
+
+% calculate confidence intervals
+ci_X = [mean(X_shuff) - 2*std(X_shuff), mean(X_shuff) + 2*std(X_shuff)];
+ci_Y = [mean(X_data) - 2*std(X_data), mean(X_data) + 2*std(X_data)];
+
+figure; hold on;
+s = scatter(X_shuff, X_data, [25], 'k', 'filled');
 s.MarkerFaceAlpha = .6;
+meanPoint = scatter(mean_dist(1), mean_dist(2), [60], 'r', 'filled');
+meanPoint.MarkerFaceAlpha = .6;
+plot(ci_X, ci_Y, '--r', 'LineWidth', 1.15)
 xlabel('RH tuning strength (shuffled data)'); ylabel('RH tuning strength (real data)')
 set(gca,'FontSize', 15, 'FontName', 'Leelawadee UI', 'FontWeight', 'normal');
 box off;
