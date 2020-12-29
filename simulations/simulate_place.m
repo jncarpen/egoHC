@@ -94,26 +94,26 @@ spiketimes = sort(st_unsorted, 'ascend'); % simulated timestamps
 
 
 %% visualize
-figure; set(gcf,'color','w');
-
-hold on;
-
-subplot(2,2,1)
-pathPlot_hd(param.position, spiketimes, get_hd(param.position))
-title("") % remove title
-
-subplot(2,2,2)
-map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
-peakRate = nanmax(nanmax(map.z));
-rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
-plot.colorMap(map.z)
-pbaspect([1 1 1])
-colorbar
-colormap(gca,'jet')
-set(gca,'xtick',[])
-set(gca,'ytick',[])
-title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal');
-box off
+% figure; set(gcf,'color','w');
+% 
+% hold on;
+% 
+% subplot(2,2,1)
+% pathPlot_hd(param.position, spiketimes, get_hd(param.position))
+% title("") % remove title
+% 
+% subplot(2,2,2)
+% map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
+% peakRate = nanmax(nanmax(map.z));
+% rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
+% plot.colorMap(map.z)
+% pbaspect([1 1 1])
+% colorbar
+% colormap(gca,'jet')
+% set(gca,'xtick',[])
+% set(gca,'ytick',[])
+% title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal');
+% box off
 
 % subplot(1,3,3)
 % surf(X,Y,fr_map,'FaceAlpha',0.5);
