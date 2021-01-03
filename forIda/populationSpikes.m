@@ -9,9 +9,21 @@ for i=1:length(matfilelist)
     pathnames{i} = append(matfilelist(i).folder, '\', matfilelist(i).name);
 end
 
+% load everything in 
 spikearray = cell(1,length(pathnames));
 for celnum = 1:length(pathnames)
     S = load(pathnames{1,celnum});
     spikearray{1,celnum} = S.cellTS;
     lengthVec(celnum) = length(S.cellTS);
+end
+
+% max number of spikes a cell fires during the session
+maxspikes = nanmax(lengthVec);
+
+% make a matrix of the correct size
+spikesMat = zeros(length(spikearray), maxspikes);
+
+% put spikes into the matrix
+for unit = 1:length(spikearray)
+    spikesMat(unit, :) = spikearray{1,cellnum};
 end
