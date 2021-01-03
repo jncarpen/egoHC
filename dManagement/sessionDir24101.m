@@ -14,6 +14,7 @@ count = 1;
 for dirIndex = 1:length(recDir)
     L = strlength(recDir(dirIndex).name);
     % check that folder is named as a session
+    
     if L == 10 
         % squash strings together to get correct filepath
         dirList{count} = append(recDir(dirIndex).folder, '\', recDir(dirIndex).name);
