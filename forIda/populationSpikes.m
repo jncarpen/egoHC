@@ -41,7 +41,7 @@ popSpikes = spikesMat';
 
 % save the matrix
 savepath = 'ida\something';
-savename = 'popSpikes_session1.mat';
-savestring = strcat(savepath, '\', savename);
+savename = 'popSpikes_session1';
+savestring = strcat(savepath, '\', savename, '.mat');
 save(savestring, popSpikes, '-v7.3')
 
