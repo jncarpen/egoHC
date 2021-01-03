@@ -25,5 +25,6 @@ spikesMat = zeros(length(spikearray), maxspikes);
 
 % put spikes into the matrix
 for unit = 1:length(spikearray)
-    spikesMat(unit, :) = spikearray{1,unit};
+    lenNow = lengthVec(unit);
+    spikesMat(unit, 1:lenNow) = spikearray{1,unit};
 end
