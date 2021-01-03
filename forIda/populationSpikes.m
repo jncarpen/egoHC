@@ -2,7 +2,7 @@
 folderPath =  'C:\Users\17145\Documents\github_local\egoHC\dManagement';
 
 % select matfiles to pull out of the folder
-matfilelist = dir(fullfile(folderPath, '*.m'));
+matfilelist = dir(fullfile(folderPath, '*.mat'));
 
 % make a list of the paths to these matfiles
 for i=1:length(matfilelist)
@@ -28,3 +28,6 @@ for unit = 1:length(spikearray)
     lenNow = lengthVec(unit);
     spikesMat(unit, 1:lenNow) = spikearray{1,unit};
 end
+
+% transpose the spikes matrix
+populationSpikes = spikesMat';
