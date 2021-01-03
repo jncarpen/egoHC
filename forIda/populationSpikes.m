@@ -1,3 +1,5 @@
+%% for ida 
+
 % folder that you want to pull matfiles from
 folderPath =  'C:\Users\17145\Documents\github_local\egoHC\dManagement';
 
