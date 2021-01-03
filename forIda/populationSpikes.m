@@ -44,6 +44,6 @@ end
 popSpikes = spikesMat';
 
 % save the matrix
-savestring = convertCharsToStrings(strcat(savepath, '\', savename, '.mat'));
+savestring = strcat(savepath, '\', savename, '.mat');
 save(savestring, 'popSpikes', '-v7.3')
 
