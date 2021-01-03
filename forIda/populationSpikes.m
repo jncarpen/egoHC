@@ -3,6 +3,10 @@
 % folder that you want to pull matfiles from
 folderPath =  'C:\Users\17145\Documents\github_local\egoHC\dManagement';
 
+% save information
+savepath = 'ida\something';
+savename = 'popSpikes_session1';
+
 % select matfiles to pull out of the folder
 matfilelist = dir(fullfile(folderPath, '*.mat'));
 
@@ -40,8 +44,6 @@ end
 popSpikes = spikesMat';
 
 % save the matrix
-savepath = 'ida\something';
-savename = 'popSpikes_session1';
 savestring = strcat(savepath, '\', savename, '.mat');
 save(savestring, popSpikes, '-v7.3')
 
