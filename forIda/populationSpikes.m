@@ -36,4 +36,5 @@ for unit = 1:length(spikearray)
 end
 
 % transpose the spikes matrix
-populationSpikes = spikesMat';
+popSpikes = spikesMat';
+
