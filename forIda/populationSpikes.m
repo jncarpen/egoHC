@@ -11,7 +11,6 @@ end
 
 % load everything in and query length of spiketimes
 thresh_ceil = 30000;
-spikearray = cell(1,length(pathnames));
 count = 1; % start a count
 for celnum = 1:length(pathnames)
     S = load(pathnames{1,celnum});
