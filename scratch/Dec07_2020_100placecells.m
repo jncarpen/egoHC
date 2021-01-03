@@ -20,7 +20,7 @@ param.width = 1;
 param.theta = 270; %rand(1).*360;
 param.radius = 40; %rand(1).*80;
 %simulate the cell
-[sim] = simulate_place(param)
+[sim] = simulate_place(param);
 % run the model
 [model] = modelMe(sim.position, sim.spiketimes);
 ref_point = [model.bestParams.xref, model.bestParams.yref]
