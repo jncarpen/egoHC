@@ -17,7 +17,7 @@ for celnum = 1:length(pathnames)
     S = load(pathnames{1,celnum});
     lengthVec(celnum) = length(S.cellTS);
     if  lengthVec(celnum) < thresh_ceil
-        spikearray{1,celnum} = S.cellTS;
+        spikearray{1,count} = S.cellTS;
         count = count + 1; % only count units that pass the threshhold
     end
 end
