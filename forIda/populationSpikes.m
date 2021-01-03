@@ -9,12 +9,17 @@ for i=1:length(matfilelist)
     pathnames{i} = append(matfilelist(i).folder, '\', matfilelist(i).name);
 end
 
-% load everything in 
+% load everything in and query length of spiketimes
+thresh_ceil = 30000;
 spikearray = cell(1,length(pathnames));
+count = 1; % start a count
 for celnum = 1:length(pathnames)
     S = load(pathnames{1,celnum});
-    spikearray{1,celnum} = S.cellTS;
     lengthVec(celnum) = length(S.cellTS);
+    if  lengthVec(celnum) < thresh_ceil
+        spikearray{1,celnum} = S.cellTS;
+        count = count + 1; % only count units that pass the threshhold
+    end
 end
 
 % max number of spikes a cell fires during the session
