@@ -25,7 +25,7 @@ xmu = param.ctr_mass(1,1);
 ymu = param.ctr_mass(1,2);
 
 % bin the arena and find bin centers
-nBins = 50;
+nBins = 100;
 xEdges = linspace(0,150,nBins+1);
 yEdges = linspace(0,150,nBins+1);
 xCenter = (diff(xEdges)./2)+xEdges(1:end-1);
@@ -94,28 +94,24 @@ spiketimes = sort(st_unsorted, 'ascend'); % simulated timestamps
 
 
 %% visualize
-% figure; set(gcf,'color','w');
-% 
-% hold on;
-% 
-% subplot(2,2,1)
-% pathPlot_hd(param.position, spiketimes, get_hd(param.position))
-% title("") % remove title
-% 
-% subplot(2,2,2)
-% map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
-% peakRate = nanmax(nanmax(map.z));
-% rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
-% plot.colorMap(map.z)
-% pbaspect([1 1 1])
-% colorbar
-% colormap(gca,'jet')
-% set(gca,'xtick',[])
-% set(gca,'ytick',[])
-% title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal');
-% box off
+figure; set(gcf,'color','w');
+pathPlot_hd(param.position, spiketimes, get_hd(param.position))
+title("") % remove title
 
-% subplot(1,3,3)
+figure; set(gcf,'color','w');
+map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
+peakRate = nanmax(nanmax(map.z));
+rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
+plot.colorMap(map.z)
+pbaspect([1 1 1])
+c = colorbar; c.FontName = 'Helvetica'; c.FontSize = 15;
+colormap(gca,'jet')
+set(gca,'xtick',[])
+set(gca,'ytick',[])
+title(rate_map_title, 'FontName', 'Helvetica', 'FontSize', 15, 'FontWeight', 'normal');
+box off
+
+% subplot(2,2,3)
 % surf(X,Y,fr_map,'FaceAlpha',0.5);
 % pbaspect([1 1 1])
 
