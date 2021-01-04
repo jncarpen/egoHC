@@ -27,8 +27,8 @@ pred_val = reshape(peak_pred', 100, 1);
 data_val = reshape(peak_data', 100, 1);
 
 % map small values onto big values
-fac = 2;
-fac_data = 1.25;
+fac = 1.25;
+fac_data = 1.5;
 pred_scale_unmapped = reshape((1./binwise_err)', 100, 1);
 % map scale for predicted data onto 0-1
 pred_scale = (pred_scale_unmapped-min(pred_scale_unmapped))*(1-0)/(max(pred_scale_unmapped)-min(pred_scale_unmapped)) + 0;

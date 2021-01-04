@@ -37,9 +37,9 @@ for neuron = 1:length(cellSpikes)
     binnedSpikes = histcounts(S,edgesT);
     
     % smooth spike train
-    sigma = 2;
-    binnedSpikes = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate');
-    
+%     sigma = 2;
+%     binnedSpikes = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate');
+%     
     % save to cell array
     spikeTrain{1,neuron} = binnedSpikes;
     

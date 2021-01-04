@@ -66,7 +66,7 @@ scatter(spkPos(:,2), spkPos(:,3), [45], spkAng(:,2), '.')
 % newmap = brighten(hsv,-.8);
 colormap(hsv);
 c = colorbar; c.FontSize = 15; c.Ticks = [90 180 270]; c.Box = 'off';
-c.FontName = 'Calibri Light'; c.FontWeight = 'normal';
+c.FontName = 'Helvetica'; c.FontWeight = 'normal';
 pbaspect([1 1 1])
 xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
 ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])

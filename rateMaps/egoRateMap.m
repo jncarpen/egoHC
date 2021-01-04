@@ -76,37 +76,40 @@ ECOFiringMap_normalized_smoothed=imgaussfilt(ECOFiringMap_normalized,sigma);
 % set(gcf,'color','w');
 
 % set a max radial range
-maxRadialRange = 90;
+maxRadialRange = 75;
 
 % occupancy
-ax1=subplot(1,3,1); 
+% ax1=subplot(1,3,1); 
+figure
 polarplot3d(ECOMap_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);         
 % colormap(ax1,'jet');
 daspect([1 1 1]); 
 view(2)
 camroll(90)
 grid off
-title('Egocentric Occupancy','FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal');
+title('Egocentric Occupancy','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
 
 % egocentric firing map
-ax2=subplot(1,3,2);
+% ax2=subplot(1,3,2);
+figure
 polarplot3d(ECOFiringMap_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);
 % colormap(ax2,'jet');    
 daspect([1 1 1]); 
 view(2)
 camroll(90)
 grid off
-title('Egocentric Spike Map','FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal');
+title('Egocentric Spike Map','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
 
 % egocentric firing map (normalized)
-ax3=subplot(1,3,3); 
+% ax3=subplot(1,3,3); 
+figure
 polarplot3d(ECOFiringMap_normalized_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);         
 % colormap(ax3, 'jet');
 daspect([1 1 1]);
 view(2)
 camroll(90)
 grid off
-title('Egocentric Spike Map (Normalized)','FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal');
+title('Egocentric Spike Map (Normalized)','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
 
 
 
