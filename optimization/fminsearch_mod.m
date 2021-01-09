@@ -386,7 +386,7 @@ while func_evals < maxfun && itercount < maxiter
     end
     [fv,j] = sort(fv);
     v = v(:,j);
-    disp(v)
+%     disp(v)
     % save parameters on each iteration (JC)
     JO.ParamList(itercount, 1:4) = x;
     JO.IterCnt(itercount,:) = itercount;
