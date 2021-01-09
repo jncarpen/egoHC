@@ -184,7 +184,7 @@ end
 OP = output.params;
 
 % determine whether the reference point was distant
-if OP.xref > 300 || OP.yref > 300
+if OP.xref > 500 || OP.yref > 500
     model.where = 'distant';
 else 
     model.where = 'nearby';
@@ -256,10 +256,10 @@ end
 warning('on','all')
 
 % linear average of tuning strengths
-MVL(MVL==Inf) = NaN; MVL(MVL==0) = NaN;
+MVL(MVL==Inf) = NaN; % MVL(MVL==0) = NaN;
 tuningStrength_HD = mean(reshape(MVL, 100,1), 'all', 'omitnan');
 
-MVL_RH(MVL_RH==Inf) = NaN; MVL_RH(MVL_RH==0) = NaN;
+MVL_RH(MVL_RH==Inf) = NaN; % MVL_RH(MVL_RH==0) = NaN;
 tuningStrength_RH = mean(reshape(MVL_RH, 100,1), 'all', 'omitnan');
 
 
