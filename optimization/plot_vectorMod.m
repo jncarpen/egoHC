@@ -23,8 +23,17 @@ for row = 1:nBins
 end
 
 % reshape vectors, @todo use phase angle instead of peak?
+% +180 brings 'forward' to 'up' (not sure what to do here)
 pred_val = reshape(peak_pred', 100, 1);
 data_val = reshape(peak_data', 100, 1);
+
+% reshape MVL (scaling factor)
+data_MVL = reshape(model.modStrength.HD_MVL, 100, 1);
+data_MVL(isnan(data_MVL))=0;
+
+model_MVL = reshape(model.modStrength.RH_MVL, 100, 1);
+model_MVL(isnan(model_MVL))=0;
+
 
 % map small values onto big values
 fac = 1.25;
@@ -42,8 +51,11 @@ u_data = cos(data_val * pi/180);
 v_data = sin(data_val * pi/180);
 
 % find scaling factor
-sf = abs(pred_scale./(sqrt((u.^2)+(v.^2))));
-sf_data = abs(data_scale./(sqrt((u_data.^2)+(v_data.^2))));
+% sf = abs(pred_scale./(sqrt((u.^2)+(v.^2))));
+% sf_data = abs(data_scale./(sqrt((u_data.^2)+(v_data.^2))));
+
+sf = model_MVL;
+sf_data = data_MVL;
 % scale the vectors
 uprime = u.*sf; 
 vprime = v.*sf;

@@ -26,14 +26,21 @@ end
 pred_val = reshape(peak_pred', 100, 1);
 data_val = reshape(peak_data', 100, 1);
 
+% reshape MVL (scaling factor)
+data_MVL = reshape(model.modStrength.HD_MVL, 100, 1);
+data_MVL(isnan(data_MVL))=0;
+
+model_MVL = reshape(model.modStrength.RH_MVL, 100, 1);
+model_MVL(isnan(model_MVL))=0;
+
 % map small values onto big values
-fac = 2;
-fac_data =.75;
-pred_scale_unmapped = reshape((1./binwise_err)', 100, 1);
-% map scale for predicted data onto 0-1
-pred_scale = (pred_scale_unmapped-min(pred_scale_unmapped))*(1-0)/(max(pred_scale_unmapped)-min(pred_scale_unmapped)) + 0;
-pred_scale = pred_scale.*fac;
-data_scale = reshape(data_MVL', 100, 1).*fac_data;
+% fac = 2;
+% fac_data =.75;
+% pred_scale_unmapped = reshape((1./binwise_err)', 100, 1);
+% % map scale for predicted data onto 0-1
+% pred_scale = (pred_scale_unmapped-min(pred_scale_unmapped))*(1-0)/(max(pred_scale_unmapped)-min(pred_scale_unmapped)) + 0;
+% pred_scale = pred_scale.*fac;
+% data_scale = reshape(data_MVL', 100, 1).*fac_data;
 
 % define vector orientations
 u = cos(pred_val * pi/180); 
@@ -42,8 +49,12 @@ u_data = cos(data_val * pi/180);
 v_data = sin(data_val * pi/180);
 
 % find scaling factor
-sf = abs(pred_scale./(sqrt((u.^2)+(v.^2))));
-sf_data = abs(data_scale./(sqrt((u_data.^2)+(v_data.^2))));
+% sf = abs(pred_scale./(sqrt((u.^2)+(v.^2))));
+% sf_data = abs(data_scale./(sqrt((u_data.^2)+(v_data.^2))));
+
+sf = model_MVL;
+sf_data = data_MVL;
+
 % scale the vectors
 uprime = u.*sf; 
 vprime = v.*sf;
