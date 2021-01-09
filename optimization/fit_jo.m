@@ -55,6 +55,7 @@ vars = params2var(params, freeList);
 
 % calling fminsearch
 % options = optimset('Display','iter','PlotFcns',@optimplotfval);
+options = optimset('Display','off');
 [vars,fval,exitflag,out, save] = fminsearch_mod('fitFunction', vars, options, funName, params, freeList, varargin);
 % [results,vars,fval,exitflag,out] = evalc("fminsearch('fitFunction', vars, options, funName, params, freeList, varargin)");
 
