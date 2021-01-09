@@ -13,6 +13,8 @@ function [sim] = simulate_place(param)
 %
 %   Jo Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% turn warnings off
+warning('off','all')
 
 % pull out position information
 t = param.position(:,1);
@@ -94,22 +96,22 @@ spiketimes = sort(st_unsorted, 'ascend'); % simulated timestamps
 
 
 %% visualize
-figure; set(gcf,'color','w');
-pathPlot_hd(param.position, spiketimes, get_hd(param.position))
-title("") % remove title
-
-figure; set(gcf,'color','w');
-map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
-peakRate = nanmax(nanmax(map.z));
-rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
-plot.colorMap(map.z)
-pbaspect([1 1 1])
-c = colorbar; c.FontName = 'Helvetica'; c.FontSize = 15;
-colormap(gca,'jet')
-set(gca,'xtick',[])
-set(gca,'ytick',[])
-title(rate_map_title, 'FontName', 'Helvetica', 'FontSize', 15, 'FontWeight', 'normal');
-box off
+% figure; set(gcf,'color','w');
+% pathPlot_hd(param.position, spiketimes, get_hd(param.position))
+% title("") % remove title
+% 
+% figure; set(gcf,'color','w');
+% map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
+% peakRate = nanmax(nanmax(map.z));
+% rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
+% plot.colorMap(map.z)
+% pbaspect([1 1 1])
+% c = colorbar; c.FontName = 'Helvetica'; c.FontSize = 15;
+% colormap(gca,'jet')
+% set(gca,'xtick',[])
+% set(gca,'ytick',[])
+% title(rate_map_title, 'FontName', 'Helvetica', 'FontSize', 15, 'FontWeight', 'normal');
+% box off
 
 % subplot(2,2,3)
 % surf(X,Y,fr_map,'FaceAlpha',0.5);
@@ -118,5 +120,8 @@ box off
 %% save stuff
 sim.spiketimes = spiketimes;
 sim.position = param.position;
+
+% turn warnings back on
+warning('on','all')
 
 end 

@@ -78,36 +78,35 @@ SpikeTrain_sim = binnedSpikes;
 sim.spiketimes = SpikeTimes_sim;
 sim.spiketrain = SpikeTrain_sim;
 sim.hd = hd_sim;
+sim.position = param.position;
 
 % show user their simulated cell!
-figure
-hold on;
-set(gcf,'color','w');
-pathPlot_hd(param.position, SpikeTimes_sim, hd_sim) % from -180 to +180
-c1 = colorbar; c1.Ticks = [0 90 180 270 360]; c1.FontSize = 25;
-h1 = plot(rlX, rlY, 'o', 'MarkerSize',15);
-set(h1, 'markerfacecolor', 'k');
-color_plot_title = strcat('theta_{pref} = ', sprintf('%.f',param.theta));
-title(color_plot_title, 'FontName', 'Calibri light', 'FontSize', 30, 'FontWeight', 'normal');
-
-
-figure
-pathPlot_quiver(param.position, SpikeTimes_sim, hd_sim)
-
-
-figure
-map = analyses.map(param.position, SpikeTimes_sim, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
-peakRate = nanmax(nanmax(map.z));
-rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
-plot.colorMap(map.z)
-pbaspect([1 1 1])
-colormap(gca,'jet')
-c2 = colorbar; c2.FontSize = 25;
-set(gca,'xtick',[])
-set(gca,'ytick',[])
-title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 30, 'FontWeight', 'normal');
-box off
-
-sim.position = param.position;
+% figure
+% hold on;
+% set(gcf,'color','w');
+% pathPlot_hd(param.position, SpikeTimes_sim, hd_sim) % from -180 to +180
+% c1 = colorbar; c1.Ticks = [0 90 180 270 360]; c1.FontSize = 25;
+% h1 = plot(rlX, rlY, 'o', 'MarkerSize',15);
+% set(h1, 'markerfacecolor', 'k');
+% color_plot_title = strcat('theta_{pref} = ', sprintf('%.f',param.theta));
+% title(color_plot_title, 'FontName', 'Calibri light', 'FontSize', 30, 'FontWeight', 'normal');
+% 
+% 
+% figure
+% pathPlot_quiver(param.position, SpikeTimes_sim, hd_sim)
+% 
+% 
+% figure
+% map = analyses.map(param.position, SpikeTimes_sim, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
+% peakRate = nanmax(nanmax(map.z));
+% rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
+% plot.colorMap(map.z)
+% pbaspect([1 1 1])
+% colormap(gca,'jet')
+% c2 = colorbar; c2.FontSize = 25;
+% set(gca,'xtick',[])
+% set(gca,'ytick',[])
+% title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 30, 'FontWeight', 'normal');
+% box off
 
 end
