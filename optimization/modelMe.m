@@ -83,12 +83,9 @@ tSpk = tSpk(tSpk < stopTime & tSpk > startTime);
 
 edgesT = linspace(startTime,stopTime,numel(t)+1); % binsize is close to video frame rate
 
-% bin the spikes
-binnedSpikes = histcounts(tSpk,edgesT);
+% [unsmoothed] spike train
+SpkTrn = histcounts(tSpk,edgesT);
 
-% smooth the spike train (by some factor, sigma)
-sigma = 2; % smoothing factor
-SpkTrn = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate'); % smooth spiketrain
 
 
 %% bin the spatial arena
@@ -118,10 +115,12 @@ for col = 1:length(xCenter)
     end
 end
 
-%% compute values for each bin
 
-% define spatial bins
-numBins_HD = 10; % 24 degree bins
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% GENERATE RATE MAPS (DATA)
+% define bins
+nBins = 10; % spatial bin size
+numBins_HD = 10; % angular bins (36 deg/ea)
 binWidth_deg = 360/numBins_HD+1;
 angBins = linspace(0,360,numBins_HD+1);
 
@@ -133,159 +132,184 @@ for i = 1:length(angBins)
     end
 end
 
-% clear old variables
-clear rateMap rateMap_HD R_ratio R_ratio_summed pdx_hd r_xyh_mat ...
-    ang_occupancy
+
+% clear relevant variables
+clear loc3d spatial_occupancy rateMap r_xyh R_xyh
 
 % initialize variables
-spatial_occupancy=zeros(nBins,nBins);
-RR = zeros(nBins, nBins, numBins_HD);
-R_ratio = cell(nBins,nBins);
-angOccArray = cell(nBins,nBins);
+loc3d = zeros(nBins,nBins, 2).* NaN;
+spatial_occupancy = zeros(nBins,nBins).*NaN;
+rateMap = zeros(nBins,nBins).*NaN;
+r_xyh = zeros(nBins,nBins, numBins_HD).*NaN;
+R = zeros(nBins,nBins, numBins_HD).*NaN;
 
-nBins = 10;
+% set initial values for the loop
 count = 1;
-didNotPass = 0;
 backwardY = nBins:-1:1; forwardX = 1:1:nBins;
-
 
 % iterate through every 2D spatial bin 
 for row = 1:nBins
     for col = 1:nBins
-        yNow = backwardY(row);
-        xNow = forwardX(col);
+        % what spatial bin are we iterating over?
+        yNow = backwardY(row); xNow = forwardX(col);
+        
+        % find frames when animal occupied this spatial bin
         indices = find(yNow == binY & xNow == binX);
         timeInBin = length(indices)*fs; % occupancy (s)
         
-        % x and y now in matrix form 
-        xNow_(row,col) = xNow;
-        yNow_(row,col) = yNow;
-        
-        % save the spatial bin numbers for each count
-        spatbinNum(count,1) = xNow;
-        spatbinNum(count,2) = yNow;
-        
         % coordinates (in cm) of the location of this particular bin
-        location_now{row,col} = [binCenters(count,1), binCenters(count,2)]; % array form
-        loc3d(row,col,:) = [binCenters(count,1), binCenters(count,2)]; % matrix form
+        loc3d(row,col,:) = [binCenters(count,1), binCenters(count,2)];
 
         % save occupancy 
         spatial_occupancy(row,col) = timeInBin;
 
-        % spike train for this *spatial* bin
+        % spike train for this spatial bin
         spikes_here = SpkTrn(indices); hd_here = head_direction(indices); 
         
-%         disp(strcat('bin ', sprintf('%.f', count), 'has ', sprintf('%.2f', sum(spikes_here)), ' spikes...'))
-        
-        % find head direction at times of spikes
-        spikeInds = find(spikes_here > 0); % since its smoothed
+        % find head direction (deg) at times of spikes
+        spikeInds = find(spikes_here > 0); % since it might be smoothed
         angSpk = hd_here(spikeInds); % angles (in deg)
+        % @todo- account for timestamps that have a spikecount > 1
 
-        % make ratemap that does not exclude any bins (pre-threshold)
+        % make spatial ratemap that does not exclude any bins (pre-threshold)
+        % this is for plotting purposes only
         if ~isempty(spikeInds)
             rateMap_inclusive(row,col) = sum(spikes_here./timeInBin);
         else
             rateMap_inclusive(row,col) = 0;
         end
         
-        % set a bin-by-bin threshold
-        if ~isempty(spikeInds) && length(spikeInds) > 10 && timeInBin > 0.5
-        % if ~isempty(spikeInds) && length(spikeInds) > 5 && timeInBin > 0.5 && all(ang_occupancy > .05)
-        % are at least 50 degrees covered?
+        % compute average firing rate for this spatial bin
+        r_xy = sum(spikes_here./timeInBin);
         
-            % compute angular occupany in each *HD* bin
-            [ang_counts, ~, angBinIdx] = histcounts(mod(hd_here, 360), angBins); % circular histogram
-            pdx_hd{row,col} = ang_counts./sum(ang_counts); % probability distribution
-            
-            % check to make sure the pdx sums to 1
-%             if not(sum(pdx_hd{row,col}, 'omitnan') == 1)
-%                 disp(strcat('pdx_hd', '(', sprintf('%.f', row), ',' ,sprintf('%.f', col), ') does not sum to 1.'));
-%             end
-            
-            % calculate angular occupancy for this *spatial bin*
-            ang_occupancy(row,col, :) = ang_counts .* fs; % how many seconds the animal was in each angular bin
-            
-            
-            % compute normal firing rate map [r(x,y)] for this 2D spatial bin
-            r_xy = sum(spikes_here./timeInBin); % firing rate in this spatial bin
-            rateMap(row,col) = r_xy; % save for later
-            
-            for H = 1:length(angBinCtrs)
-                % find indices of timestamps when animal occupied both
-                % spatial_bin(row,col) and HD_bin(H) --> (bin(x,y,H))
-                idx_H = find(H == angBinIdx);
-                
-                % amount of time animal spend in bin(x,y,H)
-                time_H = length(idx_H)*fs;
-                
-                % spiketimes in bin(x,y,H) 
-                spk_H = spikes_here(idx_H);
-                
-                % save angular [spike] occupancy (in counts)
-                spk_H(spk_H>0) = 1;
-                angOccArray{row,col}(H,1) = sum(spk_H, 'omitnan');
-                
-                % firing rate of cell in bin(x,y,H)
-                r_xyh = sum(spk_H./time_H);
-                rateMap_HD{row,col}(H,1) = r_xyh; % save in cell array
-                r_xyh_mat(row,col,H) = r_xyh; % save in matrix
-                
-                % FR ratio in bin(x,y,H), R(x,y,H) --> [this is what we compare with model output]
-                R_xyh = r_xyh./r_xy; 
-                R_ratio{row,col}(H,1) = R_xyh; % save in cell array 
-                RR(row,col,H) = R_xyh; % save in matrix
-            
-            end
-            
-            % summed R_ratio, @todo: comment this better later... lol
-            R_ratio_summed(row,col) = nansum(R_ratio{row,col});
-
-        else
-           % disp(strcat('bin ', sprintf('%.f', count), ' did not pass criteria...'))
-           didNotPass = didNotPass + 1; % add one to the 'didNotPass' count
-           rateMap(row,col) = NaN; % throw a NaN into the rateMap
-           r_xyh_mat(row,col,:) = NaN; % throw a NaN into the rateMap that is conditioned on HD
-           angOccArray{row,col} = [];
-           ang_occupancy(row,col, :) = zeros(1,10)*NaN;
+        % make spatial ratemap
+        if timeInBin >= 1 % 1000 ms
+            rateMap(row,col) = r_xy; 
         end
         
-        count = count+1;
+            % compute angular occupany in each *HD* bin
+            [ang_counts, ~, angBinIdx] = histcounts(mod(hd_here, 360), ...
+                angBins); 
+            
+            % probability distribution
+            pdx_hd{row,col} = ang_counts./sum(ang_counts);
+            
+            % calculate angular occupancy (s) for this *spatial bin*
+            ang_occupancy_now = ang_counts .* fs;            
+            
+            for H = 1:length(angBinCtrs)
+                % amount of time animal spent in this HD bin (s)
+                time_H = ang_occupancy_now(H);
+                
+                % find indices when animal occupied this HD bin
+                idx_H = find(angBinIdx == H);
+                
+                if time_H >= 0.1 % 100 ms
+                    % spiketimes in bin(x,y,H)
+                    spk_H = spikes_here(idx_H);
+                    
+                    % firing rate of cell in bin(x,y,H)
+                    r_xyh_now = sum(spk_H./time_H);
+                    r_xyh(row,col,H) = r_xyh_now;
+
+                    % FR ratio, R(x,y,H) --> [this is what we compare with model output]
+                    if r_xy == 0 && r_xyh_now == 0
+                        R_xyh_now = 0;
+                        R(row,col,H) = 0;
+                    else
+                        R_xyh_now = r_xyh_now./r_xy;
+                        R(row,col,H) = R_xyh_now;
+                    end
+                    
+                end
+            end 
+    end
+    
+    count = count+1;
+end
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% INITIALIZE PARAMETERS & PERFORM OPTIMIZATION
+
+% grab X/Y positions (cm)
+X = loc3d(:,:,1); 
+Y = loc3d(:,:,2); 
+
+% head direction bins (deg)
+H = zeros(nBins, nBins, nBins);
+for h = 1:length(angBinCtrs)
+    H(:,:,h) = repmat(angBinCtrs(h),10,10);
+end
+
+% perform optimization
+[output] = fit_jo('cosErr',params,{'g','thetaP','xref','yref'},X,Y,H,R);
+
+% output parameters variable
+OP = output.params;
+
+% determine whether the reference point was distant
+if OP.xref > 300 || OP.yref > 300
+    model.where = 'distant';
+else 
+    model.where = 'nearby';
+end
+
+% correct for negative values of preferred theta(if there are any)
+output.params.thetaP = mod(OP.thetaP, 360);
+
+% best fit
+[model.pred, model.err] = cosFit(OP, X, Y, H, R);
+
+% get hd tuning curves for each spatial bin (for predicted)
+clear pred_values_reshaped
+for row=1:nBins
+    for col=1:nBins
+        pred_values_reshaped{row,col}(:) = model.pred(row,col,:);
     end
 end
 
-% display number of spatial bins that didn't pass the criteria
-% disp(didNotPass)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% COMPUTE VARIANCE EXPLAINED
+%% (1) Variance Explained by Place
+var_place = 1 - (var(r_xyh - rateMap, 1, [3 2 1], 'omitnan')...
+    ./var(r_xyh, 1, [3 2 1], 'omitnan'));
 
 
-%% find HD tuning strength for this neuron (real data)
-% get angular bin centers in radians
+%% (2) Variance Explained by RH Angle (Model)
+var_model = 1 - (var(r_xyh - model.pred, 1, [3 2 1], 'omitnan') ...
+    ./var(r_xyh, 1, [3 2 1], 'omitnan'));
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% FIND TUNING/MODULATION STRENGTH
+%% (A) HD Modulation Tuning Strength (Data)
+
+% get angular bin centers (rad)
 angBinCtrs_rad = deg2rad(angBinCtrs)';
 
+% clear relevant variables
 clear mu_rad mu_deg MVL
+
 warning('off','all')
 for row = 1:nBins
     for col = 1:nBins
         % grab hd tuning curve in each spatial bin
-        tuningCurve_now = reshape(RR(row,col,:), 10, 1);
-        
-        % get angular occupancy
-        angOcc_now = angOccArray{row,col};
+        tuningCurve_now = reshape(R(row,col,:), 10, 1);
         
         % take circular mean (in RADIANS)
         % note: in jercog paper they sum (which would just be mu_rad * 10)
-        [mu_rad_uncorrected, ~, ~] = circ_mean(angBinCtrs_rad, tuningCurve_now);
+        [mu_rad_uncorrected, ~, ~] = circ_mean(angBinCtrs_rad, ...
+            tuningCurve_now);
         mu_rad(row,col) = mod(mu_rad_uncorrected, 2*pi);
         
         % get circular mean in deg
         mu_deg(row,col) = mod(rad2deg(mu_rad(row,col)), 360);
         
-        
-        if ~isempty(angOcc_now)
-            % find mean resultant length
-            MVL(row,col) = circ_r(angBinCtrs_rad, angOcc_now);
-        else
-            MVL(row,col) = 0;
-        end
+        % mean vector length
+        MVL(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now);
         
     end
 end
@@ -298,76 +322,8 @@ MVL(MVL==0) = NaN;
 tuningStrength_HD = mean(reshape(MVL, 100,1), 'all', 'omitnan');
 
 
-%% fit the model
+%% (B) RH Modulation Tuning Strength (Model)
 
-% get center of the box;
-% [boxCtrX,boxCtrY] = getBoxCenter(P);
-
-% set initial values for parameters to be fit
-% clear p
-% p.g = .25;
-% p.thetaP = 0;
-% p.xref = boxCtrX;
-% p.yref = boxCtrY;
-
-clear p
-p.g = params.g;
-p.thetaP = params.thetaP;
-p.xref = params.xref;
-p.yref = params.yref;
-
-% set values for stable parameters
-X = loc3d(:,:,1); 
-Y = loc3d(:,:,2); 
-
-H = zeros(nBins, nBins, nBins);
-for h = 1:length(angBinCtrs)
-    H(:,:,h) = repmat(angBinCtrs(h),10,10);
-end
-
-% make a copy of RR (save as R)
-R = RR;
-
-% have the model take a first guess given the parameters we've fed in
-% [firstGuess_pred, firstGuess_err] = cosFit(p,X,Y,H,R);
-
-% fit the model (make sure this is the modified 'fit' function (not the orig))
-clear output
-[output] = fit_jo('cosErr',p,{'g','thetaP','xref','yref'},X,Y,H,R);
-
-% reassign variable name (debugging)
-OP = output.params;
-
-% correct for negative values of preferred theta(if there are any)
-output.params.thetaP = mod(OP.thetaP, 360);
-
-% best fit 
-[model.pred, model.err] = cosFit(OP, X, Y, H, R);
-
-% get hd tuning curves for each spatial bin (for predicted)
-clear pred_values_reshaped
-for row=1:nBins
-    for col=1:nBins
-        pred_values_reshaped{row,col}(:) = model.pred(row,col,:);
-    end
-end
-
-
-%% compute variance explained (as in Jercog et al.)
-% (1) variance explained by place tuning (?)
-num = r_xyh_mat - rateMap;
-num = var(num, 1, [3 2 1], 'omitnan');
-den = var(r_xyh_mat, 1, [3 2 1], 'omitnan');
-var_place = 1 - (num/den);
-
-% (2) variance explained overall (by the model)
-numMod = r_xyh_mat - model.pred;
-numMod = var(numMod, 1, [3 2 1], 'omitnan');
-denMod = var(r_xyh_mat, 1, [3 2 1], 'omitnan');
-var_model = 1 - (numMod/denMod);
-
-
-%% find RH tuning strength for this neuron (model data)
 % get angular bin centers in radians
 angBinCtrs_rad = deg2rad(angBinCtrs)';
 
@@ -377,40 +333,39 @@ for row = 1:nBins
     for col = 1:nBins
         % grab hd tuning curve in each spatial bin
         tuningCurve_now = reshape(model.pred(row,col,:), 10, 1);
-%         tuningCurve_now(tuningCurve_now<0)=0;
         
         % take circular mean (in RADIANS)
         % note: in jercog paper they sum (which would just be mu_rad * 10)
-        [mu_rad_RH_uncorrected, ~, ~] = circ_mean(angBinCtrs_rad, tuningCurve_now);
+        [mu_rad_RH_uncorrected, ~, ~] = circ_mean(angBinCtrs_rad, ...
+            tuningCurve_now);
         mu_rad_RH(row,col) = mod(mu_rad_RH_uncorrected, 2*pi);
         
-        
-        % get circular mean in deg
+        % get circular mean in degrees
         mu_deg_RH(row,col) = mod(rad2deg(mu_rad_RH(row,col)), 360);
         
-        % find mean resultant length
+        % find circular mean resultant length
         MVL_RH(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now);
         
     end
 end
 warning('on','all')
 
-% take mean of MVLs to get head direction tuning strength
-% for this unit
+% linear average of tuning strength
 MVL_RH(MVL_RH==0) = NaN;
 MVL_RH(MVL_RH==Inf) = NaN; % get rid of infinity values
 tuningStrength_RH = mean(reshape(MVL_RH, 100,1), 'all', 'omitnan');
 
 
-%% save outputs in a struct
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% SAVE OUTPUTS TO A STRUCT
 model.data = R;
 model.loc3d = loc3d;
-model.datacell = R_ratio;
+model.datacell = R;
 model.bins = angBinCtrs;
 model.rateMap = rateMap;
 model.rateMapInclusive = rateMap_inclusive;
 model.spatbins = binCenters;
-model.spatbinsnum = spatbinNum;
+% model.spatbinsnum = spatbinNum;
 model.spatial_occ = spatial_occupancy;
 model.fval = output.fval;
 model.exitflag = output.exitflag;
@@ -419,13 +374,13 @@ model.bestParams = output.params;
 model.saved = output.saved;
 model.varExplained.place = var_place;
 model.varExplained.model = var_model;
-model.rxyh = r_xyh_mat;
+model.rxyh = r_xyh;
 model.modStrength.HD = tuningStrength_HD;
 model.modStrength.RH = tuningStrength_RH;
 model.modStrength.HD_prefVec = mu_deg;
 model.modStrength.RH_prefVec = mu_deg_RH;
 model.modStrength.HD_MVL = MVL;
 model.modStrength.RH_MVL = MVL_RH;
-model.predcell = pred_values_reshaped; % % get hd tuning curves for each spatial bin (for predicted)
+model.predcell = pred_values_reshaped; % get hd tuning curves for each spatial bin (for predicted)
 end
 
