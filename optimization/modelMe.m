@@ -5,8 +5,7 @@ function [model] = modelMe(P, ST, head_direction, params)
 %   params:             struct containing initial values for 4 parameters
 %   J. Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% get information about cell
-
+%% SET EVERYTHING UP
 % parse position data
 t = P(:,1); % time (seconds)
 fs = mode(diff(t)); % sampling freq
@@ -15,102 +14,37 @@ y = P(:,3);
 x2 = P(:,4);
 y2 = P(:,5);
 
-%% option 1: apply a speed threshold
-% % speed
-% [s, ~] = get_speed(P);
-% s = s(:,1); % grab first column
-% 
-% % speed threshold before we make the spiketrain
-% % Get speed at time of spike and put into vector SpikeSpeed
-% SpikeSpeed = interp1 (t, s, ST); %in cm/s
-% 
-% % Set threshold
-% thr_d= 4; % this is the threshold set in jercog et al. (diff for dMan)       
-% thr_u= 100;
-% 
-% % Apply threshold 
-% a=find(SpikeSpeed>thr_d);
-% b=find(SpikeSpeed<thr_u);
-% 
-% % make position samples NaN
-% x(find(s<thr_d))=NaN; x(find(s>thr_u))=NaN;
-% y(find(s<thr_d))=NaN; y(find(s>thr_u))=NaN;
-% x2(find(s<thr_d))=NaN; x2(find(s>thr_u))=NaN;
-% y2(find(s<thr_d))=NaN; y2(find(s>thr_u))=NaN;
-% position = [t, x, y, x2, y2];
-% 
-% % Combined threshold 
-% c=intersect(a,b);
-% 
-% % Vector with filtered spikes - based on indexing from c
-% SpikeSpeed_fil=ST(c);
-% tSpk = SpikeSpeed_fil; % spike times
-% 
-% % MAKE SPIKE TRAIN (bin the spikes)- this is speed-thresholded
-% startTime = t(1);
-% stopTime = t(end);
-% 
-% % remove spike times that are outside the range of tracking times
-% tSpk = tSpk(tSpk < stopTime & tSpk > startTime);
-% 
-% edgesT = linspace(startTime,stopTime,numel(t)+1); % binsize is close to video frame rate
-% 
-% binnedSpikes = histcounts(tSpk,edgesT);
-% 
-% sigma = 2; % smoothing factor
-% SpkTrn = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate'); % smooth spiketrain
-% 
-% % get head direction values
-% % head_direction = get_hd(position);
-% 
-% % make sure that head direction ranges from 0-360 deg
-% if nanmax(head_direction) < 350
-%     head_direction = rad2deg(head_direction);
-% else
-%     head_direction = head_direction;
-% end
-
-%% option 2: make a spiketrain without speed thresholding
-tSpk = ST; % spike times
-% position = P; % rename position
-
-% MAKE SPIKE TRAIN (bin the spikes)- this is speed-thresholded
-startTime = t(1);
-stopTime = t(end);
+% spike times (s)
+tSpk = ST; 
 
 % remove spike times that are outside the range of tracking times
+startTime = t(1); stopTime = t(end);
 tSpk = tSpk(tSpk < stopTime & tSpk > startTime);
 
-edgesT = linspace(startTime,stopTime,numel(t)+1); % binsize is close to video frame rate
+% histogram edges (binsize close to video frame rate)
+edgesT = linspace(startTime,stopTime,numel(t)+1);
 
 % [unsmoothed] spike train
 SpkTrn = histcounts(tSpk,edgesT);
 
-
-
-%% bin the spatial arena
 % divide the arena into 100 2D spatial bins
 nBins = 10;
 [~, xEdges, yEdges, binX, binY] = histcounts2(x,y,nBins);
 yEdges = fliplr(yEdges); % flip y-vector
 
+% get bin centers
 for i = 1:length(xEdges)
     if i+1 <= length(xEdges)
         xCenter(i) = ((xEdges(i+1)-xEdges(i))/2)+xEdges(i);
-    end
-end
-
-for i = 1:length(yEdges)
-    if i+1 <= length(yEdges)
         yCenter(i) = ((yEdges(i+1)-yEdges(i))/2)+yEdges(i);
     end
 end
 
+% bin centers (vectors)
 count = 1;
 for col = 1:length(xCenter)
     for row = 1:length(yCenter)
         binCenters(count,1:2) = [xCenter(row), yCenter(col)];
-%         plot(xCenter(row), yCenter(col), '.'); hold on;
         count = count+1;
     end
 end
@@ -285,8 +219,6 @@ var_model = 1 - (var(r_xyh - model.pred, 1, [3 2 1], 'omitnan') ...
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% FIND TUNING/MODULATION STRENGTH
-%% (A) HD Modulation Tuning Strength (Data)
-
 % get angular bin centers (rad)
 angBinCtrs_rad = deg2rad(angBinCtrs)';
 
@@ -298,6 +230,7 @@ for row = 1:nBins
     for col = 1:nBins
         % grab hd tuning curve in each spatial bin
         tuningCurve_now = reshape(R(row,col,:), 10, 1);
+        tuningCurve_now_RH = reshape(model.pred(row,col,:), 10, 1);
         
         % take circular mean (in RADIANS)
         % note: in jercog paper they sum (which would just be mu_rad * 10)
@@ -305,55 +238,30 @@ for row = 1:nBins
             tuningCurve_now);
         mu_rad(row,col) = mod(mu_rad_uncorrected, 2*pi);
         
+        [mu_rad_RH_uncorrected, ~, ~] = circ_mean(angBinCtrs_rad, ...
+            tuningCurve_now_RH);
+        mu_rad_RH(row,col) = mod(mu_rad_RH_uncorrected, 2*pi);
+        
         % get circular mean in deg
         mu_deg(row,col) = mod(rad2deg(mu_rad(row,col)), 360);
+        mu_deg_RH(row,col) = mod(rad2deg(mu_rad_RH(row,col)), 360);
         
         % mean vector length
         MVL(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now);
+        MVL_RH(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now);
+
         
     end
 end
 warning('on','all')
 
-% take mean of MVLs to get head direction tuning strength
-% for this unit
-MVL(MVL==Inf) = NaN; % get rid of infinity values
-MVL(MVL==0) = NaN;
+% linear average of tuning strengths
+MVL(MVL==Inf) = NaN; MVL(MVL==0) = NaN;
 tuningStrength_HD = mean(reshape(MVL, 100,1), 'all', 'omitnan');
 
-
-%% (B) RH Modulation Tuning Strength (Model)
-
-% get angular bin centers in radians
-angBinCtrs_rad = deg2rad(angBinCtrs)';
-
-clear mu_rad_RH mu_deg_RH MVL_RH
-warning('off','all')
-for row = 1:nBins
-    for col = 1:nBins
-        % grab hd tuning curve in each spatial bin
-        tuningCurve_now = reshape(model.pred(row,col,:), 10, 1);
-        
-        % take circular mean (in RADIANS)
-        % note: in jercog paper they sum (which would just be mu_rad * 10)
-        [mu_rad_RH_uncorrected, ~, ~] = circ_mean(angBinCtrs_rad, ...
-            tuningCurve_now);
-        mu_rad_RH(row,col) = mod(mu_rad_RH_uncorrected, 2*pi);
-        
-        % get circular mean in degrees
-        mu_deg_RH(row,col) = mod(rad2deg(mu_rad_RH(row,col)), 360);
-        
-        % find circular mean resultant length
-        MVL_RH(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now);
-        
-    end
-end
-warning('on','all')
-
-% linear average of tuning strength
-MVL_RH(MVL_RH==0) = NaN;
-MVL_RH(MVL_RH==Inf) = NaN; % get rid of infinity values
+MVL_RH(MVL_RH==Inf) = NaN; MVL_RH(MVL_RH==0) = NaN;
 tuningStrength_RH = mean(reshape(MVL_RH, 100,1), 'all', 'omitnan');
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -383,4 +291,62 @@ model.modStrength.HD_MVL = MVL;
 model.modStrength.RH_MVL = MVL_RH;
 model.predcell = pred_values_reshaped; % get hd tuning curves for each spatial bin (for predicted)
 end
+
+
+
+%%
+%% option 1: apply a speed threshold
+% % speed
+% [s, ~] = get_speed(P);
+% s = s(:,1); % grab first column
+% 
+% % speed threshold before we make the spiketrain
+% % Get speed at time of spike and put into vector SpikeSpeed
+% SpikeSpeed = interp1 (t, s, ST); %in cm/s
+% 
+% % Set threshold
+% thr_d= 4; % this is the threshold set in jercog et al. (diff for dMan)       
+% thr_u= 100;
+% 
+% % Apply threshold 
+% a=find(SpikeSpeed>thr_d);
+% b=find(SpikeSpeed<thr_u);
+% 
+% % make position samples NaN
+% x(find(s<thr_d))=NaN; x(find(s>thr_u))=NaN;
+% y(find(s<thr_d))=NaN; y(find(s>thr_u))=NaN;
+% x2(find(s<thr_d))=NaN; x2(find(s>thr_u))=NaN;
+% y2(find(s<thr_d))=NaN; y2(find(s>thr_u))=NaN;
+% position = [t, x, y, x2, y2];
+% 
+% % Combined threshold 
+% c=intersect(a,b);
+% 
+% % Vector with filtered spikes - based on indexing from c
+% SpikeSpeed_fil=ST(c);
+% tSpk = SpikeSpeed_fil; % spike times
+% 
+% % MAKE SPIKE TRAIN (bin the spikes)- this is speed-thresholded
+% startTime = t(1);
+% stopTime = t(end);
+% 
+% % remove spike times that are outside the range of tracking times
+% tSpk = tSpk(tSpk < stopTime & tSpk > startTime);
+% 
+% edgesT = linspace(startTime,stopTime,numel(t)+1); % binsize is close to video frame rate
+% 
+% binnedSpikes = histcounts(tSpk,edgesT);
+% 
+% sigma = 2; % smoothing factor
+% SpkTrn = imgaussfilt(binnedSpikes, sigma, 'Padding', 'replicate'); % smooth spiketrain
+% 
+% % get head direction values
+% % head_direction = get_hd(position);
+% 
+% % make sure that head direction ranges from 0-360 deg
+% if nanmax(head_direction) < 350
+%     head_direction = rad2deg(head_direction);
+% else
+%     head_direction = head_direction;
+% end
 
