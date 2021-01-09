@@ -7,7 +7,7 @@ function [err] = cosErr(p,X,Y,H,R)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % model (predicted value)
-pred = (p.g).*cosd(1+(atan2d(p.yref-Y, p.xref-X)+180 - H) - p.thetaP);
+pred = 1 + (p.g).*cosd((atan2d(p.yref-Y, p.xref-X)+180 - H) - p.thetaP);
 pred(pred == 0) = NaN;
 
 % calculate the sums of squared error between 
