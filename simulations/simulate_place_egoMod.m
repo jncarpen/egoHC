@@ -152,28 +152,28 @@ SpikeTrain_sim = binnedSpikes;
 
 %% visualize (with colormap)
 
-figure; set(gcf,'color','w');
-figTit = strcat('preferred theta =', {' '},  sprintf('%.f', param.theta), {' '}, 'degrees');
-% sgtitle(figTit{1,1}, 'FontName', 'Calibri light', 'FontSize', 25, 'FontWeight', 'normal')
-
-subplot(1,2,1)
-hold on;
-pathPlot_hd(param.position, spiketimes, get_hd(param.position))
-title("")
-hold off;
-
-subplot(1,2,2)
-map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
-peakRate = nanmax(nanmax(map.z));
-rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
-plot.colorMap(map.z)
-pbaspect([1 1 1])
-colorbar
-colormap(gca,'jet')
-set(gca,'xtick',[])
-set(gca,'ytick',[])
-title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
-box off
+% figure; set(gcf,'color','w');
+% figTit = strcat('preferred theta =', {' '},  sprintf('%.f', param.theta), {' '}, 'degrees');
+% % sgtitle(figTit{1,1}, 'FontName', 'Calibri light', 'FontSize', 25, 'FontWeight', 'normal')
+% 
+% subplot(1,2,1)
+% hold on;
+% pathPlot_hd(param.position, spiketimes, get_hd(param.position))
+% title("")
+% hold off;
+% 
+% subplot(1,2,2)
+% map = analyses.map(param.position, spiketimes, 'smooth', 2, 'binWidth', 150/50); % calculate tuning curve
+% peakRate = nanmax(nanmax(map.z));
+% rate_map_title = strcat('peak fr: ', sprintf('%.2f',peakRate));
+% plot.colorMap(map.z)
+% pbaspect([1 1 1])
+% colorbar
+% colormap(gca,'jet')
+% set(gca,'xtick',[])
+% set(gca,'ytick',[])
+% title(rate_map_title, 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
+% box off
 
 %% visualize (with arrow spike plot)
 % figure; set(gcf,'color','w');
