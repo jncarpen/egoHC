@@ -19,6 +19,12 @@ tSpk = ST;
 
 % remove spike times that are outside the range of tracking times
 startTime = t(1); stopTime = t(end);
+% histogram edges (binsize close to video frame rate)
+edgesT = linspace(startTime,stopTime,numel(t)+1);
+
+% [unsmoothed] spike train
+SpkTrn = histcounts(tSpk,edgesT);
+
 tSpk = tSpk(tSpk < stopTime & tSpk > startTime);
 
 % histogram edges (binsize close to video frame rate)
