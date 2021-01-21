@@ -11,8 +11,8 @@ t = P(:,1); % time (seconds)
 fs = mode(diff(t)); % sampling freq
 x = P(:,2); 
 y = P(:,3);
-x2 = P(:,4);
-y2 = P(:,5);
+% x2 = P(:,4);
+% y2 = P(:,5);
 
 % spike times (s)
 tSpk = ST; 
@@ -92,6 +92,9 @@ for row = 1:nBins
     for col = 1:nBins
         % what spatial bin are we iterating over?
         yNow = backwardY(row); xNow = forwardX(col);
+        
+        binNowX(row,col) = xNow;
+        binNowY(row,col) = yNow;
         
         % find frames when animal occupied this spatial bin
         indices = find(yNow == binY & xNow == binX);
@@ -254,7 +257,7 @@ for row = 1:nBins
         
         % mean vector length
         MVL(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now);
-        MVL_RH(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now);
+        MVL_RH(row,col) = circ_r(angBinCtrs_rad, tuningCurve_now_RH);
 
         
     end
@@ -279,7 +282,8 @@ model.bins = angBinCtrs;
 model.rateMap = rateMap;
 model.rateMapInclusive = rateMap_inclusive;
 model.spatbins = binCenters;
-% model.spatbinsnum = spatbinNum;
+model.spatBinNum.X = binNowX;
+model.spatBinNum.Y = binNowY;
 model.spatial_occ = spatial_occupancy;
 model.fval = output.fval;
 model.exitflag = output.exitflag;
