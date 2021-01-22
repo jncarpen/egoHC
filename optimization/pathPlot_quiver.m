@@ -66,7 +66,7 @@ v = sin(spkAng(:,2) * pi/180)*scale;
 % plots
 hold on;
 set(gca, 'visible', 'off')
-trajectory = plot(x, y, 'Color', [.7 .7 .7], 'LineWidth', .5);
+% trajectory = plot(x, y, 'Color', [.7 .7 .7], 'LineWidth', .5);
 h1 = quiver(spkPos(:,2), spkPos(:,3), u, v, 0); % 0 turns autoscaling off
 set(h1, 'Color', 'k')
 % set(h1, 'Color', [.9 0 .2])
@@ -74,8 +74,8 @@ pbaspect([1 1 1])
 xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
 ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
 title("Spike Quiver Plot (HD)", 'FontName', 'Calibri light', 'FontSize', 14, 'FontWeight', 'normal')
-set(gca,'xtick',[])
-set(gca,'ytick',[])
+% set(gca,'xtick',[])
+% set(gca,'ytick',[])
 box off
 % hold off;
 end
