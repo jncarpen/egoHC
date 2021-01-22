@@ -18,4 +18,5 @@ simulations\simdata.mat
 *.mat
 measures\distance_measures/
 optimization/examples/
+optimization/aFitLMNew.m
 
