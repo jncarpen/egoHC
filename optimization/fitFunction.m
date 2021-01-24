@@ -1,4 +1,4 @@
-function [err] = fitFunction(var, funName, params, freeList, origVarargin)
+function [err] = fitFunction(vars, funName, params, freeList, origVarargin)
 % [err] = fitFunction(var, funName, params, freeList, origVarargin)
 %
 % Evaluates the error value at minimum for the given 'funName' with
@@ -31,7 +31,7 @@ function [err] = fitFunction(var, funName, params, freeList, origVarargin)
 %% Calling Specified Function to be Fitted
 
 % stick values of var into params
-params = var2params(var, params, freeList);
+params = var2params(vars, params, freeList);
 
 % evaluate the error function
 err = feval(funName, params, origVarargin{:});

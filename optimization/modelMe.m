@@ -176,7 +176,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% INITIALIZE PARAMETERS & PERFORM OPTIMIZATION
 
-% grab X/Y positions (cm)
+% grab X/Y positions (bin centers, in cm)
 X = loc3d(:,:,1); 
 Y = loc3d(:,:,2); 
 
@@ -185,7 +185,7 @@ H = zeros(nBins, nBins, nBins);
 for h = 1:length(angBinCtrs)
     H(:,:,h) = repmat(angBinCtrs(h),10,10);
 end
-
+     
 % perform optimization
 [output] = fit_jo('cosErr',params,{'g','thetaP','xref','yref'},X,Y,H,R);
 
