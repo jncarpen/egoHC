@@ -86,7 +86,7 @@ end
 fr_map = n_map./(occ.*fs);
 
 % calculate egocentric bearing at each spiketime
-head_direction = get_hd(param.position); % shift the values 
+head_direction = param.hd; % shift the values 
 idx = knnsearch(t,foreground_spikes');
 spkhd = head_direction(idx);
 

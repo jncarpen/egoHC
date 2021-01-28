@@ -13,29 +13,18 @@ g = pFit(1);
 thetaP = pFit(2);
 xref = pFit(3);
 yref = pFit(4);
-
-fF = 0;
-    angCount = 0;
+R_xyh_model = zeros(10,10,10)*NaN;
     for i=1:Nbins
         for j=1:Nbins
-            if (rP(i, j)>rCutOff)
-                rT = squeeze(rF(i, j, :)); % 10x1
-                iF = find(isfinite(rT));
-                if (length(iF)>0)
-                    a = 180*atan2(yref-j, xref-i)/pi - (-180 -360/(2*Nbins) + iF*360/Nbins);
-                    cFac = cos(pi*(a-thetaP)/180);
-                    
-                    % take circular mean- ignore NaN
-                   cBar = circ_mean(cFac(~isnan(cFac)));
-                    
-                    z = 1+g*(cFac - cBar);
-                    z = z.*(z>0);
-                    R_xyh_model(i,j,:) = z;
-                    fF = fF + nansum((z - rT(iF)).^2);
-                    angCount = angCount + length(iF);
-                end
-            end
+            rT = squeeze(rF(i, j, :)); % 10x1
+            iF = linspace(1,10,10);
+            a = 180*atan2(yref-j, xref-i)/pi - (-180 -360/(2*Nbins) + iF*360/Nbins);
+            cFac = cos(pi*(a-thetaP)/180);
+            cBar = circ_mean(cFac(~isnan(cFac)));
+            z = 1+g*(cFac - cBar);
+            z = z.*(z>0);
+            R_xyh_model(i,j,:) = z;
         end
     end
-    fF = fF/angCount;
+
 end

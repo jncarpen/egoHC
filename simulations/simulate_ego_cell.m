@@ -20,23 +20,25 @@ function [sim] = simulate_ego_cell(param)
 % parse position vector
 t = param.position(:,1);
 x = param.position(:,2); y = param.position(:,3);
-x2 = param.position(:,4); y2 = param.position(:,5);
+% x2 = param.position(:,4); y2 = param.position(:,5);
+
+hd_sim = param.hd;
 
 % get head_direction values
-hd_sim = rem(atan2d(y2-y, x2-x) + 180, 360);
+% hd_sim = rem(atan2d(y2-y, x2-x) + 180, 360);
 
 % parse ref_point
 rlX = param.ref_point(1,1);
 rlY = param.ref_point(1,2);
 
 % define midpoint between two LEDs
-midX=(x+x2)/2; midY=(y+y2)/2;
-
+% midX=(x+x2)/2; midY=(y+y2)/2;
+midX = x; midY = y;
 % calculate allocentric bearing
 egoAng = mod((atan2d(rlY-midY, rlX-midX)+180) - hd_sim, 360);
 
 % define angles of interest
-plus_minus_orien = 10; % how many degrees are acceptable
+plus_minus_orien = 30; % how many degrees are acceptable
 min_angle = param.theta - plus_minus_orien;
 max_angle = param.theta + plus_minus_orien;
 
@@ -45,7 +47,7 @@ logical = egoAng>min_angle & egoAng<max_angle;
 idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
 
 % define how many spikes to keep
-throw_away = .25;
+throw_away = .01;
 sz = floor(length(idx)-length(idx)*throw_away);
 randIdx = datasample(idx, sz, 'Replace', false);
 foreground_spikes = t(randIdx);

@@ -1,15 +1,15 @@
-function plot_vectorMod(model)
-
+function plot_vectorMod(out)
+warning('off', 'all')
 % reshape vectors, @todo use phase angle instead of peak?
 % +180 brings 'forward' to 'up' (not sure what to do here)
-pred_val = reshape(model.modStrength.RH_prefVec, 100, 1);
-data_val = reshape(model.modStrength.HD_prefVec, 100, 1);
+pred_val = out.measures.mu.RH;
+data_val = out.measures.mu.HD;
 
 % reshape MVL (scaling factor)
-data_MVL = reshape(model.modStrength.HD_MVL, 100, 1);
+data_MVL = out.measures.MVL.HD;
 data_MVL(isnan(data_MVL))=0;
 
-model_MVL = reshape(model.modStrength.RH_MVL, 100, 1);
+model_MVL = out.measures.MVL.RH;
 model_MVL(isnan(model_MVL))=0;
 
 % define vector orientations
@@ -19,7 +19,7 @@ u_data = cos(data_val * pi/180);
 v_data = sin(data_val * pi/180);
 
 % scaling factors
-sf = model_MVL.*3;
+sf = model_MVL;
 sf_data = data_MVL;
 
 % scale the vectors
@@ -29,16 +29,17 @@ uprime_data = u_data.*sf_data;
 vprime_data = v_data.*sf_data;
 
 % get rid of nan values in ratemap
-rm_vec = reshape(model.rateMap',100,1);
+rm_vec = reshape(out.data.rxy',100,1);
 nan_idx = find(isnan(rm_vec));
-binX = reshape(model.spatBinNum.X, 100, 1);
-binY = reshape(model.spatBinNum.Y, 100, 1);
 
+% grab bin information
+binX = out.info.bin.X;
+binY = out.info.bin.Y;
 
 %% PLOT
-figure; hold on;
+figure; hold on; set(gcf,'color','w');
 set(gca, 'visible', 'off')
-imagescwithnan(flipud(model.rateMap),jet,[.7 .5 .7])% colorbar
+imagescwithnan(out.data.rxyS,jet,[.7 .5 .7])% colorbar
 alpha(0.2) 
 brighten(.6)
 xlim([0 11]); ylim([0 11]);
@@ -53,6 +54,11 @@ set(modelVecs, 'Color', 'r', 'AutoScale', 'off', 'LineWidth',1)
 
 % make the figure a square
 pbaspect([1 1 1])
+warning('on', 'all')
 
 end
 
+% % streamline
+% startx = ones(10,1)*5;
+% starty = ones(10,1)*5;
+% streamline(binX, binY, uprime_data, vprime_data, startx, starty)

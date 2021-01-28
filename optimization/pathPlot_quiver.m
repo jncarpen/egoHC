@@ -59,7 +59,7 @@ else
 end
 
 % make spike angles into quivers
-scale = 7;
+scale = .1;
 u = cos(spkAng(:,2) * pi/180)*scale; 
 v = sin(spkAng(:,2) * pi/180)*scale; 
 

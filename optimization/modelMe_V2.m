@@ -1,6 +1,10 @@
-function [out] = modelMe_V2(P, ST)
+function [out] = modelMe_V2(P, ST, Z)
 %MODELME_V2 
-% J Carpenter, 2020.
+%   INPUTS -
+%   P:         position vector [t, x1, y1, x2, y2];
+%   ST:        spike times vector (s)
+%   Z:         angular variable, range (-180 to 180)
+%   J. Carpenter, 2021.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % position info
 t = P(:,1); 
@@ -10,29 +14,13 @@ y = P(:,3); x = P(:,2);
 tpf = mode(diff(t)); % time per frame (s)
 fps = 1/tpf; % frames/sec (Hz)
 
-% compute MD
-clear MD
-for ts = 1:length(t)-1  
-    if ts == 1
-        MD(1) = NaN;
-    elseif ts == length(t)-1
-        MD(end-1:end+2) = NaN;
-    else
-        % -pi to pi
-        MD(ts) = atan2( y(ts+1) - y(ts-1), x(ts+1) - x(ts-1));
-    end
-end
-
-% choose an angular variable (HD or MD);
-ang_var = MD;
-
 % remove spikes outside of viable range
 startTime = t(1); stopTime = t(end);
 ST = ST(ST < stopTime & ST > startTime);
 
 % raw spike train
-edgesT = linspace(startTime,stopTime,numel(t)+1);
-SpkTrn = histcounts(ST,edgesT);
+t_edges = linspace(startTime,stopTime,numel(t)+1);
+SpkTrn = histcounts(ST,t_edges);
 
 % bin arena (10x10)
 nBins = 10;
@@ -56,25 +44,23 @@ for cc = 1:length(xCenter)
 end
 
 % bin angular data
-num_ang_bins = 10; % (pi/5 bins)
-angBinWidth = 2*pi/num_ang_bins+1;
-angBins = linspace(-pi,pi,num_ang_bins+1);
+num_Z_bins = 10; % 36 deg/bin
+Z_edges = linspace(-180,180,num_Z_bins+1);
 
 % get angular bin centers
-angBinCtrs = [];
-for i = 1:length(angBins)
-    if i+1 <= length(angBins)
-        angBinCtrs(i) = ((angBins(i+1)-angBins(i))/2)+angBins(i);
+Z_bin_ctrs = [];
+for i = 1:num_Z_bins
+    if i+1 <= length(Z_edges)
+        Z_bin_ctrs(i) = ((Z_edges(i+1)-Z_edges(i))/2) + Z_edges(i);
     end
 end
 
 
 %% GENERATE RATEMAPS
-
-clear binNowX binNowY loc3d r_xy pdx_hd r_xyh R_xyh
 r_xy = zeros(nBins,nBins).*NaN;
 r_xyh = zeros(nBins,nBins, nBins).*NaN;
 R_xyh = zeros(nBins,nBins, nBins).*NaN;
+
 count = 1;
 for rr = 1:nBins
     for cc = 1:nBins
@@ -89,12 +75,12 @@ for rr = 1:nBins
         idx_here = find(rr == binY & cc == binX);
         time_in_bin = length(idx_here)*tpf; % occupancy (s)
         
-        % spikes and angular variable (rad) in this spatial bin
+        % spikes and angular variable Z (rad) in this spatial bin
         spikes_here = SpkTrn(idx_here); 
-        ang_var_here = ang_var(idx_here); 
-              
+        Z_here = Z(idx_here);
+                      
         % average rate for this spatial bin (Hz)
-        r_xy_here = sum(spikes_here)/length(idx_here)*fps;
+        r_xy_here = sum(spikes_here)/(length(idx_here)*tpf);
         
         % make spatial ratemap
         % @criteria: animal must have occupied each 2D spatial bin 
@@ -103,47 +89,74 @@ for rr = 1:nBins
             r_xy(rr,cc) = r_xy_here; 
         end
         
-        % compute angular occupany in each angular bin
+        % compute occupany in each angular bin
         % linear histogram because input constrained between -pi and pi
-        ang_edges = linspace(-pi, pi, nBins+1);
-        [ang_count_here, ~, ang_idx_here] = histcounts(ang_var_here, angBins);
-        ang_idx_here(ang_idx_here==0) = NaN; 
+        Z_edges = linspace(-180, 180, nBins+1);
+        [Z_count_here, ~, Z_idx_here] = histcounts(Z_here, Z_edges);
+        Z_idx_here(Z_idx_here==0) = NaN; 
         
         % calculate angular occupancy (s) for this spatial bin
-        ang_occ_here = ang_count_here .* tpf; 
+        Z_occ_here = Z_count_here .* tpf; 
         
-        for H = 1:length(angBinCtrs)
+        % loop through each angular (Z) bin
+        for H = 1:length(Z_bin_ctrs)
             % amount of time animal spent in this HD bin (s)
-            time_H = ang_occ_here(H);
-            count_H = ang_count_here(H);
+            time_H = Z_occ_here(H);
+            count_H = Z_count_here(H);
             
             % find indices when animal occupied this HD bin
-            idx_H = find(ang_idx_here == H);
+            idx_H = find(Z_idx_here == H);
                 
             % @criteria: animal must have occupied each angular bin for >=100 ms
-            if time_H >= 0.1 
+            if time_H >= .1 
                 % spiketimes in bin(x,y,H)
                 spk_H = spikes_here(idx_H);
 
                 % conditional rate, r(x,y,H)
-                r_xyh_now = sum(spk_H)/(count_H*fps);
-                r_xyh(rr,cc,H) = r_xyh_now;
+                r_xyh_here = sum(spk_H)./(count_H*tpf);
+                test(count) = r_xyh_here;
+                
+                if isfinite(r_xyh_here)
+                    r_xyh(rr,cc,H) = r_xyh_here;
+                else
+                    r_xyh(rr,cc,H) = NaN;
+                end
 
                 % conditional (normalized) rate, R(x,y,H)
-                if r_xy_here == 0 && r_xyh_now == 0
+                if r_xy_here == 0 && r_xyh_here == 0
                     % since occupancy criteria is met by this step,
                     % rate map should be 0 (not NaN- which you would
-                    % get if r_xy_now = r_xyh_now = 0 and 0/0 = NaN).
+                    % get if r_xy_here = r_xyh_here = 0 and 0/0 = NaN).
                     R_xyh(rr,cc,H) = 0;
                 else
                     % normalize by average rate in spatial bin
-                    R_xyh(rr,cc,H) = r_xyh_now./r_xy_here;
+                    R_xyh(rr,cc,H) = r_xyh_here./r_xy_here;
                 end
             end
         end  
     end
     count = count + 1; 
 end
+
+% smooth ratemaps (?)
+% r_xy_S = r_xy;
+% r_xyh_S = r_xyh;
+% R_xyh_S = R_xyh;
+
+r_xy_S = smooth2a(r_xy,3,3);
+for i=1:10
+    r_xyh_S(:,:,i) = smooth2a(squeeze(r_xyh(:,:,i)),3,3);
+    R_xyh_S(:,:,i) = smooth2a(squeeze(R_xyh(:,:,i)),3,3);
+end
+for i=1:10
+    for j=1:10
+        r_xyh_S(i,j,:)=smoothdata(squeeze(r_xyh_S(i,j,:)),3,'omitnan');
+        R_xyh_S(i,j,:)=smoothdata(squeeze(R_xyh_S(i,j,:)),3,'omitnan');
+    end
+end
+
+% how correlated are the two maps?
+% corrcoef(squeeze(nanmean(r_xyh,3)),r_xy,'rows','complete')
 
 
 %% OPTIMIZATION
@@ -160,38 +173,141 @@ pFitLM = [p.g; p.thetaP; p.xref; p.yref];
 options = optimset('Display','off','TolX',1e-8,'TolFun',1e-8);
 
 % perform the optimization
-[pFit, fF]=fminsearch(@(pFit)aFitLMNew(pFit,R_xyh,r_xy,rCutOff,nBins),...
+[pFit, ~]=fminsearch(@(pFit)aFitLMNew(pFit,R_xyh_S,r_xy_S,rCutOff,nBins),...
     pFitLM,options);
 
 % get model-predicted firing rates for best-fit parameters
-% R_xyh_model = get_Rxyh_model(pFit,R_xyh,r_xy,rCutOff,nBins);
+[R_xyh_model fF_other] = get_Rxyh_model(pFit,R_xyh_S,r_xy_S,rCutOff,nBins);
 
-% perform the optimization
-[pFit_CM, fF]=fminsearch(@(pFit)aFitLMNew_CM(pFit,R_xyh,r_xy,rCutOff,nBins),...
-    pFitLM,options);
 
-% get model-predicted firing rates for best-fit parameters
-% R_xyh_model_CM = get_Rxyh_model_CM(pFit_CM,R_xyh,r_xy,rCutOff,nBins);
+%% VARIANCE EXPLAINED
+% (1) by place 
+VE_place = 1 - (var(r_xyh_S - r_xy_S, 1, [3 2 1], 'omitnan')...
+    ./var(r_xyh_S, 1, [3 2 1], 'omitnan'));
+
+% (2) by model
+VE_model = 1 - (var(R_xyh_S - R_xyh_model, 1, [3 2 1], 'omitnan') ...
+    ./var(R_xyh_S, 1, [3 2 1], 'omitnan'));
+
+
+%% MODULATION STRENGTH
+warning('off','all')
+for rr = 1:nBins
+    for cc = 1:nBins
+        % grab angular tuning curve in each spatial bin
+        tc_now = reshape(R_xyh_S(rr,cc,:), nBins, 1);
+        tc_now_RH = reshape(R_xyh_model(rr,cc,:), nBins, 1);
+        
+        % which bins are finite (~nan, ~inf)
+        finite_bins = find(isfinite(tc_now));
+        
+        % grab these bins
+        tc_now = tc_now(finite_bins);
+        tc_now_RH = tc_now_RH(finite_bins);
+        bins_now = deg2rad(Z_bin_ctrs(finite_bins))';
+        
+        % take circular mean (in RADIANS)
+        % note: in jercog paper they sum (which would just be mu_rad * 10)
+        [mu_raw, ~, ~] = circ_mean(bins_now, tc_now);
+        mu(rr,cc) = rad2deg(mu_raw);
+        
+        [mu_RH_raw, ~, ~] = circ_mean(bins_now, tc_now_RH);
+        mu_RH(rr,cc) = rad2deg(mu_RH_raw);
+        
+        % mean vector length
+        MVL(rr,cc) = circ_r(bins_now, tc_now);
+        MVL_RH(rr,cc) = circ_r(bins_now, tc_now_RH);
+
+        
+    end
+end
+warning('on','all')
+
+% linear average of tuning strengths
+MVL(MVL==Inf) = NaN; % MVL(MVL==0) = NaN;
+tuningStrength_HD = mean(reshape(MVL, nBins.^2,1), 'all', 'omitnan');
+
+MVL_RH(MVL_RH==Inf) = NaN; % MVL_RH(MVL_RH==0) = NaN;
+tuningStrength_RH = mean(reshape(MVL_RH, nBins^2,1), 'all', 'omitnan');
 
 
 %% PREPARE OUTPUTS
 % MODEL CLASS
-% out.model.Rxyh = R_xyh_model;
+out.model.Rxyh = R_xyh_model;
 out.model.fitParams.g = pFit(1);
 out.model.fitParams.thetaP = mod(pFit(2),360)-180;
+out.model.fitParams.thetaP2 = pFit(2);
 out.model.fitParams.xref = pFit(3);
 out.model.fitParams.yref = pFit(4);
-
-% MODEL (CM) CLASS
-% out.CM.Rxyh = R_xyh_model_CM;
-out.CM.fitParams.g = pFit_CM(1);
-out.CM.fitParams.thetaP = mod(pFit_CM(2),360)-180;
-out.CM.fitParams.xref = pFit_CM(3);
-out.CM.fitParams.yref = pFit_CM(4);
 
 % DATA CLASS
 out.data.Rxyh = R_xyh;
 out.data.rxyh = r_xyh;
 out.data.rxy = r_xy;
+out.data.RxyhS = R_xyh_S;
+out.data.rxyhS = r_xyh_S;
+out.data.rxyS = r_xy_S;
+
+
+% MEASURES
+out.measures.VE.place = VE_place;
+out.measures.VE.RH = VE_model;
+out.measures.MVL.HD = MVL;
+out.measures.MVL.RH = MVL_RH;
+out.measures.TS.HD = tuningStrength_HD;
+out.measures.TS.RH = tuningStrength_RH;
+out.measures.mu.HD = mu;
+out.measures.mu.RH = mu_RH;
+
+% INFO
+out.info.bin.X = x_bin_here;
+out.info.bin.Y = y_bin_here;
+
+
+%% NESTED FUNCTIONS
+    function [RXYH_M, fF] = get_Rxyh_model(pFit,rF,rP,rCutOff,Nbins)
+    % INPUT
+    %   rF:         R_data(x,y,H) (10x10x10)
+    %   rP:         r(x,y) (10x10)
+    %   rCutOff:    min firing rate for a bin to be considered
+    %   Nbins:      number of bins of the discretization
+    %   pFit:       [g; thetaP; xref; yref]; initial conditions of params.
+    
+    % unroll pFit
+    g = pFit(1);
+    thetaP = pFit(2); % (deg)
+    xref = pFit(3);
+    yref = pFit(4);
+    
+    fF = 0;
+        angCount = 0;
+        for ii=1:Nbins
+            for jj=1:Nbins
+                if (rP(ii, jj)>rCutOff)
+                    rT = squeeze(rF(ii, jj, :));
+                    iF = find(isfinite(rT));
+                    if ~isempty(iF)            
+                        a = 180*atan2(yref-ii, xref-jj)/pi - ...
+                            (-180 -360/(2*Nbins) + iF*360/Nbins);
+                        cFac = cos(pi*(a-thetaP)/180);
+                        cBar = nanmean(cFac);
+                        z = 1+g*(cFac - cBar);
+                        z = z.*(z>0);
+                        fF = fF + nansum((z - rT(iF)).^2);                   
+                        angCount = angCount + length(iF);
+                        RXYH_M(ii,jj,iF) = z;
+                    end
+                end
+            end
+        end
+        fF = fF/angCount;
+    end
+
+    function [fF] = aFitLMNew(pFit,rF,rP,rCutOff,Nbins)
+        % call the other function (optimization)
+        [~, fF] = get_Rxyh_model(pFit,rF,rP,rCutOff,Nbins);
+    end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 

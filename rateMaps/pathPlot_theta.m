@@ -15,7 +15,7 @@ function pathPlot_theta(pos_, SpikeTimes_, rawEEG)
 %%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%
 
 % add BNT to path
-addpath(genpath('C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001'));
+% addpath(genpath('C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001'));
 
 % remove [x2 y2] if present
 if length(pos_) > 3
@@ -66,8 +66,8 @@ end
 
 % make path plot
 % figure
-plot(x, y, 'Color', [.7 .7 .7])
-hold on
+% plot(x, y, 'Color', [.7 .7 .7])
+% hold on
 scatter(spkPos(:,2), spkPos(:,3), [50], spkPhz(:,2), '.')
 % newmap = brighten(hsv,-.8);
 colormap(hsv);
@@ -78,5 +78,6 @@ xlim([nanmin(pos_(:,2)), nanmax(pos_(:,2))])
 ylim([nanmin(pos_(:,3)), nanmax(pos_(:,3))])
 title("Theta phase Path Plot")
 box off
+
 end
 
