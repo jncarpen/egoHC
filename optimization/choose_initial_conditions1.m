@@ -1,4 +1,4 @@
-function initial = choose_initial_conditions(nbins)
+function initial = choose_initial_conditions1(nbins)
 %CHOOSE_INITIAL_CONDITIONS Summary of this function goes here
 
 % make a vector of all possible positions

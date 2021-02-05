@@ -4,6 +4,7 @@ function [sim] = simulate_ego_cell(param)
 %   param.position
 %   param.ref_point
 %   param.theta
+%   param.hd
 %
 %   OUTPUT STRUCT - 
 %   sim.hd                      head direction values for simulated cell
@@ -12,28 +13,18 @@ function [sim] = simulate_ego_cell(param)
 %
 % J. Carpenter, 2020.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% set box size- make this an input?
-% boxSize = 80; (boxsize for seb's data)
-% boxSize = 150; (boxsize for jan's data)
-
 % parse position vector
-t = param.position(:,1);
-x = param.position(:,2); y = param.position(:,3);
-% x2 = param.position(:,4); y2 = param.position(:,5);
-
+t = param.P(:,1);
+x = param.P(:,2); y = param.P(:,3);
 hd_sim = param.hd;
-
-% get head_direction values
-% hd_sim = rem(atan2d(y2-y, x2-x) + 180, 360);
 
 % parse ref_point
 rlX = param.ref_point(1,1);
 rlY = param.ref_point(1,2);
 
 % define midpoint between two LEDs
-% midX=(x+x2)/2; midY=(y+y2)/2;
 midX = x; midY = y;
+
 % calculate allocentric bearing
 egoAng = mod((atan2d(rlY-midY, rlX-midX)+180) - hd_sim, 360);
 
@@ -44,7 +35,7 @@ max_angle = param.theta + plus_minus_orien;
 
 % find indices where egoAngle is within range
 logical = egoAng>min_angle & egoAng<max_angle;
-idx = find(logical==1); %logical = alloAng>min_angle & alloAng<max_angle;
+idx = find(logical==1);
 
 % define how many spikes to keep
 throw_away = .01;
@@ -77,10 +68,8 @@ binnedSpikes(speed_idx)=0; % get rid of spikes when animal was moving slow
 binnedSpikes = imgaussfilt(binnedSpikes, 2, 'Padding', 'replicate'); % smooth ST
 SpikeTrain_sim = binnedSpikes;
 
-sim.spiketimes = SpikeTimes_sim;
+sim.ST = SpikeTimes_sim;
 sim.spiketrain = SpikeTrain_sim;
-sim.hd = hd_sim;
-sim.position = param.position;
 
 % show user their simulated cell!
 % figure

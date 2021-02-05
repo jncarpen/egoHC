@@ -4,6 +4,7 @@ function [MD] = get_MD(P)
 t = P(:,1);
 x = P(:,2);
 y = P(:,3);
+
 for ts = 1:length(t)-1  
     if ts == 1
         MD(1) = NaN;
