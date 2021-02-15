@@ -71,8 +71,8 @@ pbaspect([1 1 1])
 xlim([nanmin(pos(:,2)), nanmax(pos(:,2))])
 ylim([nanmin(pos(:,3)), nanmax(pos(:,3))])
 % title("spike plot (colored by HD)", 'FontName', 'Calibri light', 'FontSize', 18, 'FontWeight', 'normal')
-% set(gca,'xtick',[])
-% set(gca,'ytick',[])
+set(gca,'xtick',[])
+set(gca,'ytick',[])
 box off
 % hold off;
 end

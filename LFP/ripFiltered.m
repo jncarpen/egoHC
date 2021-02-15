@@ -22,7 +22,9 @@ function [filtered] = ripFiltered(lfp)
 
 %%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%
 
-
+% The Nyquist theorem states that a signal must be sampled at least twice as fast as the bandwidth of
+% the signal to accurately reconstruct the waveform; otherwise, the high-frequency content will alias at a
+% frequency inside the spectrum of interest (passband)
 nyquistLim = 125; 
 filterAbv = 100;
 
