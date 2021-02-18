@@ -1,14 +1,14 @@
-function egoRateMap(Pos, ST, ref_point)
+function ECOFiringMap_normalized_smoothed = egoRateMap(P, ST, rp)
 %EGORATEMAP 
 
 % pull out position
-time = Pos(:,1);
-x = Pos(:,2); y = Pos(:,3);
-head_direction = get_hd(Pos);
+time = P(:,1);
+x = P(:,2); y = P(:,3);
+head_direction = get_hd(P);
 spiketimes = ST;
 
 % pull out reference point
-ObjectPosition = ref_point;
+ObjectPosition = rp;
 
 % calculate distance to object
 DistanceToObject_x = x - ObjectPosition(1);
@@ -22,7 +22,7 @@ FacingToObjectAngle = mod(180 + AngleToObject - head_direction, 360);
 % select bin sizes
 AngleBin=3; % in degrees
 SpaceBin=25;
-maxSpaceBin = 100;
+maxSpaceBin = 75;
 
 % bin spikes
 [spikeTrain, ~] = binSpikes(time, spiketimes);
@@ -36,10 +36,10 @@ t=t*180/pi;
 
 for i=1:1:SpaceBin
     for jj=1:1:round(360/AngleBin)
-        for k=1:length(Pos)
+        for k=1:length(P)
             if RToObject(k)>=RR(i,jj) && RToObject(k)<RR(i+1,jj) && FacingToObjectAngle(k)>=t(i,jj)&&FacingToObjectAngle(k)<t(i,jj+1)
                 ECOMap(i,jj)=ECOMap(i,jj)+1;
-                if ~isnan(Pos(k))
+                if ~isnan(P(k))
                     ECOFiringMap(i,jj)=ECOFiringMap(i,jj) + spikeTrain(k);
                 else
                 end
@@ -78,40 +78,36 @@ ECOFiringMap_normalized_smoothed=imgaussfilt(ECOFiringMap_normalized,sigma);
 % set a max radial range
 maxRadialRange = 75;
 
-% occupancy
-% ax1=subplot(1,3,1); 
-figure
-polarplot3d(ECOMap_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);         
-% colormap(ax1,'jet');
-daspect([1 1 1]); 
-view(2)
-camroll(90)
-grid off
-title('Egocentric Occupancy','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
-
-% egocentric firing map
-% ax2=subplot(1,3,2);
-figure
-polarplot3d(ECOFiringMap_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);
-% colormap(ax2,'jet');    
-daspect([1 1 1]); 
-view(2)
-camroll(90)
-grid off
-title('Egocentric Spike Map','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
+% % occupancy
+% % ax1=subplot(1,3,1); 
+% figure
+% polarplot3d(ECOMap_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);         
+% % colormap(ax1,'jet');
+% daspect([1 1 1]); 
+% view(2)
+% camroll(90)
+% grid off
+% title('Egocentric Occupancy','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
+% 
+% % egocentric firing map
+% % ax2=subplot(1,3,2);
+% figure
+% polarplot3d(ECOFiringMap_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);
+% % colormap(ax2,'jet');    
+% daspect([1 1 1]); 
+% view(2)
+% camroll(90)
+% grid off
+% title('Egocentric Spike Map','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
 
 % egocentric firing map (normalized)
 % ax3=subplot(1,3,3); 
-figure
 polarplot3d(ECOFiringMap_normalized_smoothed,'PlotType','surfn','RadialRange',[0 maxRadialRange]);         
-% colormap(ax3, 'jet');
 daspect([1 1 1]);
 view(2)
 camroll(90)
 grid off
-title('Egocentric Spike Map (Normalized)','FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
-
-
+% title([{'Egocentric Spike Map (Normalized)', ' '}],'FontName', 'Helvetica', 'FontSize', 14, 'FontWeight', 'normal');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% FUNCTIONS
