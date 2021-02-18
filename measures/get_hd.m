@@ -16,7 +16,8 @@ posx2 = position(:,4);
 posy2 = position(:,5);
 
 % compute head direction in degrees
-head_direction = rem(atan2d(posy2-posy, posx2-posx)+180, 360);
+head_direction = mod(atan2d(posy2-posy, posx2-posx), 360);
+head_direction = mod(head_direction + 90, 360); % 0 is up
 
 end
 
