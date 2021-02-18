@@ -66,7 +66,6 @@ v = sin(spkAng(:,2) * pi/180)*scale;
 % plots
 hold on;
 set(gca, 'visible', 'off')
-% trajectory = plot(x, y, 'Color', [.7 .7 .7], 'LineWidth', .5);
 h1 = quiver(spkPos(:,2), spkPos(:,3), u, v, 1); % 0 turns autoscaling off
 set(h1, 'Color', 'k')
 % set(h1, 'Color', [.9 0 .2])

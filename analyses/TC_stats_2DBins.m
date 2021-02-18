@@ -13,7 +13,7 @@ function [HD_TC, ALLO_TC, EGO_TC, HD_ST, ALLO_ST, EGO_ST, allo_angleAtPeak, ego_
 % make sure BNT is on the path
 addpath(genpath("C:\Users\17145\Documents\github_local\MATLAB\moser_matlab\OVC\bnt-20190903T101355Z-001\bnt"));
 
-% parse position vector
+% unpack position vector
 t = position(:,1);
 x1 = position(:,2); y1 = position(:,3);
 x2 = position(:,4); y2 = position(:,5);
