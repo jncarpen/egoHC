@@ -1,4 +1,4 @@
-function [Xi,Yi,Zi] = polarplot3d(Zp,varargin)
+function [Xi,Yi,Zi,Ci] = polarplot3d(Zp,varargin)
 % POLARPLOT3D  Plot a 3D surface from polar coordinate data
 %   [Xi,Yi,Zi] = polarplot3d(Zp,varargin)
 %
@@ -180,7 +180,8 @@ if nargin < 1
                  'RadLabels',3,'RadLabelLocation',{180 'max'},'RadLabelColor','red');
              
                                          % set plot attributes
-   set(gca,'DataAspectRatio',[1 1 10],'View',[-12,38],...
+%                                            set(gca,'DataAspectRatio',[1 1 10],'View',[-12,38],...
+   set(gca,'DataAspectRatio',[1 1 10],'View',[0,2],...
            'Xlim',[-4.5 4.5],'Xtick',[-4 -2 0 2 4],...
            'Ylim',[-4.5 4.5],'Ytick',[-4 -2 0 2 4]);
        
@@ -204,7 +205,7 @@ p.angularrange      = [0 2*pi];   % angular range
 p.radialrange       = [0 1];      % radial  range
 p.plottype          = 'surfn';    % surface plot, no rectangular grid
 p.meshscale         = [1 1];      % no mesh scaling
-p.polargrid         = {10 8};     % number of radial and azimuthal sections
+p.polargrid         = {0 0};      % number of radial and azimuthal sections
 p.gridscale         = [40 40];    % 40x scaling for smooth grid interpolation
 p.cartorigin        = [0 0 0];    % Cartesian origin
 p.tickspacing       = 45;         % ten degree tick mark spacing
@@ -218,7 +219,7 @@ p.contourlines      = '';         % default contour specification
 p.gridcolor         = 'black';    % default overlay grid line color
 p.gridstyle         = '';         % style of grid lines: '-' ':' '-.' '--'
 p.polaraxiscolor    = 'black';    % default polar axis color
-p.tickcolor         = 'black';    % default polar tick color
+p.tickcolor         = 'white';    % default polar tick color
 p.ticklabelcolor    = 'black';    % default polar tick label color
 p.radlabelcolor     = 'black';    % default radial label color
 p.plotprops         = {};         % no additional plot properties
@@ -475,7 +476,7 @@ end
 %-- Plot the polar axis
 % Axis and tick label attributes
 % fontargs = {'FontName','Arial','FontSize',10,'FontWeight','bold'};
-fontargs = {'FontName','Calibri Light','FontSize',14,'FontWeight','normal'};
+fontargs = {'FontName','Helvectica UI','FontSize',20,'FontWeight','normal'};
 if ~isequal(p.axislocation,'off')
     
    % Create polar axis data just outside the largest radius
