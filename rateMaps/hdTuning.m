@@ -1,4 +1,4 @@
-function hdTuning(hd, pos, SpikeTrain)
+function hdTuning(P,HD,ST)
 %HDTUNING: make HD tuning plot
 %   INPUTS
 %   hd:                     Tx1 double, where T is the number of
@@ -13,53 +13,61 @@ function hdTuning(hd, pos, SpikeTrain)
 %                           position samples- should be a Tx1 double.
 %   OUTPUTS
 %   TC:                     Head direction tuning curve will be generated.
-
-% make sure that everything is in SECONDS ** for appropriate Hz
-% calculations :)
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% unpack inputs
+t = P(:,1);
+tpf = mode(diff(t));
 
-% convert degrees to radians 
-if max(hd) > 2*pi
-    hd = hd*pi/180;
+% spiketrain
+startT = t(1); stopT = t(end);
+ST = ST(ST < stopT & ST > startT);
+time_edges = linspace(startT,stopT,numel(t)+1);
+spiketrain = histcounts(ST, time_edges);
+
+% instantaneous fr at each timepoint
+inst_fr = spiketrain./tpf;
+
+%% apply speed threshold 
+% @todo: make this an option
+threshold = 5; % cm/s
+[P_logical, ST_thresh] = speed_threshold(P, ST, threshold);
+
+% find time indices when cell spikes
+spkidx = knnsearch(t, ST_thresh);
+spk_hd = HD(spkidx);
+
+%% tuning curve
+nBins = 40; % 9 degree bins
+angEdges = linspace(0,360,nBins+1);
+[bincounts, edges, binidx] = histcounts(spk_hd,angEdges);
+% find standard deviation in each bin
+for bin = 1:length(edges)-1
+    stdev_spk(bin) = std(inst_fr(find(binidx==bin)), 'omitnan');
 end
+% occupancy map
+for bin = 1:length(angEdges)-1
+    idx_now = find(HD>angEdges(bin) & HD<=angEdges(bin+1));
+    stdev_bin(bin) = std(inst_fr(idx_now), 'omitnan');
+    occ(bin) = sum(P_logical(idx_now)); % occupancy (counts)
+end
+% bin centers
+for i = 1:length(edges)
+    if i+1 <= length(edges)
+        ctrs(i) = ((edges(i+1)-edges(i))/2)+edges(i);
+    end
+end
+% tuning curve
+tc = bincounts./(occ*tpf + eps); 
+tc = imgaussfilt(tc, 2, 'Padding', 'circular');
 
-trackingtimes = pos(:,1); % pull trackingtimes out of pos matrix
-
-% find video sampling frequency (in S)
-sampleRate = mode(diff(trackingtimes));
-
-%angular bins
-da = pi/30; %6 degrees
-angBins = [da/2:da:2*pi-da/ 2];
-
-%Occupancy
-[histAng,~,~] = histcounts(hd,angBins+1);
-
-% histogram of the number of times the cell fired in each bin of
-% head-direction
-[spkPerAng,~,~] = histcounts(SpikeTrain,angBins);
-
-% now compute the tuning curve:
-HDT = spkPerAng./histAng*sampleRate;
-
-angBins = angBins(2:end); % cut out the first bin
-
-figure(1),clf
-%set(gcf,'Position',[62   319   783   281])
-subplot(1,3,1)
-    plot(angBins,spkPerAng)
-% polar(angBins,spkPerAng)
-    title('Number of spikes')
-subplot(1,3,2)
-    plot(angBins,histAng)
-% polar(angBins,histAng)
-    title('Occupancy')
-subplot(1,3,3)
-    plot(angBins,HDT)
-% polar(angBins,hdTuning)
-    title('Tuning Curve (Hz)')
-return
-
+%% plot
+figure; hold on;
+set(gcf,'color','w');
+errorbar(ctrs, tc, stdev_spk, 'Color', 'k', 'LineWidth', .75);
+plot(ctrs, tc, 'Color', 'k', 'LineWidth', .75);
+ylabel("fr (Hz)"); xlabel("angle (deg)");
+xticks([90 180 270 360]); 
+box off;
+set(gca, 'FontSize', 15, 'FontName', 'Myriad Pro');
 end
 
