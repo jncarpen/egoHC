@@ -1,4 +1,4 @@
-function tc_shuffle_poisson(position, ST, ref_point, size_simdataset)
+function tc_shuffle_poisson(P, ST, RP, size_simdataset)
 %TC_SHUFFLE 
 %   As in Mimica et al. 2018
 %   Inputs:
@@ -27,12 +27,12 @@ function tc_shuffle_poisson(position, ST, ref_point, size_simdataset)
 doPlot = "False";
 
 % break down 'refLoc'
-rlX = ref_point(1,1);
-rlY = ref_point(1,2);
+rlX = RP(1,1);
+rlY = RP(1,2);
 
 % break down position data
-x = position(:,2); y = position(:,3);
-t = position(:,1); hd = get_hd(position);
+x = P(:,2); y = P(:,3);
+t = P(:,1); hd = get_hd(P);
 
 % get spike positions 
 clear spikes
@@ -42,8 +42,8 @@ spikes(:,1) = ST; spikes(:,2) = x(spk_idx);
 spikes(:,3) = y(spk_idx);
 
 for iter = 1:size_simdataset
-    [simulatedSpikes,~] = spatialPoissonSimulation(position, spikes);
-    [tcVals_shift(iter,:), ~] = plot_egoBearing(position, simulatedSpikes(:,1), ref_point, doPlot);
+    [simulatedSpikes,~] = spatialPoissonSimulation(P, spikes);
+    [tcVals_shift(iter,:), ~] = plot_egoBearing(P, simulatedSpikes(:,1), RP, doPlot);
 end
 
 % take mean (along the columns)
@@ -58,7 +58,7 @@ yl = mean_tc - 2*std_tc;
 
 
 %% II. Calculate 'real' tuning curve
- [tcVals_data, binCtrs] = plot_egoBearing(position, ST, ref_point, doPlot);
+ [tcVals_data, binCtrs] = plot_egoBearing(P, ST, RP, doPlot);
 
 
 %% III. Plot tuning curves
