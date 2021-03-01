@@ -34,7 +34,7 @@ alloAng = rem(atan2d(rlY-midY, rlX-midX)+180, 360);
 egoAng = mod(alloAng - Z, 360);
 
 % define angles of interest
-plus_minus_orien = 35; % how many degrees are acceptable
+plus_minus_orien = 30; % how many degrees are acceptable
 min_angle = theta - plus_minus_orien;
 max_angle = theta + plus_minus_orien;
 
@@ -42,7 +42,7 @@ max_angle = theta + plus_minus_orien;
 dist_from_ref = sqrt((rlX - midX).^2+ (rlY - midY).^2);
 
 % define distance range
-plus_minus_distance = 20; % (in cm)
+plus_minus_distance = 15; % (in cm)
 min_dist = radius - plus_minus_distance;
 max_dist = radius + plus_minus_distance;
 
