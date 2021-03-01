@@ -60,12 +60,13 @@ end
 
 % make path plot
 % figure
-plot(x, y, 'Color', [.85 .85 .85]);
+plot(x, y, 'Color', [.90 .90 .90]);
+set(gca, 'visible', 'off')
 hold on;
-scatter(spkPos(:,2), spkPos(:,3), [45], spkAng(:,2), '.')
+scatter(spkPos(:,2), spkPos(:,3), [35], spkAng(:,2), '.')
 % newmap = brighten(hsv,-.8);
 colormap(hsv);
-c = colorbar; c.FontSize = 15; c.Ticks = [90 180 270]; c.Box = 'off';
+% c = colorbar; c.FontSize = 30; c.Ticks = [90 180 270]; c.Box = 'off';
 caxis([0 360]);
 c.FontName = 'Helvetica UI'; c.FontWeight = 'normal';
 pbaspect([1 1 1])
