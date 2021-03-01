@@ -4,7 +4,7 @@ function plot_vonMises(theta)
 % default parameters
 alpha = 0:0.001:2*pi; % from 0 to 2pi
 theta = deg2rad(theta);
-kappa = 4;
+kappa = 2;
 
 % calculate the pdf
 [p, ~] = circ_vmpdf(alpha, theta, kappa);
@@ -13,7 +13,7 @@ kappa = 4;
 figure
 hold on;
 set(gcf,'color','w');
-plot(rad2deg(alpha), p, 'Color', [.6 .6 .6], 'LineWidth', 1.5);
+plot(rad2deg(alpha), p, 'Color','k', 'LineWidth', 1.5);
 xline(rad2deg(theta), '--r');
 pbaspect([1 1 1])
 xlim([0 360])
