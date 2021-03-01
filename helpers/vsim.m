@@ -31,6 +31,8 @@ gamma = 1/3;
 
 % calculate similarity value (range 0 to 1)
 sim_pipj = alpha*dist_term + beta*ang_term + gamma*mag_term;
+% sim_pipj = beta*ang_term + gamma*mag_term;
+
 
 end
 
