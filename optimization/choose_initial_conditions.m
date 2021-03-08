@@ -1,11 +1,11 @@
-function initial = choose_initial_conditions1(nbins)
+function initial = choose_initial_conditions(nbins)
 %CHOOSE_INITIAL_CONDITIONS Summary of this function goes here
 
 % make a vector of all possible positions
 step = 0.5;
 x = 1:5.:nbins;
 y = 1:.5:nbins;
-orientation = -180:1:180;
+orientation = linspace(-180,180,360);
 
 % randomly sample from them 
 howMany = 1;

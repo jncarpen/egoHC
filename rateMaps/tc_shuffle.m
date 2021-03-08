@@ -2,7 +2,7 @@ function tc_shuffle(P, ST, RP)
 %TC_SHUFFLE 
 %   As in Mimica et al. 2018
 %   Inputs:
-%   'position'      tx5 array, where t is the number of timestamps in the
+%   'position'      tx5 array, where t is the number of ti mestamps in the
 %                   session. It should be in the form [t x y x2 y2].
 %   'ST'            sx1 array, where s is the number of spikes the cell
 %                   fired throughout the session. spike time values should
@@ -24,6 +24,7 @@ function tc_shuffle(P, ST, RP)
 % ref_point = [89, 83];
 
 %% I. Calculate shuffled distribution
+RP = RP.*150/10;
 
 % define the number of shuffles we want
 total_shuffles = 100;

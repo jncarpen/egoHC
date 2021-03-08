@@ -15,7 +15,7 @@ rlX = rp(1); rlY = rp(2);
 % allo & egocentric bearing
 allo = mod(atan2d(rlY-Y, rlX-X), 360);
 allo = mod(allo + 90, 360); % shift so that 0 deg is in front of animal
-ego = mod(allo - HD, 360);
+ego = mod(allo - HD - 90, 360);
 
 % spiketrain
 startT = t(1); stopT = t(end);

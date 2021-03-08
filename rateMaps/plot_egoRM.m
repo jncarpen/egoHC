@@ -5,6 +5,9 @@ function out = plot_egoRM(P, ST, RP)
 %   ST:     spiketimes
 %   RP:     reference point
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%s
+% if RP is output from the cosine model
+% convert to cm
+RP = RP.*150/10;
 
 ego_RM = egoRateMap(P, ST, RP);
 [Xi,Yi,Zi,Ci] = polarplot3d(ego_RM, 'PlotType','off');
