@@ -7,7 +7,8 @@ function out = plot_egoRM(P, ST, RP)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%s
 % if RP is output from the cosine model
 % convert to cm
-RP = RP.*150/10;
+% nbinstheta = 10;
+% RP = RP.*(150/nbinstheta);
 
 ego_RM = egoRateMap(P, ST, RP);
 [Xi,Yi,Zi,Ci] = polarplot3d(ego_RM, 'PlotType','off');

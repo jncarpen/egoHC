@@ -24,7 +24,7 @@ function tc_shuffle(P, ST, RP)
 % ref_point = [89, 83];
 
 %% I. Calculate shuffled distribution
-RP = RP.*150/10;
+% RP = RP.*150/10;
 
 % define the number of shuffles we want
 total_shuffles = 100;

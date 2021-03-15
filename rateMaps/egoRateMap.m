@@ -1,4 +1,4 @@
-function ECOFiringMap_normalized_smoothed = egoRateMap(P, ST, rp)
+function ECOFiringMap_normalized_smoothed = egoRateMap(P, ST, RP)
 %EGORATEMAP 
 
 % pull out position
@@ -8,7 +8,7 @@ head_direction = get_hd(P);
 spiketimes = ST;
 
 % pull out reference point
-ObjectPosition = rp;
+ObjectPosition = RP;
 
 % calculate distance to object
 DistanceToObject_x = x - ObjectPosition(1);
@@ -20,9 +20,9 @@ AngleToObject = rem(atan2d(y-ObjectPosition(2), x-ObjectPosition(1))+360, 360);
 FacingToObjectAngle = mod(180 + AngleToObject - head_direction, 360);
 
 % select bin sizes
-AngleBin=3; % in degrees
-SpaceBin=25;
-maxSpaceBin = 75;
+AngleBin = 3; % in degrees
+SpaceBin = 130; % # of bins
+maxSpaceBin = 325;
 
 % bin spikes
 [spikeTrain, ~] = binSpikes(time, spiketimes);
