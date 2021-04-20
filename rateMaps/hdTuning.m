@@ -1,4 +1,4 @@
-function hdTuning(P,HD,ST)
+function tc = hdTuning(P,HD,ST, nBins)
 %HDTUNING: make HD tuning plot
 %   INPUTS
 %   hd:                     Tx1 double, where T is the number of
@@ -37,9 +37,9 @@ spkidx = knnsearch(t, ST_thresh);
 spk_hd = HD(spkidx);
 
 %% tuning curve
-nBins = 40; % 9 degree bins
 angEdges = linspace(0,360,nBins+1);
 [bincounts, edges, binidx] = histcounts(spk_hd,angEdges);
+
 % find standard deviation in each bin
 for bin = 1:length(edges)-1
     stdev_spk(bin) = std(inst_fr(find(binidx==bin)), 'omitnan');
@@ -60,14 +60,14 @@ end
 tc = bincounts./(occ*tpf + eps); 
 tc = imgaussfilt(tc, 2, 'Padding', 'circular');
 
-%% plot
-figure; hold on;
-set(gcf,'color','w');
-errorbar(ctrs, tc, stdev_spk, 'Color', 'k', 'LineWidth', .75);
-plot(ctrs, tc, 'Color', 'k', 'LineWidth', .75);
-ylabel("fr (Hz)"); xlabel("angle (deg)");
-xticks([90 180 270 360]); 
-box off;
-set(gca, 'FontSize', 15, 'FontName', 'Myriad Pro');
+% %% plot
+% figure; hold on;
+% set(gcf,'color','w');
+% errorbar(ctrs, tc, stdev_spk, 'Color', 'k', 'LineWidth', .75);
+% plot(ctrs, tc, 'Color', 'k', 'LineWidth', .75);
+% ylabel("fr (Hz)"); xlabel("angle (deg)");
+% xticks([90 180 270 360]); 
+% box off;
+% set(gca, 'FontSize', 15, 'FontName', 'Myriad Pro');
 end
 

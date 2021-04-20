@@ -61,7 +61,7 @@ end
 % make path plot
 % figure
 plot(x, y, 'Color', [.90 .90 .90]);
-set(gca, 'visible', 'off')
+% set(gca, 'visible', 'off')
 hold on;
 scatter(spkPos(:,2), spkPos(:,3), [35], spkAng(:,2), '.')
 % newmap = brighten(hsv,-.8);

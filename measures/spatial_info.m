@@ -17,7 +17,7 @@ spiketimes = ST;
 % calculate ratemap
 nbins = 30; % 5 cm bins (900 total bins)
 sigma = 2; % smoothing factor
-map = analyses.map(position, spiketimes,'binWidth', 150/nbins); % bug in 2d smoothing fn
+map = analyses.map(position, spiketimes,'binWidth', 1.50/nbins); % bug in 2d smoothing fn
 spikemap = imgaussfilt(map.Nspikes, sigma); % number of spikes per spatial bin (smoothed)
 
 % get rid of NaNs in the occupancy map
