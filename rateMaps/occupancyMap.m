@@ -1,90 +1,40 @@
-function occupancyMap(pos_cm_)
+function occ = occupancyMap(P, nBins)
 %OCCUPANCYMAP Summary of this function goes here
 %   Detailed explanation goes here
 % plot occ and map
-posx = pos_cm_(:,2);
-posy = pos_cm_(:,3);
+posx = P(:,2);
+posy = P(:,3);
+tpf = mode(diff(P(:,1))); % time per frame
 
 % get min/max values
-xMin = nanmin(pos_cm_(:,2));
-xMax = nanmax(pos_cm_(:,2));
-yMin = nanmin(pos_cm_(:,3));
-yMax = nanmax(pos_cm_(:,2));
+xMin = nanmin(P(:,2));
+xMax = nanmax(P(:,2));
+yMin = nanmin(P(:,3));
+yMax = nanmax(P(:,3));
 
 maxEdges = max(xMax, yMax);
 minEdges = min(xMin, yMin);
 
 % bin position data
-posBins = 20;
-posEdges = linspace(minEdges, maxEdges, posBins+1);
+% nBins = 10;
+[occ, xEdges, yEdges, binX, binY] = histcounts2(posx,posy,nBins);
 
-% FOR X:
-% compute position occupancy & pos indices
-[posXOccupancy,~,posXInds] = histcounts(posx, posEdges);
-
-% initialize zero matrix
-posX_dis = zeros(length(posXInds), posBins);
-
-for T=1:length(posXInds) % for every time point
-    currentBin = posXInds(T); % pulls out value for HD bin at time_i
-    posX_dis(T, currentBin+1) = 1; % sets value to 1
-end
-
-
-% FOR Y:
-
-[posYOccupancy,~,posYInds] = histcounts(posy, posEdges);
-
-% initialize zero matrix
-currentBin = [];
-posY_dis = zeros(length(posYInds), posBins);
-
-for T=1:length(posYInds) % for every time point
-    currentBin = posYInds(T); % pulls out value for posY
-    posY_dis(T, currentBin+1) = 1; % sets value to 1
-end
-
-%% OCC
-SF = 5; % smoothing factor
-for i=1:100
-    for j= 1:100
-        f = find(abs(posX_dis-i)<SF & abs(posY_dis-j)<SF);
-        occ(i,j) = length(f);
-    end
-end
-
-% smooth occ
-occ = imgaussfilt(occ, 2);
-
-figure
-imagesc(occ)
-pbaspect([1 1 1])
-title("Spatial Occ")
-xlabel("X")
-ylabel("Y")
-colormap('jet')
-colorbar
-
+% for rr = 1:nBins
+%     for cc = 1:nBins
+%         % find frames in which animal occupied this spatial bin
+%         occ(rr,cc) = length(find(rr == binY & cc == binX));
+%     end
+% end
+% 
 % figure
-% contourf(occ)
-% title("Occupancy- Contour")
-% xlabel("X-Coordinate")
-% ylabel("Y-Coordinate")
-% colorbar
-
-% figure
-% imagesc(map)
-% title("Speed Map")
+% imagesc(occ)
+% pbaspect([1 1 1])
+% title("Spatial Occ")
 % xlabel("X")
 % ylabel("Y")
+% colormap('jet')
 % colorbar
 
-% figure
-% contourf(map)
-% title("Speed Map- Contour")
-% xlabel("X-Coordinate")
-% ylabel("Y-Coordinate")
-% colorbar
 
 return
 
